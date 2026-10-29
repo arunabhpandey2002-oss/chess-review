@@ -2,3 +2,4 @@ node_modules/
 dist/
 test/*.evals.json
 *.log
+shots-live/
