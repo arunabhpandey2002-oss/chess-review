@@ -269,7 +269,7 @@ cg-board square.hint-threat { background: rgba(213, 94, 0, .45); }
   .tabs { order: 3; flex-basis: 100%; margin: 0; }
   .coach { grid-template-columns: 1fr; }
   .coach-facts > div { grid-template-columns: 1fr; gap: 2px; }
-  .trainer { grid-template-columns: 1fr; }
+  .trainer { grid-template-columns: minmax(0, 1fr); }
   .overlay { padding: 0; }
   .overlay-inner { border-radius: 0; padding: 10px; min-height: 100%; }
   .tr-board-wrap { max-width: 100%; }
@@ -278,4 +278,6 @@ cg-board square.hint-threat { background: rgba(213, 94, 0, .45); }
   .pz-act { grid-column: 1 / -1; flex-direction: row; }
   .mini { width: 72px; height: 72px; }
 }
-label[for="tr-input"]{white-space:nowrap;}
+label[for="tr-input"] { white-space: nowrap; font-size: 13px; color: var(--muted); }
+.tr-type input { min-width: 0; }
+.tr-side { min-width: 0; }
