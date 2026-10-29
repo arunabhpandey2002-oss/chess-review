@@ -31,6 +31,6 @@ describe('local store', () => {
     expect((await store.get<store.Puzzle>('puzzles', 'x'))?.core.bestSan).toBe('Nc6');
   });
   it('rejects files that are not backups', async () => {
-    await expect(store.importAll({ hello: 1 })).rejects.toThrow(/not a Rook-ie mistakes backup/);
+    await expect(store.importAll({ hello: 1 })).rejects.toThrow(/not a rook-i\.e\. mistakes backup/);
   });
 });

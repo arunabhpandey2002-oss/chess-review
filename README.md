@@ -1,4 +1,6 @@
-# Rook-ie mistakes
+# rook-i.e. mistakes
+
+(Display name: "rook-i.e. mistakes". The Vercel project and URL stay `rook-ie-mistakes`, because dots are not allowed there.)
 
 A static web app that reviews your chess games in the browser and turns your mistakes into training.
 Enter a Chess.com or Lichess username, or paste a PGN, pick a finished game, and Stockfish 19 (WASM lite) reviews every move.

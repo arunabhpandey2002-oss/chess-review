@@ -111,7 +111,7 @@ async function route() {
     prof.then((pr) => { if (state.user === user) { state.profile = pr; renderHeader(); } }).catch(() => {});
     store.ensureProfile(site, user).catch(() => {});
   }
-  document.title = game ? 'Game Review · Rook-ie mistakes' : `${state.user} · Rook-ie mistakes`;
+  document.title = game ? 'Game Review · rook-i.e. mistakes' : `${state.user} · rook-i.e. mistakes`;
   renderTabs(game ? '' : view ?? '');
   if (!game || view) { currentReview?.destroy(); currentReview = null; }
   if (view !== 'train') destroyTrainer();
