@@ -38,6 +38,8 @@ export interface MoveReview {
   explanation: string;
   scoreAfter: Score | null; // white POV
   isBestMove: boolean;
+  /** Mover's position was already decided before and after the move (win chance under 10% or over 90%). */
+  decided: 'won' | 'lost' | null;
 }
 
 export type Book = Record<string, string>;
@@ -353,10 +355,36 @@ export function reviewGame({ plies, evals, book }: ReviewInput): (MoveReview | n
 
     out.push({
       cls, loss, wpBefore: wpBest, wpAfter, bestUci: best.pv[0] ?? null, bestSan, bestPvSan, playedPvSan, bestPv: best.pv, playedPv: reply?.pv ?? [], fenBefore: p.fenBefore, fenAfter: p.fenAfter,
-      explanation: ex, scoreAfter, isBestMove,
+      explanation: ex, scoreAfter, isBestMove, decided: decidedState(cls, wpBest, wpAfter),
     });
   }
   return out;
+}
+
+/** 'lost' / 'won' when the result was already settled for the mover both before and after the move. */
+export function decidedState(cls: Cls, wpBefore: number, wpAfter: number): 'won' | 'lost' | null {
+  if (cls === 'book' || cls === 'forced') return null;
+  if (wpBefore < 10 && wpAfter < 10) return 'lost';
+  if (wpBefore > 90 && wpAfter > 90) return 'won';
+  return null;
+}
+
+const GOOD: Cls[] = ['brilliant', 'great', 'best', 'excellent', 'good'];
+/** Headline suffix and the plain note for a decided position. `you` = the reviewed player made this move. */
+export function decidedWording(rv: Pick<MoveReview, 'cls' | 'wpBefore' | 'wpAfter' | 'decided'>, you: boolean, color: Color): { suffix: string; note: string } | null {
+  if (!rv.decided) return null;
+  const who = you ? 'You' : color === 'w' ? 'White' : 'Black';
+  const was = you ? 'were' : 'was';
+  const state = rv.decided === 'lost' ? 'lost' : 'winning';
+  const good = GOOD.includes(rv.cls);
+  const kept = good
+    ? 'this kept things about as good as possible'
+    : rv.decided === 'lost' ? 'this made it a bit worse than the best move would have' : 'this gave back some of the advantage the best move would have kept';
+  const r = (x: number) => `${Math.round(x)}%`;
+  return {
+    suffix: ` in a ${rv.decided === 'lost' ? 'lost' : 'won'} position`,
+    note: `Grades compare ${you ? 'your' : 'the'} move with the best move here, not who's winning. ${who} ${was} already ${state}; ${kept} (${r(rv.wpBefore)} → ${r(rv.wpAfter)}).`,
+  };
 }
 
 const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);

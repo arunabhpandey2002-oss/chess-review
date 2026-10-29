@@ -10,7 +10,8 @@ import type { Color } from 'chess.js';
 import { fetchArchives, fetchMonth, fetchProfile, resultFor, fmtTimeControl, REASONS, type GameSummary } from './api';
 import { fetchLichessGames, fetchLichessGame, fetchLichessProfile } from './sources';
 import { EnginePool, type PosEval } from './engine';
-import { parseGame, reviewGame, summarize, terminalEval, fmtScore, type Ply, type MoveReview, type Book } from './review';
+import { parseGame, reviewGame, summarize, terminalEval, fmtScore, decidedState, decidedWording, type Ply, type MoveReview, type Book } from './review';
+import { openExplorer } from './explorer';
 import { CLS_META, CLS_ORDER, winPct, type Cls } from './classify';
 import { buildMoments, buildSummary, type Moment, type GameSummaryView } from './coach';
 import { levelForRating, LEVEL_LABEL, type Level } from './moments';
@@ -446,7 +447,7 @@ class ReviewView {
 
   recompute() {
     this.reviews = reviewGame({ plies: this.plies, evals: this.evals, book });
-    (window as any).__review = { plies: this.plies.map((p) => p.san), reviews: this.reviews, done: this.done, total: this.fens.length, go: (n: number) => this.go(n) };
+    (window as any).__review = { plies: this.plies.map((p) => p.san), reviews: this.reviews, evals: this.evals, done: this.done, total: this.fens.length, go: (n: number) => this.go(n) };
     this.drawProgress();
     this.drawMoveList();
     this.drawGraph();
@@ -593,18 +594,26 @@ class ReviewView {
     const m = CLS_META[rv.cls];
     const showBest = !rv.isBestMove && rv.cls !== 'forced';
     const nt = this.notation;
+    const mine = mv.color === this.me;
+    const sideW = mv.color === 'w' ? 'White' : 'Black';
+    const dw = decidedWording({ ...rv, decided: decidedState(rv.cls, rv.wpBefore, rv.wpAfter) }, mine, mv.color);
+    const canExplore = rv.cls !== 'book' && rv.cls !== 'forced' && !!rv.bestUci && !!this.evals[k - 1];
     el.innerHTML = `
       <div class="mc-head">
         <span class="icon" style="background:${m.color};color:${m.fg}">${m.icon}</span>
-        <span class="mc-title">${num}${esc(mv.san)} <span style="color:${m.color}">is ${rv.cls === 'book' ? 'a book move' : rv.cls === 'forced' ? 'forced' : rv.cls === 'miss' ? 'a miss' : (/^[aeiou]/.test(m.label.toLowerCase()) ? 'an ' : rv.cls === 'best' ? 'the ' : 'a ') + m.label.toLowerCase() + (rv.cls === 'best' ? ' move' : rv.cls === 'brilliant' || rv.cls === 'great' || rv.cls === 'excellent' || rv.cls === 'good' ? ' move' : '')}</span></span>
+        <span class="mc-title">${num}${esc(mv.san)} <span style="color:${m.color}">is ${rv.cls === 'book' ? 'a book move' : rv.cls === 'forced' ? 'forced' : rv.cls === 'miss' ? 'a miss' : (/^[aeiou]/.test(m.label.toLowerCase()) ? 'an ' : rv.cls === 'best' ? 'the ' : 'a ') + m.label.toLowerCase() + (rv.cls === 'best' ? ' move' : rv.cls === 'brilliant' || rv.cls === 'great' || rv.cls === 'excellent' || rv.cls === 'good' ? ' move' : '')}${dw ? dw.suffix : ''}</span></span>
         <span class="mc-eval">${fmtScore(rv.scoreAfter)}</span>
       </div>
+      <p class="mc-who small muted" id="mc-who">${mine ? 'Your move' : 'Their move'} (${sideW}) · the grade, lines and win chance are from ${sideW}'s side</p>
       <p class="mc-ex">${esc(renderText(rv.explanation, nt ? 'san' : 'words'))}</p>
+      ${dw ? `<p class="mc-decided" id="mc-decided">${esc(dw.note)}</p>` : ''}
       ${showBest && rv.bestSan ? `<div class="mc-row"><span class="k">Best</span><span><span class="icon sm" style="background:${CLS_META.best.color}">★</span> ${nt ? `<b>${esc(rv.bestSan)}</b>` : `${esc(bestWords(rv))} (<b>${esc(rv.bestSan)}</b>)`} <span class="muted">(${fmtScore(this.evals[k - 1]?.lines[0]?.score)})</span></span></div>` : ''}
       ${rv.bestPvSan ? `<div class="mc-row"><span class="k">Best line</span>${lineHtml(rv.fenBefore, rv.bestPv, rv.bestPvSan, nt)}</div>` : ''}
       ${!rv.isBestMove && rv.playedPvSan ? `<div class="mc-row"><span class="k">After ${esc(mv.san)}</span>${lineHtml(rv.fenAfter, rv.playedPv, rv.playedPvSan, nt)}</div>` : ''}
       <div class="mc-row small muted"><span class="k">Win chance <span class="info" tabindex="0" data-tip="${WIN_TIP}" aria-label="${WIN_TIP}">i</span></span><span>${mv.color === 'w' ? 'White' : 'Black'}: ${rv.wpBefore.toFixed(0)}% → ${rv.wpAfter.toFixed(0)}%${rv.loss >= 0.5 ? ` (−${rv.loss.toFixed(1)})` : ''}</span></div>
-      <div class="mc-foot"><button class="linkbtn" id="nt-toggle">${nt ? 'Show plain English' : 'Show notation'}</button></div>`;
+      <div class="mc-foot">${canExplore ? `<button class="btn small" id="mc-explore">${showBest && rv.bestSan ? `Why is ${esc(rv.bestSan)} best? Explore` : 'Explore this move'}</button>` : ''}<button class="linkbtn" id="nt-toggle">${nt ? 'Show plain English' : 'Show notation'}</button></div>`;
+    const ex = document.getElementById('mc-explore');
+    if (ex) ex.onclick = () => openExplorer({ fen: rv.fenBefore, playedUci: mv.uci, label: `${num}${mv.san}`, me: this.me, before: this.evals[k - 1]!, after: this.evals[k] ?? null, orientation: this.orientation === 'black' ? 'b' : 'w' });
     $('#nt-toggle').onclick = () => {
       this.notation = !this.notation;
       localStorage.setItem('cr-notation', this.notation ? '1' : '0');
