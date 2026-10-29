@@ -36,8 +36,18 @@ describe('explore 16.c3 vs Rf1 (walls79 game)', () => {
   });
   it('is honest about a modest gap and close alternatives', () => {
     const v = san(x.verdict.text);
-    expect(v).toMatch(/^The difference is modest: Rf1 keeps the win chance at \d+%, c3 at \d+% \(\d points\)\. White is losing either way/);
-    expect(v).toMatch(/f4 and Nc3 are rated almost the same as Rf1, so it is not the only good move/);
+    expect(v).toMatch(/^The difference is modest\. Rf1 keeps the win chance at (\d+)% \([−+]\d+\.\d\); c3 gives (\d+)% \([−+]\d+\.\d\), (\d+) points less\. White is losing either way\./);
+    const [, a, b, d] = /at (\d+)%.*gives (\d+)%.*?, (\d+) points less/.exec(v)!;
+    expect(+a - +b).toBe(+d); // the gap matches the rounded numbers shown
+    expect(v).toMatch(/f4 and Nc3 are almost as good, so Rf1 is not the only good move\.$/);
+    expect(v).not.toMatch(/\. \(|\)\s*\(/); // no orphan parentheses
+  });
+  it('glosses each move once, then uses the short name', () => {
+    const seen = new Set<string>();
+    const out = renderText(x.verdict.text, 'words', seen) + ' ' + x.compare.map((f) => renderText(f.text, 'words', seen)).join(' ');
+    expect(out.match(/Rf1 \(/g)?.length).toBe(1);
+    expect(out.match(/(?<![A-Za-z])c3 \(/g)?.length).toBe(1);
+    expect(out).toMatch(/Rf1 \(bringing the rook to f1\)/);
   });
   it('steps through the played line in plain English', () => {
     const s = stepLine(FEN, x.played.line, 'w', 3).map((st) => st.text);
@@ -63,7 +73,7 @@ describe('explore 16.c3 vs Rf1 (walls79 game)', () => {
   it('says plainly when no single board fact separates the moves (Nc3 on top)', () => {
     const before = { depth: 18, lines: [{ score: { cp: -390, mate: null }, pv: ['a4c3', 'b4d6', 'f2f4'], depth: 18 }, ...browser[C3].lines] };
     const n = buildExplore(FEN, plies[C3].uci, before as any, browser[C3 + 1])!;
-    expect(san(n.compare[0].text)).toBe('No single threat, defence or capture separates Nc3 from c3 right now; the engine prefers Nc3 after looking further ahead, so compare the two lines step by step.');
+    expect(san(n.compare[0].text)).toBe("No immediate threat or capture separates Nc3 from c3; the engine's edge shows further into its line.");
   });
   it('moveFacts: open file and check', () => {
     expect(moveFacts('4k3/8/8/8/8/8/8/R3K3 w - - 0 1', 'a1a8', 'w')).toContain('it gives check');

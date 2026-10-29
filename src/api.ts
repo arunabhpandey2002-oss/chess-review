@@ -44,7 +44,8 @@ export function openingFromPgn(pgn: string): string {
     if (/^\d/.test(p)) break;
     out.push(p);
   }
-  return decodeURIComponent(out.join(' ')).replace(/\s+/g, ' ').trim();
+  return decodeURIComponent(out.join(' ')).replace(/\s+/g, ' ').trim()
+    .replace(/\b(King|Queen|Bishop|Petrov|Alekhine|Bird|Philidor|Owen|Larsen|Morphy)s\b/g, "$1's"); // Kings Pawn -> King's Pawn
 }
 
 export async function fetchMonth(url: string): Promise<GameSummary[]> {

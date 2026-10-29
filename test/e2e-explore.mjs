@@ -44,7 +44,7 @@ async function run(tag, ctxOpts) {
   const cmp = await page.locator('#ex-compare').innerText();
   console.log('   compare:', cmp.replace(/\n/g, ' | '));
   if (['Rf1', 'f4'].includes(x.best)) ok(`${tag}: compare names the f2 pawn and the g2 queen`, /pawn on f2/.test(cmp) && /queen on g2/.test(cmp), '');
-  else ok(`${tag}: compare says plainly when no single fact separates them`, /No single threat|pawn on f2/.test(cmp), x.best);
+  else ok(`${tag}: compare says plainly when no single fact separates them`, /No immediate threat|pawn on f2/.test(cmp), x.best);
   if (tag === 'desktop') await page.screenshot({ path: `${OUT}/${tag}-explore.png` }); else { await page.locator('#ex-verdict').scrollIntoViewIfNeeded(); await page.screenshot({ path: `${OUT}/${tag}-explore.png` }); }
   // step through the played line
   await page.click('[data-line="played"]');

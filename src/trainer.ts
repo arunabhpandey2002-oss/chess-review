@@ -13,7 +13,7 @@ import { uciToMove, pvToSan, formatPv } from './tactics';
 import { lineItems, renderText } from './words';
 import { diagnose, clockOf, CHOICES, VERDICT_LABEL, CAUSE_LABEL, type Diagnosis, type Choice } from './diagnose';
 import { openSparring } from './sparring';
-import { $, esc, srcChip, reducedMotion, boardDescription, legalDests, parseTyped } from './ui';
+import { $, esc, srcChip, dlgHead, reducedMotion, boardDescription, legalDests, parseTyped } from './ui';
 
 export interface TrainResult { solved: boolean; attempts: number; hints: number; revealed: boolean; close: number; move?: string }
 export interface TrainerOpts {
@@ -66,6 +66,7 @@ export class Trainer {
   render() {
     const m = this.o.core;
     this.host.innerHTML = `
+      ${this.o.onClose ? dlgHead(this.o.title, this.o.subtitle ? esc(this.o.subtitle) : '', 'tr-close', this.o.closeLabel ?? 'Close') : ''}
       <div class="trainer" role="region" aria-label="Retry this position">
         <div class="tr-board-col">
           <div class="tr-board-wrap"><div class="tr-board" id="tr-board" role="img" aria-label="${esc(boardDescription(m.fenBefore))}"></div></div>
@@ -76,14 +77,13 @@ export class Trainer {
           </form>
         </div>
         <div class="tr-side">
-          <div class="tr-head"><h2>${esc(this.o.title)}</h2>${this.o.subtitle ? `<p class="muted">${esc(this.o.subtitle)}</p>` : ''}</div>
+          ${this.o.onClose ? '' : `<div class="tr-head"><h2>${esc(this.o.title)}</h2>${this.o.subtitle ? `<p class="muted">${esc(this.o.subtitle)}</p>` : ''}</div>`}
           <p class="tr-task"><b>${this.side} to move.</b> Find a better move than the one played in the game. The evaluation is hidden.</p>
           <div class="tr-status" id="tr-status" role="status" aria-live="polite"></div>
           <div class="tr-hints" id="tr-hints"></div>
           <div class="tr-actions" id="tr-actions">
             <button class="btn" id="tr-hint">Hint (1 of 4)</button>
             <button class="btn ghost" id="tr-reveal">Show answer</button>
-            ${this.o.onClose ? `<button class="btn ghost" id="tr-close">${esc(this.o.closeLabel ?? 'Close')}</button>` : ''}
           </div>
           <div class="tr-lesson" id="tr-lesson" hidden></div>
         </div>

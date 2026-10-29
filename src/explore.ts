@@ -170,15 +170,21 @@ export function threatText(fen: string, viewer: Color): Fact {
 
 const pct = (x: number) => `${Math.round(x)}%`;
 
-/** How big the difference really is, said plainly. */
+/** An engine score from the mover's side (+ is good for the mover), e.g. "+2.8". */
+export function povScore(s: Score, mover: Color): string {
+  if (mover === 'w' || !s) return fmtScore(s);
+  return fmtScore({ ...s, cp: -s.cp, mate: s.mate === null ? null : s.mate === 0 ? 0 : -s.mate });
+}
+
+/** How big the difference really is, said plainly. Numbers are rounded the same way they are shown. */
 export function gapVerdict(best: Side, played: Side, mover: Color): Fact {
-  const gap = best.wp - played.wp;
+  const bw = Math.round(best.wp), pw = Math.round(played.wp);
+  const gap = bw - pw;
   const both = (lo: number, hi: number) => (best.wp <= lo && played.wp <= lo) || (best.wp >= hi && played.wp >= hi);
-  const evals = `(${fmtScore(best.score)} vs ${fmtScore(played.score)})`;
-  const state = best.wp <= 25 && played.wp <= 25 ? ` ${sideName(mover)} is losing either way ${evals}.` : best.wp >= 75 && played.wp >= 75 ? ` ${sideName(mover)} is winning either way ${evals}.` : ` ${evals}`;
   const size = gap < 3 || both(5, 95) ? 'tiny' : gap < 10 ? 'modest' : gap < 20 ? 'clear' : 'big';
-  const lead = size === 'tiny' ? 'The difference is tiny' : size === 'modest' ? 'The difference is modest' : size === 'clear' ? 'The difference is clear' : 'The difference is big';
-  return { text: `${lead}: ${best.tok} keeps the win chance at ${pct(best.wp)}, ${played.tok} at ${pct(played.wp)} (${Math.round(gap)} points).${state}`, src: 'engine' };
+  const state = best.wp <= 25 && played.wp <= 25 ? ` ${sideName(mover)} is losing either way.` : best.wp >= 75 && played.wp >= 75 ? ` ${sideName(mover)} is winning either way.` : '';
+  const less = gap <= 0 ? 'about the same' : `${gap} point${gap === 1 ? '' : 's'} less`;
+  return { text: `The difference is ${size}. ${best.tok} keeps the win chance at ${bw}% (${povScore(best.score, mover)}); ${played.tok} gives ${pw}% (${povScore(played.score, mover)}), ${less}.${state}`, src: 'engine' };
 }
 
 export function buildExplore(fen: string, playedUci: string, before: PosEval, after: PosEval | null): Explore | null {
@@ -203,7 +209,7 @@ export function buildExplore(fen: string, playedUci: string, before: PosEval, af
     const made = played.left.created.filter((s) => !best.left.created.includes(s) && !best.left.still.includes(s));
     if (made.length) compare.push({ text: `${played.tok} creates a new target: ${made[0]}.`, src: 'rules' });
     if (played.left.mate && !best.left.mate) compare.push({ text: `After ${played.tok} they threaten mate in one; after ${best.tok} they do not.`, src: 'rules' });
-    if (!compare.length) compare.push({ text: `No single threat, defence or capture separates ${best.tok} from ${played.tok} right now; the engine prefers ${best.tok} after looking further ahead, so compare the two lines step by step.`, src: 'engine' });
+    if (!compare.length) compare.push({ text: `No immediate threat or capture separates ${best.tok} from ${played.tok}; the engine's edge shows further into its line.`, src: 'engine' });
     // 2. replies
     if (best.reply && played.reply) {
       if (best.reply.uci === played.reply.uci) {
@@ -228,7 +234,7 @@ export function buildExplore(fen: string, playedUci: string, before: PosEval, af
   const alternatives = before.lines.slice(1).map((l) => { const s = pvToSan(fen, l.pv, 1)[0]; return { uci: l.pv[0], tok: tokMove(fen, s), score: l.score, wp: winPct(l.score, mover) }; });
   const close = alternatives.filter((a) => best.wp - a.wp < 3 && a.uci !== playedUci);
   const verdict = gapVerdict(best, played, mover);
-  if (!same && close.length) verdict.text += ` ${cap(list(close.map((a) => a.tok)))} ${close.length > 1 ? 'are' : 'is'} rated almost the same as ${best.tok}, so it is not the only good move.`;
+  if (!same && close.length) verdict.text += ` ${cap(list(close.map((a) => a.tok)))} ${close.length > 1 ? 'are' : 'is'} almost as good, so ${best.tok} is not the only good move.`;
   return { fen, mover, same, best, played, gap: best.wp - played.wp, verdict, compare: compare.slice(0, 5), threat: threatText(fen, mover), alternatives };
 }
 
@@ -248,7 +254,7 @@ export function whatIf(fen: string, uci: string, ev: PosEval, bestWp: number): {
   if (!l) return { tok, wp: 50, score: null, facts };
   const wp = winPct(l.score, mover);
   const d = Math.round(bestWp - wp);
-  facts.push({ text: `Engine: ${fmtScore(l.score)}, win chance ${pct(wp)} (${d <= 1 ? 'as good as the best move' : `${d} points less than the best move`}).`, src: 'engine' });
+  facts.push({ text: `Engine: ${povScore(l.score, mover)}, win chance ${pct(wp)} (${d <= 1 ? 'as good as the best move' : `${d} points less than the best move`}).`, src: 'engine' });
   const r = l.pv[0];
   if (r) {
     const fa = c.fen();

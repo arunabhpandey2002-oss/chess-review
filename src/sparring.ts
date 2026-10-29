@@ -10,7 +10,7 @@ import type { MomentCore } from './explain';
 import { uciToMove, pvToSan, formatPv } from './tactics';
 import { tokMove, renderText } from './words';
 import { strengthFor, summarizePlayout, type Outcome, type MyMove, type Strength } from './playout';
-import { $, esc, srcChip, reducedMotion, boardDescription, legalDests, parseTyped } from './ui';
+import { $, esc, srcChip, dlgHead, reducedMotion, boardDescription, legalDests, parseTyped } from './ui';
 
 interface Ply { uci: string; san: string; fenBefore: string; by: Color }
 interface PosInfo { wp: number; bestUci: string | null }
@@ -71,6 +71,7 @@ export class Sparring {
     const m = this.o.core;
     const side = this.me === 'w' ? 'White' : 'Black';
     this.host.innerHTML = `
+      ${dlgHead(this.o.title, `You are ${side}, from the position before ${esc(m.playedSan)}. Opponent: ${esc(this.st.label)} ${srcChip('estimate')}`, 'sp-close')}
       <div class="trainer sparring">
         <div class="tr-board-col">
           <div class="tr-board-wrap"><div class="tr-board" id="sp-board" role="img" aria-label="${esc(boardDescription(this.start))}"></div></div>
@@ -81,8 +82,7 @@ export class Sparring {
           </form>
         </div>
         <div class="tr-side">
-          <div class="tr-head"><h2>${esc(this.o.title)}</h2>
-            <p class="muted">You are ${side}, from the position before ${esc(m.playedSan)}. Opponent: ${esc(this.st.label)} ${srcChip('estimate')}</p></div>
+
           <div class="tr-status" id="sp-status" role="status" aria-live="polite"></div>
           <p class="sp-moves muted" id="sp-moves"></p>
           <div class="tr-actions" id="sp-actions">
@@ -90,7 +90,6 @@ export class Sparring {
             <button class="btn" id="sp-restart">Restart</button>
             <button class="btn ghost" id="sp-resign">Resign</button>
             <button class="btn ghost" id="sp-stop">Stop and review</button>
-            <button class="btn ghost" id="sp-close">Close</button>
           </div>
           <div class="sp-end" id="sp-end" hidden></div>
         </div>

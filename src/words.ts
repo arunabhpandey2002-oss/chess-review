@@ -98,11 +98,13 @@ export const tokLine = (fen: string, sans: string[]) => `⟦L|${fen}|${sans.join
 export const tokMove = (fen: string, san: string) => `⟦M|${fen}|${san}⟧`;
 
 export type TextMode = 'words' | 'san';
-export function renderText(text: string, mode: TextMode): string {
+/** `seen` (optional) glosses each move once: the first mention gets the plain-English words, later ones just the move name. */
+export function renderText(text: string, mode: TextMode, seen?: Set<string>): string {
   return text.replace(/⟦([LM])\|([^|]*)\|([^⟧]*)⟧/g, (_, kind: string, fen: string, body: string) => {
     const sans = body ? body.split(',') : [];
     if (kind === 'M') {
       if (mode === 'san') return sans[0];
+      if (seen) { const k = `${fen}|${sans[0]}`; if (seen.has(k)) return sans[0]; seen.add(k); }
       const m = movesFromSan(fen, sans)[0];
       return m ? `${m.san} (${describe(m).gerund})` : sans[0];
     }

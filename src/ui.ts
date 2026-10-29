@@ -18,7 +18,18 @@ const SRC_TIP: Record<Source, string> = {
   rules: 'Written by rules from facts checked on the board and in the engine line. No AI text generator is used.',
   estimate: 'A rough estimate; treat it as a guide, not a measurement.',
 };
-export const srcChip = (s: Source) => `<span class="src src-${s}" title="${esc(SRC_TIP[s])}">${esc(SRC_LABEL[s])}</span>`;
+const SRC_SHORT: Record<Source, string> = { engine: 'Engine', formula: 'Formula', rules: 'Rule-based', estimate: 'Estimate' };
+/** A small, quiet source tag; the full wording is in the tooltip and for screen readers. */
+export const srcChip = (s: Source) => `<span class="src src-q src-${s}" title="${esc(SRC_LABEL[s])}: ${esc(SRC_TIP[s])}" aria-label="Source: ${esc(SRC_LABEL[s])}" tabindex="0">${esc(SRC_SHORT[s])}</span>`;
+/** One quiet line of sources for a whole card (each source once; full wording in the tooltip). */
+export const srcTags = (srcs: Source[]) => {
+  const u = [...new Set(srcs)];
+  return u.length ? `<span class="src-line">${u.map(srcChip).join('')}</span>` : '';
+};
+/** Header bar for a dialog: title, optional subtitle, and the close button at the top right (sticky in overlays). */
+export const dlgHead = (title: string, sub: string, closeId: string, closeLabel = 'Close') =>
+  `<div class="dlg-head"><div class="dlg-title"><h2>${esc(title)}</h2>${sub ? `<p class="muted">${sub}</p>` : ''}</div>` +
+  `<button class="btn ghost dlg-close" id="${closeId}" aria-label="${esc(closeLabel)}"><span aria-hidden="true">✕</span><span class="lbl">${esc(closeLabel)}</span></button></div>`;
 
 export function reducedMotion(): boolean {
   const pref = localStorage.getItem('cr-motion');

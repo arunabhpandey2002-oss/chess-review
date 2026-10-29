@@ -8,7 +8,8 @@
     "preview": "vite preview",
     "deploy": "vercel --prod",
     "deploy:gh-pages-legacy": "npm run build && gh-pages -d dist --dotfiles -m 'Deploy site'",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:layout": "node test/e2e-layout.mjs"
   },
   "keywords": [],
   "author": "",

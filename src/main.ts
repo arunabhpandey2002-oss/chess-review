@@ -89,7 +89,7 @@ function renderHeader() {
   const u = state.profile?.username ?? state.user;
   h.innerHTML = `
     ${state.profile?.avatar ? `<img src="${esc(state.profile.avatar)}" alt="">` : `<span class="avatar-ph">${esc(u.slice(0, 1).toUpperCase())}</span>`}
-    <span class="uname">${esc(u)} <span class="muted small">${SITE_LABEL[state.site]}</span></span>
+    <span class="uname"><span class="un">${esc(u)}</span><span class="muted small site">${SITE_LABEL[state.site]}</span></span>
     <button class="link" id="change-user" title="Review another player's games">Change</button>`;
   $('#change-user').onclick = () => {
     h.innerHTML = `<form id="user-form"><select id="site-input" aria-label="Platform"><option value="chesscom" ${state.site === 'chesscom' ? 'selected' : ''}>Chess.com</option><option value="lichess" ${state.site === 'lichess' ? 'selected' : ''}>Lichess</option></select><input id="user-input" aria-label="Username" placeholder="Username" autocomplete="off" spellcheck="false" value="${esc(state.user)}"><button>Go</button></form>`;
@@ -730,7 +730,8 @@ class ReviewView {
     const s = this.coachSummary;
     if (!el || !s) return;
     const nt = this.notation;
-    const T = (t: string) => esc(renderText(t, nt ? 'san' : 'words'));
+    const seen = new Set<string>(); // gloss each move once per card
+    const T = (t: string) => esc(renderText(t, nt ? 'san' : 'words', seen));
     const lvl = this.level;
     const phaseRow = s.phases.filter((p) => p.moves).map((p) => `<li><b>${cap(p.phase)}</b>: ${esc(p.label)}${p.accuracy != null ? ` <span class="muted">(accuracy ${p.accuracy.toFixed(0)}, ${p.moves} moves${p.mistakes + p.blunders ? `, ${p.mistakes + p.blunders} error${p.mistakes + p.blunders > 1 ? 's' : ''}` : ''})</span>` : ''}</li>`).join('');
     const statusOf = (m: Moment) => {

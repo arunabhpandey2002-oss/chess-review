@@ -147,12 +147,12 @@ export function buildSummary(x: SummaryInput): GameSummaryView {
       sBest = val;
       const prevPly = i > 0 ? plies[i - 1] : null;
       const why = lineFacts(p.fenBefore, evals[i]?.lines[0], me, prevPly?.move ?? null);
-      strongest = `${mv(p)}${tokMove(p.fenBefore, p.san)}${r.cls === 'great' || r.cls === 'brilliant' ? ` (${r.cls === 'great' ? 'the only good move' : 'a sound sacrifice'})` : prev && prev.loss >= 10 ? ', punishing your opponent\'s error' : ''}${why ? `: ${why}` : ''}.`;
+      strongest = `${mv(p)}${tokMove(p.fenBefore, p.san)}${r.cls === 'great' || r.cls === 'brilliant' ? `, ${r.cls === 'great' ? 'the only good move' : 'a sound sacrifice'}` : prev && prev.loss >= 10 ? ', punishing your opponent\'s error' : ''}${why ? `: ${why}` : ''}.`;
     }
   });
   const top = x.moments.slice().sort((a, b) => b.score - a.score)[0];
   const improvement = top
-    ? `Move ${top.moveNumber}: ${tokMove(top.fenBefore, top.playedSan)} ${ROLE_PHRASE[top.tags.primary.id] ? `(you ${ROLE_PHRASE[top.tags.primary.id]})` : ''}. ${tokMove(top.fenBefore, top.bestSan)} was much stronger.`
+    ? `Move ${top.moveNumber}, ${tokMove(top.fenBefore, top.playedSan)}${ROLE_PHRASE[top.tags.primary.id] ? `: you ${ROLE_PHRASE[top.tags.primary.id]}` : ''}. ${tokMove(top.fenBefore, top.bestSan)} was much stronger.`
     : null;
   // phases
   const phases: PhaseStat[] = (['opening', 'middlegame', 'endgame'] as Phase[]).map((ph) => {
@@ -200,7 +200,7 @@ export function buildSummary(x: SummaryInput): GameSummaryView {
   let action: string;
   if (x.moments.length) {
     const t = (top ?? x.moments[0]).tags.primary;
-    action = `Retry the ${x.moments.length} position${x.moments.length > 1 ? 's' : ''} below before looking at the answers. Main lesson: ${noticeFor(t).replace(/\.$/, '')}.`;
+    action = `Retry the ${x.moments.length} position${x.moments.length > 1 ? 's' : ''} below before looking at the answers. Main lesson: ${((n) => (/[.?!]$/.test(n) ? n : `${n}.`))(noticeFor(t).trim())}`;
   } else action = 'No big mistakes to retry in this game. Review another game, or work through your due positions.';
   // tags across all errors (for recurring-error stats)
   const errorTags = new Set<string>();
