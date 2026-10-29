@@ -1,0 +1,73 @@
+1.e4         book       loss=0.6   best=d4      after=+0.2   d18  e4 is a known opening move (King's Pawn Game). The engine's top choice here is d4.
+1...e5       book       loss=0.4   best=c5      after=+0.3   d18  e5 is a known opening move (King's Pawn Game). The engine's top choice here is c5.
+2.Nc3        book       loss=2.7   best=Nf3     after=+0.1   d18  Nc3 is a known opening move (Vienna Game). The engine's top choice here is Nf3.
+2...d6       book       loss=3.6   best=Nf6     after=+0.5   d18  d6 is a known opening move. The engine's top choice here is Nf6.
+3.Nf3        excellent  loss=1.9   best=d4      after=+0.3   d18  Nf3 is almost as strong as d4. The position is equal (+0.3).
+3...Bg4      inaccuracy loss=6.1   best=c5      after=+1.0   d18  Bg4 is an inaccuracy: the position goes from equal (+0.3) to slightly better for White (+1.0). Best was c5, keeping the position equal (+0.3).
+4.Be2        inaccuracy loss=5.7   best=d4      after=+0.3   d18  Be2 is an inaccuracy: the position goes from slightly better for White (+1.0) to equal (+0.3). Best was d4, keeping the position slightly better for White (+1.0).
+4...f5       mistake    loss=15.3  best=c5      after=+2.1   d18  f5 is a mistake: the position goes from equal (+0.3) to clearly better for White (+2.1). Best was c5, keeping the position equal (+0.3).
+5.d3         miss       loss=10.8  best=d4      after=+0.8   d18  Black's last move was an error, but d3 does not punish it. The position goes from clearly better for White (+2.1) to slightly better for White (+0.8). Best was d4, keeping the position clearly better for White (+2.1).
+5...fxe4     good       loss=2.2   best=Nf6     after=+1.1   d18  fxe4 is playable, but a little weaker than Nf6. The position is slightly better for White (+1.1).
+6.dxe4       best       loss=0     best=dxe4    after=+1.0   d18  dxe4 is the engine's top move: it recaptures the pawn. The position is slightly better for White (+1.0).
+6...Nc6      good       loss=3.1   best=Nf6     after=+1.3   d18  Nc6 is playable, but a little weaker than Nf6. The position is clearly better for White (+1.3).
+7.Bb5        inaccuracy loss=7     best=h3      after=+0.6   d18  Bb5 is an inaccuracy: the position goes from clearly better for White (+1.3) to slightly better for White (+0.6). Best was h3, keeping the position clearly better for White (+1.3).
+7...Qd7      good       loss=4.8   best=Be7     after=+1.1   d18  Qd7 is playable, but a little weaker than Be7. The position is slightly better for White (+1.1).
+8.Bc4        inaccuracy loss=6     best=h3      after=+0.4   d18  Bc4 is an inaccuracy: the position goes from slightly better for White (+1.1) to slightly better for White (+0.4). Best was h3, keeping the position slightly better for White (+1.1).
+8...O-O-O    best       loss=0     best=O-O-O   after=+0.4   d18  O-O-O is the engine's top move. The position is slightly better for White (+0.4).
+9.Bxg8       inaccuracy loss=6.5   best=Be3     after=−0.2   d18  Bxg8 is an inaccuracy: the position goes from slightly better for White (+0.5) to equal (−0.2). Best was Be3, keeping the position slightly better for White (+0.5).
+9...Rxg8     best       loss=0     best=Rxg8    after=−0.2   d18  Rxg8 is the engine's top move: it recaptures the bishop. The position is equal (−0.2).
+10.Bg5       inaccuracy loss=10    best=Be3     after=−1.6   d18  Bg5 is an inaccuracy: the position goes from slightly better for Black (−0.5) to clearly better for Black (−1.6). Best was Be3, keeping the position slightly better for Black (−0.5).
+10...Be7     best       loss=0     best=Be7     after=−1.6   d18  Be7 is the engine's top move. The position is clearly better for Black (−1.6).
+11.Bd2       inaccuracy loss=8.9   best=Be3     after=−3.0   d18  Bd2 is an inaccuracy: the position goes from clearly better for Black (−1.9) to winning for Black (−3.0). Best was Be3, keeping the position clearly better for Black (−1.9).
+11...Rgf8    best       loss=0     best=Rgf8    after=−3.0   d18  Rgf8 is the engine's top move. The position is clearly better for Black (−3.0).
+12.Nd5       mistake    loss=13.9  best=Be3     after=−5.5   d18  Nd5 is a mistake: the position goes from clearly better for Black (−2.9) to winning for Black (−5.5). Best was Be3, keeping the position clearly better for Black (−2.9).
+12...Nd4     best       loss=0     best=Nd4     after=−5.6   d18  Nd4 is the engine's top move. The position is winning for Black (−5.6).
+13.Nxe7+     excellent  loss=0     best=Be3     after=−6.4   d18  Nxe7+ is almost as strong as Be3. The position is winning for Black (−6.4).
+13...Qxe7    best       loss=0     best=Qxe7    after=−5.8   d18  Qxe7 is the engine's top move: it recaptures the knight. The position is winning for Black (−5.8).
+14.Bg5       best       loss=0     best=Bg5     after=−6.0   d18  Bg5 is the engine's top move. The position is winning for Black (−6.0).
+14...Nxf3+   good       loss=2.5   best=Qd7     after=−5.7   d18  Nxf3+ is playable, but a little weaker than Qd7. The position is winning for Black (−5.7).
+15.gxf3      best       loss=0     best=gxf3    after=−5.3   d18  gxf3 is the engine's top move: it recaptures the knight. The position is winning for Black (−5.3).
+15...Qxg5    good       loss=2.8   best=Qf7     after=−4.5   d18  Qxg5 is playable, but a little weaker than Qf7. The position is winning for Black (−4.5). Qf7 was best because it wins a pawn (15...Qf7 16.Rg1 Bxf3).
+16.fxg4      good       loss=3.3   best=Rg1     after=−5.6   d18  fxg4 is playable, but a little weaker than Rg1. The position is winning for Black (−5.6).
+16...Rf4     best       loss=0     best=Rf4     after=−5.6   d18  Rf4 is the engine's top move. The position is winning for Black (−5.6).
+17.Qd2       inaccuracy loss=7.1   best=Qe2     after=−8.8   d18  Qd2 is an inaccuracy: the position goes from winning for Black (−5.7) to winning for Black (−8.8). Best was Qe2, keeping the position winning for Black (−5.7).
+17...Rxe4+   best       loss=0     best=Rxe4+   after=−8.8   d18  Rxe4+ is the engine's top move: it wins a pawn (17...Rxe4+ 18.Kd1). The position is winning for Black (−8.8).
+18.Qe2       best       loss=0     best=Qe2     after=−9.4   d18  Qe2 is the engine's top move. The position is winning for Black (−9.4).
+18...Rxe2+   best       loss=0     best=Rxe2+   after=−9.3   d18  Rxe2+ is the engine's top move: it wins the queen and a pawn for a rook (18...Rxe2+ 19.Kxe2 Qxg4+ 20.Kd2). The position is winning for Black (−9.3).
+19.Kxe2      best       loss=0     best=Kxe2    after=−9.3   d18  Kxe2 is the engine's top move: it recaptures the rook. The position is winning for Black (−9.3).
+19...Qxg4+   best       loss=0     best=Qxg4+   after=−9.2   d18  Qxg4+ is the engine's top move: it wins a pawn (19...Qxg4+ 20.Kf1). The position is winning for Black (−9.2).
+20.Ke1       excellent  loss=0.2   best=Kd2     after=−9.6   d18  Ke1 is almost as strong as Kd2. The position is winning for Black (−9.6).
+20...Qb4+    excellent  loss=0.5   best=Rf8     after=−9.1   d18  Qb4+ is almost as strong as Rf8. The position is winning for Black (−9.1).
+21.Kd1       excellent  loss=0.5   best=Kf1     after=−9.6   d18  Kd1 is almost as strong as Kf1. The position is winning for Black (−9.6).
+21...Qxb2    excellent  loss=0.1   best=Rf8     after=−9.8   d18  Qxb2 is almost as strong as Rf8. The position is winning for Black (−9.8).
+22.Rc1       excellent  loss=0     best=Kd2     after=−10.2  d18  Rc1 is almost as strong as Kd2. The position is winning for Black (−10.2).
+22...Rf8     excellent  loss=0     best=d5      after=−10.1  d18  Rf8 is almost as strong as d5. The position is winning for Black (−10.1).
+23.f4        good       loss=2.5   best=Rf1     after=-M7    d18  f4 is playable, but a little weaker than Rf1. The position is a forced mate in 7 for Black.
+23...Rxf4    best       loss=0     best=Qd4+    after=-M7    d18  Rxf4 is the engine's top move: it forces mate in 7 (23...Qd4+ 24.Ke2 Rxf4 25.Rhf1 Re4+ 26.Kf3 Qe3+). The position is a forced mate in 7 for Black.
+24.Kd2       excellent  loss=0     best=Ke2     after=-M3    d18  Kd2 is almost as strong as Ke2. The position is a forced mate in 3 for Black. Ke2 was best because it resists the longest, though Black still has mate in 6.
+24...Rf2+    best       loss=0     best=Qd4+    after=-M3    d18  Rf2+ is the engine's top move: it forces mate in 3 (24...Qd4+ 25.Ke2 Rf2+ 26.Ke1 Qd2#). The position is a forced mate in 3 for Black.
+25.Kd1       best       loss=0     best=Ke1     after=-M2    d18  Kd1 is the engine's top move: it resists the longest, though Black still has mate in 2. The position is a forced mate in 2 for Black.
+25...Rxc2    good       loss=2.8   best=Qd4+    after=−9.6   d18  Rxc2 is playable, but a little weaker than Qd4+. The position is winning for Black (−9.6). Qd4+ was best because it forces mate in 2 (25...Qd4+ 26.Ke1 Qd2#).
+26.Rxc2      best       loss=0     best=Rxc2    after=−9.6   d18  Rxc2 is the engine's top move: it recaptures the rook. The position is winning for Black (−9.6).
+26...Qb1+    good       loss=3.5   best=Qd4+    after=−7.2   d18  Qb1+ is playable, but a little weaker than Qd4+. The position is winning for Black (−7.2). Qd4+ was best because it gives check.
+27.Rc1       best       loss=0     best=Rc1     after=−7.5   d18  Rc1 is the engine's top move. The position is winning for Black (−7.5).
+27...Qxa2    excellent  loss=0.2   best=Qd3+    after=−7.2   d18  Qxa2 is almost as strong as Qd3+. The position is winning for Black (−7.2). Qd3+ was best because it gives check.
+28.h4        excellent  loss=0.8   best=Rg1     after=−7.5   d18  h4 is almost as strong as Rg1. The position is winning for Black (−7.5).
+28...Qd5+    excellent  loss=0.4   best=e4      after=−7.3   d18  Qd5+ is almost as strong as e4. The position is winning for Black (−7.3).
+29.Kc2       best       loss=0     best=Kc2     after=−7.3   d18  Kc2 is the engine's top move. The position is winning for Black (−7.3).
+29...Qe4+    excellent  loss=1.1   best=e4      after=−7.0   d18  Qe4+ is almost as strong as e4. The position is winning for Black (−7.0).
+30.Kd1       good       loss=4.7   best=Kc3     after=−10.7  d18  Kd1 is playable, but a little weaker than Kc3. The position is winning for Black (−10.7).
+30...Qxh1+   best       loss=0     best=Qxh1+   after=−10.7  d18  Qxh1+ is the engine's top move: it wins a rook (30...Qxh1+ 31.Kc2). The position is winning for Black (−10.7).
+31.Kc2       best       loss=0     best=Kc2     after=−10.7  d18  Kc2 is the engine's top move. The position is winning for Black (−10.7).
+31...Qh3     excellent  loss=0     best=Qg2+    after=−12.2  d18  Qh3 is almost as strong as Qg2+. The position is winning for Black (−12.2). Qg2+ was best because it gives check.
+32.Kd1       excellent  loss=0     best=h5      after=−12.4  d18  Kd1 is almost as strong as h5. The position is winning for Black (−12.4).
+32...e4      excellent  loss=0     best=Qd3+    after=−11.4  d18  e4 is almost as strong as Qd3+. The position is winning for Black (−11.4). Qd3+ was best because it gives check.
+33.Ke1       excellent  loss=0     best=Kc2     after=−17.1  d18  Ke1 is almost as strong as Kc2. The position is winning for Black (−17.1).
+33...Qd3     excellent  loss=0     best=Qe3+    after=−13.9  d18  Qd3 is almost as strong as Qe3+. The position is winning for Black (−13.9). Qe3+ was best because the queen forks the king and rook, and it wins a rook (33...Qe3+ 34.Kf1 Qxc1+ 35.Kg2).
+34.Rd1       best       loss=0     best=Rd1     after=−13.5  d18  Rd1 is the engine's top move. The position is winning for Black (−13.5).
+34...Qb3     excellent  loss=0     best=Qe3+    after=−13.5  d18  Qb3 is almost as strong as Qe3+. The position is winning for Black (−13.5). Qe3+ was best because it gives check.
+35.h5        excellent  loss=0     best=Rd2     after=−23.6  d18  h5 is almost as strong as Rd2. The position is winning for Black (−23.6).
+35...a5      excellent  loss=0     best=Qg3+    after=−13.6  d18  a5 is almost as strong as Qg3+. The position is winning for Black (−13.6). Qg3+ was best because it gives check.
+36.h6        excellent  loss=0     best=Rd2     after=−14.4  d18  h6 is almost as strong as Rd2. The position is winning for Black (−14.4).
+36...g6      excellent  loss=0     best=Qe3+    after=−13.2  d18  g6 is almost as strong as Qe3+. The position is winning for Black (−13.2). Qe3+ was best because it gives check.
+accuracy W/B 84.0 92.8 {"w":{"book":2,"excellent":11,"inaccuracy":7,"miss":1,"best":11,"mistake":1,"good":3},"b":{"book":2,"inaccuracy":1,"mistake":1,"good":7,"best":13,"excellent":12}} 0.2s

@@ -1,0 +1,576 @@
+import 'chessground/assets/chessground.base.css';
+import 'chessground/assets/chessground.brown.css';
+import 'chessground/assets/chessground.cburnett.css';
+import './style.css';
+import { Chessground } from 'chessground';
+import type { Api as CgApi } from 'chessground/api';
+import type { Key } from 'chessground/types';
+import { fetchArchives, fetchMonth, fetchProfile, resultFor, fmtTimeControl, REASONS, type GameSummary } from './api';
+import { EnginePool, type PosEval } from './engine';
+import { parseGame, reviewGame, summarize, terminalEval, fmtScore, type Ply, type MoveReview, type Book } from './review';
+import { CLS_META, CLS_ORDER, winPct, type Cls } from './classify';
+
+const DEFAULT_USER = 'Arunabh-pandey';
+const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector(sel) as T;
+const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+const app = $('#app');
+
+// ---------------- state ----------------
+const state = {
+  user: '',
+  archives: [] as string[],
+  loadedMonths: 0,
+  games: [] as GameSummary[],
+  gamesById: new Map<string, GameSummary>(),
+  profile: null as null | { username: string; name?: string; avatar?: string },
+};
+let book: Book | null = null;
+const bookPromise = fetch(`${import.meta.env.BASE_URL}book.json`).then((r) => r.json()).then((b) => (book = b)).catch(() => null);
+
+function params() {
+  const p = new URLSearchParams(location.search);
+  return { user: p.get('user') || DEFAULT_USER, game: p.get('game') };
+}
+function navigate(q: Record<string, string | null>, replace = false) {
+  const p = new URLSearchParams(location.search);
+  for (const [k, v] of Object.entries(q)) v == null ? p.delete(k) : p.set(k, v);
+  const url = `${location.pathname}?${p.toString()}`;
+  replace ? history.replaceState(null, '', url) : history.pushState(null, '', url);
+  route();
+}
+window.addEventListener('popstate', () => route());
+
+// ---------------- header ----------------
+function renderHeader() {
+  const h = $('#user-chip');
+  const u = state.profile?.username ?? state.user;
+  h.innerHTML = `
+    ${state.profile?.avatar ? `<img src="${esc(state.profile.avatar)}" alt="">` : `<span class="avatar-ph">${esc(u.slice(0, 1).toUpperCase())}</span>`}
+    <span class="uname">${esc(u)}</span>
+    <button class="link" id="change-user" title="Review another player's games">Change</button>`;
+  $('#change-user').onclick = () => {
+    h.innerHTML = `<form id="user-form"><input id="user-input" placeholder="Chess.com username" autocomplete="off" spellcheck="false" value="${esc(state.user)}"><button>Go</button></form>`;
+    const inp = $<HTMLInputElement>('#user-input');
+    inp.focus(); inp.select();
+    $('#user-form').onsubmit = (e) => { e.preventDefault(); const v = inp.value.trim(); if (v) navigate({ user: v, game: null }); };
+    inp.onblur = () => setTimeout(() => { if (document.activeElement?.id !== 'user-input') renderHeader(); }, 150);
+  };
+}
+
+// ---------------- routing ----------------
+let currentReview: ReviewView | null = null;
+async function route() {
+  const { user, game } = params();
+  if (user.toLowerCase() !== state.user.toLowerCase()) {
+    state.user = user; state.archives = []; state.loadedMonths = 0; state.games = []; state.gamesById.clear(); state.profile = null;
+    renderHeader();
+    fetchProfile(user).then((p) => { if (state.user === user) { state.profile = p; renderHeader(); } }).catch(() => {});
+  }
+  document.title = game ? 'Game Review · Chess Review' : `${state.user} · Chess Review`;
+  if (game) {
+    if (currentReview && currentReview.game.id === game) return;
+    currentReview?.destroy();
+    currentReview = null;
+    app.innerHTML = `<div class="loading">Loading game…</div>`;
+    try {
+      const g = await findGame(game);
+      if (!g) { app.innerHTML = `<div class="error">Couldn't find that game in ${esc(state.user)}'s recent archives. <a href="#" id="back">Back to games</a></div>`; $('#back').onclick = (e) => { e.preventDefault(); navigate({ game: null }); }; return; }
+      await bookPromise;
+      currentReview = new ReviewView(g, state.user);
+    } catch (e) {
+      showError(e);
+    }
+  } else {
+    currentReview?.destroy();
+    currentReview = null;
+    renderGameList();
+  }
+}
+
+function showError(e: unknown) {
+  const msg = (e as Error)?.message === 'not-found' ? `No Chess.com player called “${esc(state.user)}”.` : `Couldn't reach Chess.com (${esc(String((e as Error)?.message ?? e))}).`;
+  app.innerHTML = `<div class="error">${msg} <button class="btn" id="retry">Try again</button></div>`;
+  $('#retry').onclick = () => { state.user = ''; route(); };
+}
+
+async function ensureArchives() {
+  if (!state.archives.length) state.archives = await fetchArchives(state.user);
+}
+async function loadNextMonth(): Promise<boolean> {
+  await ensureArchives();
+  const idx = state.archives.length - 1 - state.loadedMonths;
+  if (idx < 0) return false;
+  const games = await fetchMonth(state.archives[idx]);
+  state.loadedMonths++;
+  for (const g of games) if (!state.gamesById.has(g.id)) { state.gamesById.set(g.id, g); state.games.push(g); }
+  state.games.sort((a, b) => b.endTime - a.endTime);
+  return true;
+}
+async function findGame(id: string): Promise<GameSummary | null> {
+  for (let tries = 0; tries < 24; tries++) {
+    if (state.gamesById.has(id)) return state.gamesById.get(id)!;
+    if (!(await loadNextMonth())) return null;
+  }
+  return state.gamesById.get(id) ?? null;
+}
+
+// ---------------- game list ----------------
+async function renderGameList() {
+  app.innerHTML = `
+    <section class="games">
+      <div class="games-head"><h1>Recent games</h1><span class="muted" id="games-sub"></span></div>
+      <div id="game-list" class="game-list"><div class="loading">Loading games from Chess.com…</div></div>
+      <div class="more"><button class="btn" id="more" hidden>Load older games</button></div>
+    </section>`;
+  try {
+    if (!state.loadedMonths) {
+      await loadNextMonth();
+      // make sure there's something to show even early in a month
+      while (state.games.length < 10 && (await loadNextMonth()));
+    }
+  } catch (e) { showError(e); return; }
+  drawGameList();
+}
+
+function drawGameList() {
+  const list = $('#game-list');
+  if (!list) return;
+  const u = state.user;
+  if (!state.games.length) list.innerHTML = `<div class="empty">No standard games found for ${esc(u)}.</div>`;
+  else list.innerHTML = state.games.map((g) => {
+    const meWhite = g.white.username.toLowerCase() === u.toLowerCase();
+    const me = meWhite ? g.white : g.black;
+    const opp = meWhite ? g.black : g.white;
+    const res = resultFor(g, u);
+    const reason = REASONS[res === 'win' ? opp.result : me.result] ?? (res === 'win' ? opp.result : me.result);
+    const d = new Date(g.endTime * 1000);
+    const moves = Math.ceil((g.pgn.match(/\s\d+\.\s/g)?.length ?? 0));
+    return `<a class="game-row" href="?user=${encodeURIComponent(u)}&game=${g.id}" data-id="${g.id}">
+      <span class="res res-${res}">${res === 'win' ? 'W' : res === 'loss' ? 'L' : '½'}</span>
+      <span class="g-main">
+        <span class="g-players"><span class="pc ${meWhite ? 'pw' : 'pb'}"></span><b>${esc(me.username)}</b> <span class="muted">${me.rating}</span> <span class="vs">vs</span> <span class="pc ${meWhite ? 'pb' : 'pw'}"></span><b>${esc(opp.username)}</b> <span class="muted">${opp.rating}</span></span>
+        <span class="g-meta">${esc(g.opening || 'Unknown opening')}</span>
+      </span>
+      <span class="g-side">
+        <span>${esc(cap(g.timeClass))} · ${esc(fmtTimeControl(g.timeControl, g.timeClass))}</span>
+        <span class="muted">${d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })} · ${moves} moves · ${esc(res === 'draw' ? 'draw by ' + reason : (res === 'win' ? 'won by ' : 'lost by ') + reason)}</span>
+      </span>
+      <span class="g-go">Review ›</span>
+    </a>`;
+  }).join('');
+  list.querySelectorAll<HTMLAnchorElement>('.game-row').forEach((a) => a.onclick = (e) => { e.preventDefault(); navigate({ game: a.dataset.id! }); });
+  const sub = $('#games-sub');
+  if (sub) sub.textContent = `${state.games.length} games · ${state.loadedMonths} of ${state.archives.length} months loaded`;
+  const more = $<HTMLButtonElement>('#more');
+  more.hidden = state.loadedMonths >= state.archives.length;
+  more.onclick = async () => {
+    more.disabled = true; more.textContent = 'Loading…';
+    try { await loadNextMonth(); } catch (e) { more.textContent = 'Failed, retry'; more.disabled = false; return; }
+    more.disabled = false; more.textContent = 'Load older games';
+    drawGameList();
+  };
+}
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+// ---------------- analysis cache ----------------
+const CACHE_V = 'cr1';
+function cacheKey(id: string, depth: number) { return `${CACHE_V}:${id}:${depth}`; }
+function loadCache(id: string, depth: number): (PosEval | null)[] | null {
+  try { const s = localStorage.getItem(cacheKey(id, depth)); return s ? JSON.parse(s) : null; } catch { return null; }
+}
+function saveCache(id: string, depth: number, evals: (PosEval | null)[]) {
+  const slim = evals.map((e) => e && { ...e, lines: e.lines.map((l) => ({ ...l, pv: l.pv.slice(0, 14) })) });
+  const data = JSON.stringify(slim);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try { localStorage.setItem(cacheKey(id, depth), data); return; } catch {
+      const keys = Object.keys(localStorage).filter((k) => k.startsWith(CACHE_V + ':'));
+      keys.slice(0, Math.max(1, Math.ceil(keys.length / 2))).forEach((k) => localStorage.removeItem(k));
+    }
+  }
+}
+
+// ---------------- review view ----------------
+const DEPTHS: Record<string, { depth: number; label: string }> = {
+  fast: { depth: 14, label: 'Fast · depth 14' },
+  standard: { depth: 18, label: 'Standard · depth 18' },
+  deep: { depth: 22, label: 'Deep · depth 22' },
+};
+let pool: EnginePool | null = null;
+
+class ReviewView {
+  game: GameSummary;
+  user: string;
+  plies: Ply[] = [];
+  evals: (PosEval | null)[] = [];
+  reviews: (MoveReview | null)[] = [];
+  ply = 0;
+  orientation: 'white' | 'black' = 'white';
+  cg!: CgApi;
+  depthKey = localStorage.getItem('cr-depth') || 'standard';
+  done = 0;
+  destroyed = false;
+  private keyHandler = (e: KeyboardEvent) => this.onKey(e);
+  private raf = 0;
+  private resizeObs?: ResizeObserver;
+
+  constructor(game: GameSummary, user: string) {
+    this.game = game;
+    this.user = user;
+    const parsed = parseGame(game.pgn);
+    this.plies = parsed.plies;
+    this.orientation = game.black.username.toLowerCase() === user.toLowerCase() ? 'black' : 'white';
+    this.render();
+    this.ply = 0;
+    this.startAnalysis();
+    document.addEventListener('keydown', this.keyHandler);
+  }
+
+  get fens() { return [this.plies[0]?.fenBefore ?? 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', ...this.plies.map((p) => p.fenAfter)]; }
+
+  destroy() {
+    this.destroyed = true;
+    document.removeEventListener('keydown', this.keyHandler);
+    this.resizeObs?.disconnect();
+    pool?.destroy();
+    pool = null;
+    this.cg?.destroy();
+  }
+
+  render() {
+    const g = this.game;
+    const res = resultFor(g, this.user);
+    const meWhite = g.white.username.toLowerCase() === this.user.toLowerCase();
+    const reasonKey = res === 'win' ? (meWhite ? g.black.result : g.white.result) : (meWhite ? g.white.result : g.black.result);
+    const resultStr = /1-0|0-1|1\/2-1\/2/.exec(g.pgn.match(/\[Result "([^"]+)"\]/)?.[1] ?? '')?.[0] ?? '';
+    app.innerHTML = `
+    <section class="review">
+      <div class="review-top">
+        <button class="btn ghost" id="back">‹ Games</button>
+        <div class="title"><b>${esc(g.white.username)}</b> (${g.white.rating}) vs <b>${esc(g.black.username)}</b> (${g.black.rating}) <span class="muted">· ${esc(resultStr)} by ${esc(REASONS[reasonKey] ?? reasonKey)} · ${esc(cap(g.timeClass))} ${esc(fmtTimeControl(g.timeControl, g.timeClass))} · ${new Date(g.endTime * 1000).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span></div>
+        <div class="top-actions">
+          <select id="depth" title="Engine strength">${Object.entries(DEPTHS).map(([k, v]) => `<option value="${k}" ${k === this.depthKey ? 'selected' : ''}>${v.label}</option>`).join('')}</select>
+          <a class="btn ghost" href="${esc(g.url)}" target="_blank" rel="noopener">Chess.com ↗</a>
+        </div>
+      </div>
+      <div class="review-grid">
+        <div class="board-col">
+          <div class="player" id="p-top"></div>
+          <div class="board-area">
+            <div class="evalbar" id="evalbar"><div class="fill"></div><span class="evaltext"></span></div>
+            <div class="board-wrap"><div id="board" class="cg-wrap-host"></div><div id="badge" class="badge" hidden></div></div>
+          </div>
+          <div class="player" id="p-bot"></div>
+          <div class="controls">
+            <button class="ctl" id="c-first" title="Start (↑)">⏮</button>
+            <button class="ctl" id="c-prev" title="Previous (←)">◀</button>
+            <button class="ctl" id="c-next" title="Next (→)">▶</button>
+            <button class="ctl" id="c-last" title="End (↓)">⏭</button>
+            <button class="ctl" id="c-flip" title="Flip board (F)">⇅</button>
+          </div>
+        </div>
+        <div class="side-col">
+          <div class="progress" id="progress"><div class="bar"><div class="fill"></div></div><span class="ptext"></span></div>
+          <div class="card movecard" id="movecard"></div>
+          <div class="card graph-card"><svg id="graph" viewBox="0 0 600 120" preserveAspectRatio="none"></svg></div>
+          <div class="card" id="summary"></div>
+          <div class="card movelist" id="movelist"></div>
+        </div>
+      </div>
+    </section>`;
+    $('#back').onclick = () => navigate({ game: null });
+    $<HTMLSelectElement>('#depth').onchange = (e) => {
+      this.depthKey = (e.target as HTMLSelectElement).value;
+      localStorage.setItem('cr-depth', this.depthKey);
+      this.startAnalysis();
+    };
+    $('#c-first').onclick = () => this.go(0);
+    $('#c-prev').onclick = () => this.go(this.ply - 1);
+    $('#c-next').onclick = () => this.go(this.ply + 1);
+    $('#c-last').onclick = () => this.go(this.plies.length);
+    $('#c-flip').onclick = () => this.flip();
+    $('#graph').addEventListener('click', (e) => {
+      const svg = e.currentTarget as SVGSVGElement;
+      const r = svg.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      this.go(Math.round(x * this.plies.length));
+    });
+    this.cg = Chessground($('#board'), {
+      fen: this.fens[0], orientation: this.orientation, viewOnly: true, coordinates: true,
+      animation: { enabled: true, duration: 180 },
+      drawable: { enabled: false, visible: true },
+    });
+    this.resizeObs = new ResizeObserver(() => this.cg.redrawAll());
+    this.resizeObs.observe($('.board-wrap'));
+    this.drawMoveList();
+    this.update();
+  }
+
+  startAnalysis() {
+    pool?.destroy();
+    pool = null;
+    const depth = DEPTHS[this.depthKey]?.depth ?? 18;
+    const fens = this.fens;
+    const cached = loadCache(this.game.id, depth);
+    this.evals = cached && cached.length === fens.length ? cached : fens.map((f) => terminalEval(f));
+    this.done = this.evals.filter(Boolean).length;
+    this.recompute();
+    if (this.done === fens.length) { this.drawProgress(); return; }
+    const myPool = (pool = new EnginePool(EnginePool.defaultSize()));
+    const t0 = performance.now();
+    fens.forEach((fen, i) => {
+      if (this.evals[i]) return;
+      myPool.analyse(fen, depth, 3, depth >= 22 ? 15000 : 8000).then((ev) => {
+        if (this.destroyed || pool !== myPool) return;
+        this.evals[i] = ev;
+        this.done++;
+        if (this.done === fens.length) {
+          saveCache(this.game.id, depth, this.evals);
+          console.info(`analysis done in ${((performance.now() - t0) / 1000).toFixed(1)}s`);
+          myPool.destroy();
+          if (pool === myPool) pool = null;
+        }
+        this.scheduleRecompute();
+      }).catch(() => {});
+    });
+    this.drawProgress();
+  }
+
+  scheduleRecompute() {
+    if (this.raf) return;
+    this.raf = requestAnimationFrame(() => { this.raf = 0; this.recompute(); });
+  }
+
+  recompute() {
+    this.reviews = reviewGame({ plies: this.plies, evals: this.evals, book });
+    (window as any).__review = { plies: this.plies.map((p) => p.san), reviews: this.reviews, done: this.done, total: this.fens.length };
+    this.drawProgress();
+    this.drawMoveList();
+    this.drawGraph();
+    this.drawSummary();
+    this.update();
+  }
+
+  drawProgress() {
+    const n = this.fens.length;
+    const pct = Math.round((this.done / n) * 100);
+    const el = $('#progress');
+    if (!el) return;
+    el.classList.toggle('complete', this.done >= n);
+    $('.fill', el).style.width = pct + '%';
+    const depth = DEPTHS[this.depthKey]?.depth ?? 18;
+    $('.ptext', el).textContent = this.done >= n
+      ? `Analysis complete · Stockfish 19 (NNUE lite) · depth ${depth}`
+      : `Analysing with Stockfish… ${this.done}/${n} positions (${pct}%) · depth ${depth} · ${pool?.size ?? 1} thread${(pool?.size ?? 1) > 1 ? 's' : ''}`;
+  }
+
+  go(p: number) {
+    this.ply = Math.max(0, Math.min(this.plies.length, p));
+    this.update();
+  }
+
+  flip() {
+    this.orientation = this.orientation === 'white' ? 'black' : 'white';
+    this.cg.set({ orientation: this.orientation });
+    this.update();
+  }
+
+  onKey(e: KeyboardEvent) {
+    if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'SELECT') return;
+    if (e.key === 'ArrowLeft') this.go(this.ply - 1);
+    else if (e.key === 'ArrowRight') this.go(this.ply + 1);
+    else if (e.key === 'ArrowUp' || e.key === 'Home') this.go(0);
+    else if (e.key === 'ArrowDown' || e.key === 'End') this.go(this.plies.length);
+    else if (e.key === 'f' || e.key === 'F') this.flip();
+    else return;
+    e.preventDefault();
+  }
+
+  clockAt(color: 'w' | 'b'): string {
+    for (let i = this.ply - 1; i >= 0; i--) if (this.plies[i].color === color) return this.plies[i].clock ?? '';
+    return '';
+  }
+
+  update() {
+    const k = this.ply;
+    const fen = this.fens[k];
+    const mv = k > 0 ? this.plies[k - 1] : null;
+    const rv = k > 0 ? this.reviews[k - 1] : null;
+    const shapes: { orig: Key; dest?: Key; brush: string }[] = [];
+    if (mv && rv && rv.bestUci && !rv.isBestMove && rv.cls !== 'book' && rv.cls !== 'forced') {
+      shapes.push({ orig: rv.bestUci.slice(0, 2) as Key, dest: rv.bestUci.slice(2, 4) as Key, brush: 'green' });
+    }
+    this.cg.set({
+      fen, orientation: this.orientation, lastMove: mv ? [mv.from as Key, mv.to as Key] : undefined,
+      check: mv && mv.san.includes('+') || mv?.san.includes('#') ? (fen.split(' ')[1] === 'w' ? 'white' : 'black') : false,
+    });
+    this.cg.setAutoShapes(shapes);
+    // badge
+    const badge = $('#badge');
+    if (mv && rv) {
+      const m = CLS_META[rv.cls];
+      const f = mv.to.charCodeAt(0) - 97, r = +mv.to[1] - 1;
+      const left = this.orientation === 'white' ? f : 7 - f;
+      const top = this.orientation === 'white' ? 7 - r : r;
+      badge.hidden = false;
+      badge.style.left = `calc(${(left + 1) * 12.5}% - 2.1%)`;
+      badge.style.top = `calc(${top * 12.5}% - 1.6%)`;
+      badge.style.background = m.color;
+      badge.textContent = m.icon;
+      badge.title = m.label;
+    } else badge.hidden = true;
+    // players
+    const g = this.game;
+    const top = this.orientation === 'white' ? 'b' : 'w';
+    const bot = top === 'w' ? 'b' : 'w';
+    const pl = (c: 'w' | 'b') => {
+      const p = c === 'w' ? g.white : g.black;
+      const clk = this.clockAt(c);
+      const toMove = fen.split(' ')[1] === c;
+      return `<span class="pc ${c === 'w' ? 'pw' : 'pb'}"></span><b>${esc(p.username)}</b><span class="muted">${p.rating}</span>${clk ? `<span class="clock ${toMove ? 'active' : ''}">${esc(clk.replace(/^0:/, '').replace(/\.\d+$/, ''))}</span>` : ''}`;
+    };
+    $('#p-top').innerHTML = pl(top);
+    $('#p-bot').innerHTML = pl(bot);
+    // eval bar
+    const ev = this.evals[k];
+    const bar = $('#evalbar');
+    bar.classList.toggle('flipped', this.orientation === 'black');
+    if (ev && ev.lines.length) {
+      const s = ev.lines[0].score;
+      const wp = winPct(s, 'w');
+      ($('.fill', bar) as HTMLElement).style.height = `${wp}%`;
+      const t = $('.evaltext', bar);
+      t.textContent = fmtScore(s).replace('−', '-').replace('+', '');
+      t.className = `evaltext ${s.cp >= 0 ? 'w' : 'b'}`;
+    } else {
+      ($('.fill', bar) as HTMLElement).style.height = '50%';
+      $('.evaltext', bar).textContent = '…';
+    }
+    this.drawMoveCard();
+    // move list highlight
+    document.querySelectorAll('.mv.cur').forEach((e) => e.classList.remove('cur'));
+    const cur = document.querySelector(`.mv[data-ply="${k}"]`);
+    if (cur) {
+      cur.classList.add('cur');
+      const list = $('#movelist');
+      const cr = cur.getBoundingClientRect(), lr = list.getBoundingClientRect();
+      if (cr.top < lr.top || cr.bottom > lr.bottom) list.scrollTop += cr.top - lr.top - lr.height / 2;
+    }
+    const gl = document.querySelector('#graph .cursor');
+    if (gl) { const x = (k / Math.max(1, this.plies.length)) * 600; gl.setAttribute('x1', String(x)); gl.setAttribute('x2', String(x)); }
+  }
+
+  drawMoveCard() {
+    const el = $('#movecard');
+    const k = this.ply;
+    if (k === 0) {
+      const ev = this.evals[0];
+      const best = ev?.lines[0];
+      el.innerHTML = `<div class="mc-head"><span class="mc-title">Starting position</span></div>
+        <p class="mc-ex">Use → or the buttons to step through the game. Each move gets a label, the engine's best move, and a short reason.</p>
+        ${best ? `<div class="mc-row"><span class="k">Engine</span><span>${fmtScore(best.score)}</span></div>` : ''}`;
+      return;
+    }
+    const mv = this.plies[k - 1];
+    const rv = this.reviews[k - 1];
+    const num = `${mv.moveNumber}${mv.color === 'w' ? '.' : '...'}`;
+    if (!rv) {
+      el.innerHTML = `<div class="mc-head"><span class="mc-title">${num}${esc(mv.san)}</span></div><p class="mc-ex muted">Analysing this move…</p>`;
+      return;
+    }
+    const m = CLS_META[rv.cls];
+    const showBest = !rv.isBestMove && rv.cls !== 'forced';
+    el.innerHTML = `
+      <div class="mc-head">
+        <span class="icon" style="background:${m.color}">${m.icon}</span>
+        <span class="mc-title">${num}${esc(mv.san)} <span style="color:${m.color}">is ${rv.cls === 'book' ? 'a book move' : rv.cls === 'forced' ? 'forced' : rv.cls === 'miss' ? 'a miss' : (/^[aeiou]/.test(m.label.toLowerCase()) ? 'an ' : rv.cls === 'best' ? 'the ' : 'a ') + m.label.toLowerCase() + (rv.cls === 'best' ? ' move' : rv.cls === 'brilliant' || rv.cls === 'great' || rv.cls === 'excellent' || rv.cls === 'good' ? ' move' : '')}</span></span>
+        <span class="mc-eval">${fmtScore(rv.scoreAfter)}</span>
+      </div>
+      <p class="mc-ex">${esc(rv.explanation)}</p>
+      ${showBest && rv.bestSan ? `<div class="mc-row"><span class="k">Best</span><span><span class="icon sm" style="background:${CLS_META.best.color}">★</span> <b>${esc(rv.bestSan)}</b> <span class="muted">(${fmtScore(this.evals[k - 1]?.lines[0]?.score)})</span></span></div>` : ''}
+      ${rv.bestPvSan ? `<div class="mc-row"><span class="k">Best line</span><span class="pv">${esc(rv.bestPvSan)}</span></div>` : ''}
+      ${!rv.isBestMove && rv.playedPvSan ? `<div class="mc-row"><span class="k">After ${esc(mv.san)}</span><span class="pv">${esc(rv.playedPvSan)}</span></div>` : ''}
+      <div class="mc-row small muted"><span class="k">Win chance</span><span>${mv.color === 'w' ? 'White' : 'Black'}: ${rv.wpBefore.toFixed(0)}% → ${rv.wpAfter.toFixed(0)}%${rv.loss >= 0.5 ? ` (−${rv.loss.toFixed(1)})` : ''}</span></div>`;
+  }
+
+  drawMoveList() {
+    const el = $('#movelist');
+    if (!el) return;
+    const rows: string[] = [];
+    for (let i = 0; i < this.plies.length; i += 2) {
+      const cell = (j: number) => {
+        const p = this.plies[j];
+        if (!p) return '<span class="mv empty"></span>';
+        const r = this.reviews[j];
+        const m = r ? CLS_META[r.cls] : null;
+        return `<span class="mv" data-ply="${j + 1}" title="${m ? m.label : 'Analysing…'}">${m ? `<span class="icon sm" style="background:${m.color}">${m.icon}</span>` : '<span class="icon sm pending"></span>'}<span class="san" ${m && ['inaccuracy', 'mistake', 'miss', 'blunder', 'brilliant', 'great'].includes(r!.cls) ? `style="color:${m.color}"` : ''}>${esc(p.san)}</span></span>`;
+      };
+      rows.push(`<div class="mrow"><span class="num">${this.plies[i].moveNumber}.</span>${cell(i)}${cell(i + 1)}</div>`);
+    }
+    el.innerHTML = rows.join('') || '<div class="muted">No moves.</div>';
+    el.querySelectorAll<HTMLElement>('.mv[data-ply]').forEach((m) => (m.onclick = () => this.go(+m.dataset.ply!)));
+    const cur = el.querySelector(`.mv[data-ply="${this.ply}"]`);
+    cur?.classList.add('cur');
+  }
+
+  drawGraph() {
+    const svg = $('#graph') as unknown as SVGSVGElement;
+    if (!svg) return;
+    const n = Math.max(1, this.plies.length);
+    const W = 600, H = 120;
+    const pts = this.evals.map((e, i) => {
+      const wp = e && e.lines.length ? winPct(e.lines[0].score, 'w') : null;
+      return wp == null ? null : [(i / n) * W, H - (wp / 100) * H] as [number, number];
+    });
+    let d = '';
+    let last: [number, number] | null = null;
+    pts.forEach((p, i) => {
+      const q = p ?? last ?? [(i / n) * W, H / 2];
+      d += `${d ? 'L' : 'M'}${q[0].toFixed(1)},${q[1].toFixed(1)}`;
+      last = q;
+    });
+    const area = `${d}L${W},${H}L0,${H}Z`;
+    const dots = this.reviews.map((r, i) => {
+      if (!r || !['blunder', 'mistake', 'miss', 'inaccuracy', 'brilliant', 'great'].includes(r.cls)) return '';
+      const p = pts[i + 1];
+      if (!p) return '';
+      return `<circle cx="${p[0]}" cy="${p[1]}" r="4.2" fill="${CLS_META[r.cls].color}" stroke="#1d2027" stroke-width="1.2"><title>${this.plies[i].moveNumber}${this.plies[i].color === 'w' ? '.' : '...'}${esc(this.plies[i].san)}: ${CLS_META[r.cls].label}</title></circle>`;
+    }).join('');
+    const x = (this.ply / n) * W;
+    svg.innerHTML = `<rect width="${W}" height="${H}" fill="#3a3d45"/><path d="${area}" fill="#e9e9ea"/><line x1="0" x2="${W}" y1="${H / 2}" y2="${H / 2}" stroke="#888" stroke-width="0.6" stroke-dasharray="3 3"/>
+      <line class="cursor" x1="${x}" x2="${x}" y1="0" y2="${H}" stroke="#81b64c" stroke-width="2"/>${dots}`;
+  }
+
+  drawSummary() {
+    const el = $('#summary');
+    if (!el) return;
+    const s = summarize(this.plies, this.evals, this.reviews);
+    const complete = this.done >= this.fens.length;
+    const g = this.game;
+    const acc = (a: number | null) => (a == null ? '–' : a.toFixed(1));
+    const shown: Cls[] = CLS_ORDER;
+    el.innerHTML = `
+      <div class="sum-head">
+        <div class="acc"><span class="pc pw"></span><span class="name">${esc(g.white.username)}</span><span class="accv">${acc(s.accW)}</span><span class="muted small">accuracy</span></div>
+        <div class="acc"><span class="pc pb"></span><span class="name">${esc(g.black.username)}</span><span class="accv">${acc(s.accB)}</span><span class="muted small">accuracy</span></div>
+      </div>
+      ${complete ? '' : '<div class="muted small center">Partial — still analysing</div>'}
+      <table class="counts">${shown.map((c) => {
+        const w = s.counts.w[c] ?? 0, b = s.counts.b[c] ?? 0;
+        const m = CLS_META[c];
+        return `<tr data-cls="${c}" class="${w + b ? '' : 'zero'}"><td class="cw">${w}</td><td class="cl"><span class="icon sm" style="background:${m.color}">${m.icon}</span>${m.label}</td><td class="cb">${b}</td></tr>`;
+      }).join('')}</table>`;
+    el.querySelectorAll<HTMLElement>('tr[data-cls]').forEach((tr) => tr.onclick = () => {
+      // jump to the next move with this class
+      const c = tr.dataset.cls;
+      for (let j = 1; j <= this.reviews.length; j++) {
+        const idx = (this.ply + j - 1) % this.reviews.length;
+        if (this.reviews[idx]?.cls === c) { this.go(idx + 1); return; }
+      }
+    });
+  }
+}
+
+// boot
+const { user } = params();
+if (!new URLSearchParams(location.search).get('user')) history.replaceState(null, '', `${location.pathname}?user=${encodeURIComponent(user)}${location.search.includes('game=') ? '&' + location.search.slice(1) : ''}`);
+route();

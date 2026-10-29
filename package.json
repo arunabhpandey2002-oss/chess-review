@@ -1,0 +1,27 @@
+{
+  "name": "chess-review",
+  "version": "1.0.0",
+  "description": "Chess.com game review in the browser with Stockfish",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && gh-pages -d dist --dotfiles -m 'Deploy site'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "dependencies": {
+    "chess.js": "^1.4.0",
+    "chessground": "^9.2.1",
+    "stockfish": "^19.0.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "gh-pages": "^6.3.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  }
+}

@@ -1,0 +1,14 @@
+1.e4         book       loss=0.6   best=d4      after=+0.2   d18  e4 is a known opening move (King's Pawn Game). The engine's top choice here is d4.
+1...e5       book       loss=0.4   best=c5      after=+0.3   d18  e5 is a known opening move (King's Pawn Game). The engine's top choice here is c5.
+2.Nf3        book       loss=0     best=Nf3     after=+0.4   d18  Nf3 is a known opening move (King's Knight Opening).
+2...Nc6      book       loss=0     best=Nc6     after=+0.4   d18  Nc6 is a known opening move (King's Knight Opening: Normal Variation).
+3.Bc4        book       loss=1.4   best=Bb5     after=+0.3   d18  Bc4 is a known opening move (Italian Game). The engine's top choice here is Bb5.
+3...Nf6      book       loss=0.5   best=Bc5     after=+0.1   d18  Nf6 is a known opening move (Italian Game: Two Knights Defense). The engine's top choice here is Bc5.
+4.Ng5        book       loss=0.1   best=d3      after=+0.1   d18  Ng5 is a known opening move (Italian Game: Two Knights Defense, Knight Attack). The engine's top choice here is d3.
+4...Bd6      blunder    loss=39.5  best=d5      after=+6.3   d18  Bd6 is a blunder: the position goes from equal (+0.2) to winning for White (+6.3). Best was d5, keeping the position equal (+0.2).
+5.Nxf7       great      loss=0     best=Nxf7    after=+6.3   d18  Nxf7 is the only good move here: the knight forks the queen and rook, and it takes the pawn on f7. The next best, Bxf7+, leaves the position clearly better for White (+2.0) instead of winning for White (+6.3).
+5...O-O      inaccuracy loss=6.5   best=Qe7     after=+10.2  d18  O-O is an inaccuracy: it leaves the queen on d8 hanging, and Nxd8+ wins it. Best was Qe7, keeping the position winning for White (+6.3).
+6.Nxd8+      best       loss=0     best=Nxd8+   after=+10.2  d18  Nxd8+ is the engine's top move: it wins the queen (6.Nxd8+ Kh8). The position is winning for White (+10.2).
+6...Rf7      blunder    loss=0.5   best=Kh8     after=+11.0  d18  Rf7 is a blunder: it leaves the rook on f7 hanging, and Nxf7 takes it. The game was already lost, but this gives away the rook for nothing. Best was Kh8, keeping the position winning for White (+9.5).
+7.Nxf7       best       loss=0     best=Nxf7    after=+11.0  d18  Nxf7 is the engine's top move: it takes the rook on f7. The position is winning for White (+11.0).
+accuracy W/B 98.2 43.2 {"w":{"book":4,"great":1,"best":2},"b":{"book":3,"blunder":2,"inaccuracy":1}} 0.1s
