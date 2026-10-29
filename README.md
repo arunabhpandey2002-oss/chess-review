@@ -1,4 +1,4 @@
-# Chess Review
+# Rook-ie mistakes
 
 A static web app that reviews your chess games in the browser and turns your mistakes into training.
 Enter a Chess.com or Lichess username, or paste a PGN, pick a finished game, and Stockfish 19 (WASM lite) reviews every move.
@@ -24,10 +24,10 @@ Design and roadmap: docs/PRODUCT_PLAN.md.
     node test/e2e-explore.mjs     # Playwright E2E of Explore and decided-position wording (desktop + phone)
     node test/e2e-coach.mjs       # Playwright E2E of the why-you-erred coach and Play it out (desktop + phone)
 
-Live: https://chess-review-ashen.vercel.app/
+Live: https://rook-ie-mistakes.vercel.app/ (the old https://chess-review-ashen.vercel.app/ still works)
 
 ## Any Chess.com or Lichess player can use it
-- Open the site and type a username with the "Change" link, or share a link like `https://chess-review-ashen.vercel.app/?user=hikaru`.
+- Open the site and type a username with the "Change" link, or share a link like `https://rook-ie-mistakes.vercel.app/?user=hikaru`.
 - With no `?user=`, it opens on Arunabh-pandey. Add `&site=lichess` for a Lichess username.
 - Games come straight from Chess.com's free public API (`api.chess.com/pub/player/NAME/games/...`), called from the visitor's own browser. No login, key or server is needed, and only public games are shown.
 - The engine runs on the visitor's own device. Nothing is uploaded anywhere. Results are cached in the browser's localStorage.
@@ -51,13 +51,13 @@ Loss = win% before (best move) minus win% after the played move, from the mover'
 Accuracy uses the Lichess per-move formula 103.1668*exp(-0.04354*loss) - 3.1669 and its volatility-weighted/harmonic game mean.
 
 ## Deploy updates (Vercel)
-Hosted on Vercel as the project `chess-review`. `vercel.json` sets the build: `npm ci`, `npm run build`, output `dist`.
+Hosted on Vercel as the project `rook-ie-mistakes` (renamed from `chess-review`; the GitHub repo is still `chess-review`). `vercel.json` sets the build: `npm ci`, `npm run build`, output `dist`.
 
 - **Automatic (once Git is connected):** push to `main` and Vercel builds and deploys production. Pushes to other branches get preview URLs.
     git add -A && git commit -m "your change" && git push
-- **Manual:** `npm run deploy` runs `vercel --prod`. It needs the Vercel CLI (`npm i -g vercel`) and a one-time `vercel login` and `vercel link` to the `chess-review` project.
+- **Manual:** `npm run deploy` runs `vercel --prod`. It needs the Vercel CLI (`npm i -g vercel`) and a one-time `vercel login` and `vercel link --project rook-ie-mistakes`.
 
-To turn on automatic deploys: on GitHub, open Settings, Applications, Vercel, Configure, and add `chess-review` to the repositories Vercel can access. Then in Vercel open the project, Settings, Git, and connect `arunabhpandey2002-oss/chess-review`.
+To turn on automatic deploys: on GitHub, open Settings, Applications, Vercel, Configure, and add `chess-review` to the repositories Vercel can access. Then in Vercel open the project, Settings, Git, and connect `arunabhpandey2002-oss/chess-review` to the `rook-ie-mistakes` project.
 
 Legacy: the site used to be on GitHub Pages (`npm run deploy:gh-pages-legacy`, `gh-pages` branch). Pages is off now that the repo is private.
 

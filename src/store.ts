@@ -123,7 +123,7 @@ export async function exportAll(): Promise<Backup> {
 
 export async function importAll(b: unknown): Promise<{ profiles: number; reviews: number; puzzles: number; games: number }> {
   const x = b as Backup;
-  if (!x || x.app !== 'chess-review' || !Array.isArray(x.puzzles)) throw new Error('That file is not a Chess Review backup.');
+  if (!x || x.app !== 'chess-review' || !Array.isArray(x.puzzles)) throw new Error('That file is not a Rook-ie mistakes backup.');
   const n = { profiles: 0, reviews: 0, puzzles: 0, games: 0 };
   for (const p of x.profiles ?? []) { await put('profiles', p); n.profiles++; }
   for (const g of x.games ?? []) { await put('games', g); n.games++; }
