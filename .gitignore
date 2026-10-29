@@ -4,3 +4,4 @@ test/*.evals.json
 *.log
 shots-live/
 shots-vercel/
+shots-words

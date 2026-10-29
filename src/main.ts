@@ -1,4 +1,5 @@
 import 'chessground/assets/chessground.base.css';
+import { describe, lineItems, movesFromUci, renderText } from './words';
 import 'chessground/assets/chessground.brown.css';
 import 'chessground/assets/chessground.cburnett.css';
 import './style.css';
@@ -173,6 +174,21 @@ function drawGameList() {
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 // ---------------- analysis cache ----------------
+const WIN_TIP = "Estimated from the engine's evaluation using the Lichess formula; it reflects how good the position is, not real-world odds.";
+const GRAPH_TIP = 'Evaluation over the game. Higher means White is better; dots mark inaccuracies (yellow), mistakes (orange) and blunders (red). Click to jump.';
+
+function bestWords(rv: { fenBefore: string; bestPv: string[] }): string {
+  const m = movesFromUci(rv.fenBefore, rv.bestPv, 1)[0];
+  return m ? describe(m).imperative : '';
+}
+
+function lineHtml(fen: string, pv: string[], san: string, notation: boolean): string {
+  if (notation) return `<span class="pv">${esc(san)}</span>`;
+  const items = lineItems(fen, pv, 5);
+  const more = pv.length > 5 ? '<li class="muted more">…</li>' : '';
+  return `<ol class="pvw">${items.map((t) => `<li>${esc(t)}</li>`).join('')}${more}</ol>`;
+}
+
 const CACHE_V = 'cr1';
 function cacheKey(id: string, depth: number) { return `${CACHE_V}:${id}:${depth}`; }
 function loadCache(id: string, depth: number): (PosEval | null)[] | null {
@@ -207,6 +223,7 @@ class ReviewView {
   orientation: 'white' | 'black' = 'white';
   cg!: CgApi;
   depthKey = localStorage.getItem('cr-depth') || 'standard';
+  notation = localStorage.getItem('cr-notation') === '1';
   done = 0;
   destroyed = false;
   private keyHandler = (e: KeyboardEvent) => this.onKey(e);
@@ -271,7 +288,7 @@ class ReviewView {
         <div class="side-col">
           <div class="progress" id="progress"><div class="bar"><div class="fill"></div></div><span class="ptext"></span></div>
           <div class="card movecard" id="movecard"></div>
-          <div class="card graph-card"><svg id="graph" viewBox="0 0 600 120" preserveAspectRatio="none"></svg></div>
+          <div class="card graph-card"><svg id="graph" viewBox="0 0 600 120" preserveAspectRatio="none" aria-label="${GRAPH_TIP}"><title>${GRAPH_TIP}</title></svg><p class="graph-cap">${GRAPH_TIP}</p></div>
           <div class="card" id="summary"></div>
           <div class="card movelist" id="movelist"></div>
         </div>
@@ -342,7 +359,7 @@ class ReviewView {
 
   recompute() {
     this.reviews = reviewGame({ plies: this.plies, evals: this.evals, book });
-    (window as any).__review = { plies: this.plies.map((p) => p.san), reviews: this.reviews, done: this.done, total: this.fens.length };
+    (window as any).__review = { plies: this.plies.map((p) => p.san), reviews: this.reviews, done: this.done, total: this.fens.length, go: (n: number) => this.go(n) };
     this.drawProgress();
     this.drawMoveList();
     this.drawGraph();
@@ -479,17 +496,24 @@ class ReviewView {
     }
     const m = CLS_META[rv.cls];
     const showBest = !rv.isBestMove && rv.cls !== 'forced';
+    const nt = this.notation;
     el.innerHTML = `
       <div class="mc-head">
         <span class="icon" style="background:${m.color}">${m.icon}</span>
         <span class="mc-title">${num}${esc(mv.san)} <span style="color:${m.color}">is ${rv.cls === 'book' ? 'a book move' : rv.cls === 'forced' ? 'forced' : rv.cls === 'miss' ? 'a miss' : (/^[aeiou]/.test(m.label.toLowerCase()) ? 'an ' : rv.cls === 'best' ? 'the ' : 'a ') + m.label.toLowerCase() + (rv.cls === 'best' ? ' move' : rv.cls === 'brilliant' || rv.cls === 'great' || rv.cls === 'excellent' || rv.cls === 'good' ? ' move' : '')}</span></span>
         <span class="mc-eval">${fmtScore(rv.scoreAfter)}</span>
       </div>
-      <p class="mc-ex">${esc(rv.explanation)}</p>
-      ${showBest && rv.bestSan ? `<div class="mc-row"><span class="k">Best</span><span><span class="icon sm" style="background:${CLS_META.best.color}">★</span> <b>${esc(rv.bestSan)}</b> <span class="muted">(${fmtScore(this.evals[k - 1]?.lines[0]?.score)})</span></span></div>` : ''}
-      ${rv.bestPvSan ? `<div class="mc-row"><span class="k">Best line</span><span class="pv">${esc(rv.bestPvSan)}</span></div>` : ''}
-      ${!rv.isBestMove && rv.playedPvSan ? `<div class="mc-row"><span class="k">After ${esc(mv.san)}</span><span class="pv">${esc(rv.playedPvSan)}</span></div>` : ''}
-      <div class="mc-row small muted"><span class="k">Win chance</span><span>${mv.color === 'w' ? 'White' : 'Black'}: ${rv.wpBefore.toFixed(0)}% → ${rv.wpAfter.toFixed(0)}%${rv.loss >= 0.5 ? ` (−${rv.loss.toFixed(1)})` : ''}</span></div>`;
+      <p class="mc-ex">${esc(renderText(rv.explanation, nt ? 'san' : 'words'))}</p>
+      ${showBest && rv.bestSan ? `<div class="mc-row"><span class="k">Best</span><span><span class="icon sm" style="background:${CLS_META.best.color}">★</span> ${nt ? `<b>${esc(rv.bestSan)}</b>` : `${esc(bestWords(rv))} (<b>${esc(rv.bestSan)}</b>)`} <span class="muted">(${fmtScore(this.evals[k - 1]?.lines[0]?.score)})</span></span></div>` : ''}
+      ${rv.bestPvSan ? `<div class="mc-row"><span class="k">Best line</span>${lineHtml(rv.fenBefore, rv.bestPv, rv.bestPvSan, nt)}</div>` : ''}
+      ${!rv.isBestMove && rv.playedPvSan ? `<div class="mc-row"><span class="k">After ${esc(mv.san)}</span>${lineHtml(rv.fenAfter, rv.playedPv, rv.playedPvSan, nt)}</div>` : ''}
+      <div class="mc-row small muted"><span class="k">Win chance <span class="info" tabindex="0" data-tip="${WIN_TIP}" aria-label="${WIN_TIP}">i</span></span><span>${mv.color === 'w' ? 'White' : 'Black'}: ${rv.wpBefore.toFixed(0)}% → ${rv.wpAfter.toFixed(0)}%${rv.loss >= 0.5 ? ` (−${rv.loss.toFixed(1)})` : ''}</span></div>
+      <div class="mc-foot"><button class="linkbtn" id="nt-toggle">${nt ? 'Show plain English' : 'Show notation'}</button></div>`;
+    $('#nt-toggle').onclick = () => {
+      this.notation = !this.notation;
+      localStorage.setItem('cr-notation', this.notation ? '1' : '0');
+      this.drawMoveCard();
+    };
   }
 
   drawMoveList() {

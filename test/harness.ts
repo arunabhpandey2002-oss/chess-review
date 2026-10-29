@@ -1,4 +1,5 @@
 // Node test harness: analyse a PGN with a UCI engine (native or WASM) and print the review.
+import { renderText } from '../src/words';
 import { spawn } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { parseGame, reviewGame, summarize, terminalEval, fmtScore, type Book } from '../src/review';
@@ -69,7 +70,7 @@ const reviews = reviewGame({ plies, evals, book });
 const sum = summarize(plies, evals, reviews);
 const rows = plies.map((p, i) => {
   const r = reviews[i]!;
-  return { ply: p.index, move: `${p.moveNumber}${p.color === 'w' ? '.' : '...'}${p.san}`, cls: r.cls, loss: +r.loss.toFixed(1), best: r.bestSan, evalAfter: fmtScore(r.scoreAfter), depth: evals[i]!.depth, ex: r.explanation };
+  return { ply: p.index, move: `${p.moveNumber}${p.color === 'w' ? '.' : '...'}${p.san}`, cls: r.cls, loss: +r.loss.toFixed(1), best: r.bestSan, evalAfter: fmtScore(r.scoreAfter), depth: evals[i]!.depth, ex: renderText(r.explanation, 'words') };
 });
 for (const r of rows) console.log(`${r.move.padEnd(12)} ${r.cls.padEnd(10)} loss=${String(r.loss).padEnd(5)} best=${String(r.best).padEnd(7)} after=${r.evalAfter.padEnd(6)} d${r.depth}  ${r.ex}`);
 console.log('accuracy W/B', sum.accW?.toFixed(1), sum.accB?.toFixed(1), JSON.stringify(sum.counts), `${((Date.now() - t0) / 1000).toFixed(1)}s`);

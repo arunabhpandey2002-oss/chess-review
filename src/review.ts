@@ -5,6 +5,7 @@ import { winPct, T, type Cls, gameAccuracy } from './classify';
 import {
   material, NAME, VAL, pvToSan, formatPv, materialAlongPv, sacrifice, forkTargets, isRecapture, isObviousCapture, hangingAfter, uciToMove, winnableTargets,
 } from './tactics';
+import { tokLine, tokMove } from './words';
 
 export interface Ply {
   index: number; // 1-based ply
@@ -30,6 +31,10 @@ export interface MoveReview {
   bestSan: string | null;
   bestPvSan: string; // formatted
   playedPvSan: string; // opponent's best reply line after the played move
+  bestPv: string[]; // UCI, from fenBefore
+  playedPv: string[]; // UCI reply line, from fenAfter
+  fenBefore: string;
+  fenAfter: string;
   explanation: string;
   scoreAfter: Score | null; // white POV
   isBestMove: boolean;
@@ -142,7 +147,7 @@ function lineFacts(fen: string, line: { score: Score; pv: string[] } | undefined
   if (c.isCheckmate()) return `it is checkmate`;
   if (s.mate !== null && s.mate !== 0) {
     const forPov = (s.mate > 0) === (pov === 'w');
-    if (forPov) return `it forces mate in ${Math.abs(s.mate)} (${formatPv(fen, pvToSan(fen, line.pv, Math.min(line.pv.length, 7)))})`;
+    if (forPov) return `it forces mate in ${Math.abs(s.mate)} (${tokLine(fen, pvToSan(fen, line.pv, Math.min(line.pv.length, 7)))})`;
     return `it resists the longest, though ${side(pov === 'w' ? 'b' : 'w')} still has mate in ${Math.abs(s.mate)}`;
   }
   const fork = forkTargets(fen, line.pv[0]);
@@ -160,7 +165,7 @@ function lineFacts(fen: string, line: { score: Score; pv: string[] } | undefined
     const [ng, nl] = netPieces(swing.gained, swing.lost);
     const g = ng.length ? pieceList(ng) : 'material';
     const l = nl.length ? ` for ${pieceList(nl)}` : '';
-    parts.push(`it wins ${g}${l} (${formatPv(fen, swing.sans)})`);
+    parts.push(`it wins ${g}${l} (${tokLine(fen, swing.sans)})`);
   } else if (first.captured && swing.net >= 0) {
     parts.push(isRecapture(prev, line.pv[0]) ? `it recaptures the ${NAME[first.captured]}` : `it takes the ${NAME[first.captured]} on ${first.to} without losing material`);
   }
@@ -174,7 +179,7 @@ function threatFacts(ply: Ply, reply: { score: Score; pv: string[] } | undefined
   const opp: Color = mover === 'w' ? 'b' : 'w';
   const s = reply.score;
   if (s.mate !== null && s.mate !== 0 && (s.mate > 0) === (opp === 'w')) {
-    const line = formatPv(ply.fenAfter, pvToSan(ply.fenAfter, reply.pv, Math.min(reply.pv.length, 7)));
+    const line = tokLine(ply.fenAfter, pvToSan(ply.fenAfter, reply.pv, Math.min(reply.pv.length, 7)));
     return { text: `it allows mate in ${Math.abs(s.mate)} (${line})`, net: 0, hung: false };
   }
   if (!reply.pv.length) return null;
@@ -185,12 +190,12 @@ function threatFacts(ply: Ply, reply: { score: Score; pv: string[] } | undefined
     const hang = hangingAfter(ply.fenAfter, mover);
     const replySan = pvToSan(ply.fenAfter, reply.pv, 1)[0];
     if (hang && reply.pv[0].slice(2, 4) === hang.sq && VAL[hang.type] >= 3) {
-      return { text: `it leaves the ${NAME[hang.type]} on ${hang.sq} hanging, and ${replySan} wins it`, net: swing.net, hung: true };
+      return { text: `it leaves the ${NAME[hang.type]} on ${hang.sq} hanging, and ${tokMove(ply.fenAfter, replySan)} wins it`, net: swing.net, hung: true };
     }
     const [nl, ng] = netPieces(swing.lost, swing.gained);
     const g = nl.length ? pieceList(nl) : 'material';
     const l = ng.length ? ` for ${pieceList(ng)}` : '';
-    const seq = formatPv(ply.fenBefore, swing.sans);
+    const seq = tokLine(ply.fenBefore, swing.sans);
     return { text: `${side(opp)} wins ${g}${l} (${seq})`, net: swing.net, hung: false };
   }
   return null;
@@ -213,7 +218,7 @@ function hungPiece(ply: Ply, reply: { score: Score; pv: string[] } | undefined, 
   }
   const swing = materialAlongPv(ply.fenBefore, [ply.uci, ...reply.pv], mover, 11);
   if (swing.mate || swing.net > -3) return null;
-  return { ...h, replySan: pvToSan(ply.fenAfter, reply.pv, 1)[0] };
+  return { ...h, replySan: tokMove(ply.fenAfter, pvToSan(ply.fenAfter, reply.pv, 1)[0]) };
 }
 
 export interface ReviewInput {
@@ -311,40 +316,43 @@ export function reviewGame({ plies, evals, book }: ReviewInput): (MoveReview | n
     const bestFacts = lineFacts(p.fenBefore, best, mover, prevMove);
     const afterWords = evalWords(scoreAfter, mover);
     const bestWords = evalWords(best.score, mover);
+    const P = tokMove(p.fenBefore, p.san);
+    const B = bestSan ? tokMove(p.fenBefore, bestSan) : '';
     let ex = '';
     if (evals[i + 1]?.terminal === 'checkmate') {
-      ex = `${p.san} is checkmate.`;
+      ex = `${P} is checkmate.`;
     } else if (cls === 'book') {
       const name = book?.[bookKey(p.fenAfter)];
-      ex = `${p.san} is a known opening move${name ? ` (${name.split('|')[1]})` : ''}.`;
-      if (!isBestMove && bestSan) ex += ` The engine's top choice here is ${bestSan}.`;
+      ex = `${P} is a known opening move${name ? ` (${name.split('|')[1]})` : ''}.`;
+      if (!isBestMove && bestSan) ex += ` The engine's top choice here is ${B}.`;
     } else if (cls === 'forced') {
-      ex = `${p.san} was the only legal move.`;
+      ex = `${P} was the only legal move.`;
     } else if (cls === 'brilliant' && sac) {
       const pf = best.pv[0] === p.uci ? bestFacts : lineFacts(p.fenBefore, playedLine ?? { score: scoreAfter, pv: [p.uci, ...(reply?.pv ?? [])] }, mover, prevMove);
-      ex = `${p.san} offers the ${NAME[sac.type]} on ${sac.sq}, and it is the engine's ${best.pv[0] === p.uci ? 'top' : 'near-top'} choice. ${pf ? cap(pf) + '. ' : ''}The position stays ${afterWords}.`;
+      ex = `${P} offers the ${NAME[sac.type]} on ${sac.sq}, and it is the engine's ${best.pv[0] === p.uci ? 'top' : 'near-top'} choice. ${pf ? cap(pf) + '. ' : ''}The position stays ${afterWords}.`;
     } else if (cls === 'great') {
       const second = before.lines[1];
       const sSan = pvToSan(p.fenBefore, second.pv, 1)[0];
-      ex = `${p.san} is the only good move here${bestFacts ? `: ${bestFacts}` : ''}. The next best, ${sSan}, leaves the position ${evalWords(second.score, mover)} instead of ${bestWords}.`;
+      ex = `${P} is the only good move here${bestFacts ? `: ${bestFacts}` : ''}. The next best, ${tokMove(p.fenBefore, sSan)}, leaves the position ${evalWords(second.score, mover)} instead of ${bestWords}.`;
     } else if (cls === 'best') {
-      ex = `${p.san} is the engine's top move${bestFacts ? `: ${bestFacts}` : ''}. The position is ${bestWords}.`;
+      const pf = best.pv[0] === p.uci ? bestFacts : lineFacts(p.fenBefore, playedLine ?? { score: scoreAfter, pv: [p.uci, ...(reply?.pv ?? [])] }, mover, prevMove);
+      ex = `${P} is ${best.pv[0] === p.uci ? "the engine's top move" : 'as strong as the top move'}${pf ? `: ${pf}` : ''}. The position is ${best.pv[0] === p.uci ? bestWords : afterWords}.`;
     } else if (cls === 'excellent' || cls === 'good') {
-      ex = `${p.san} is ${cls === 'excellent' ? 'almost as strong as' : 'playable, but a little weaker than'} ${bestSan}. The position is ${afterWords}.`;
+      ex = `${P} is ${cls === 'excellent' ? 'almost as strong as' : 'playable, but a little weaker than'} ${B}. The position is ${afterWords}.`;
       if (bestFacts) ex += ` ${bestSan} was best because ${bestFacts}.`;
     } else {
       const label = { inaccuracy: 'an inaccuracy', mistake: 'a mistake', blunder: 'a blunder', miss: 'a missed chance' }[cls as 'miss'];
       let why = hang && decidedNote
-        ? `${p.san} is ${label}: it leaves the ${NAME[hang.type]} on ${hang.sq} hanging, and ${hang.replySan} takes it.${threats && threats.text.startsWith('it allows mate') ? ` It also ${threats.text.slice(3)}.` : ''}`
+        ? `${P} is ${label}: it leaves the ${NAME[hang.type]} on ${hang.sq} hanging, and ${hang.replySan} takes it.${threats && threats.text.startsWith('it allows mate') ? ` It also ${threats.text.slice(3)}.` : ''}`
         : threats
-        ? `${p.san} is ${label}: ${threats.text}.`
-        : `${p.san} is ${label}: the position goes from ${bestWords} to ${afterWords}.`;
-      if (missed) why = `${opp}'s last move was an error, but ${p.san} does not punish it${threats ? `, and ${threats.text}` : ''}. The position goes from ${bestWords} to ${afterWords}.`;
-      ex = why + decidedNote + ` Best was ${bestSan}${bestFacts ? `, because ${bestFacts}` : `, keeping the position ${bestWords}`}.`;
+        ? `${P} is ${label}: ${threats.text}.`
+        : `${P} is ${label}: the position goes from ${bestWords} to ${afterWords}.`;
+      if (missed) why = `${opp}'s last move was an error, but ${P} does not punish it${threats ? `, and ${threats.text}` : ''}. The position goes from ${bestWords} to ${afterWords}.`;
+      ex = why + decidedNote + ` Best was ${B}${bestFacts ? `, because ${bestFacts}` : `, keeping the position ${bestWords}`}.`;
     }
 
     out.push({
-      cls, loss, wpBefore: wpBest, wpAfter, bestUci: best.pv[0] ?? null, bestSan, bestPvSan, playedPvSan,
+      cls, loss, wpBefore: wpBest, wpAfter, bestUci: best.pv[0] ?? null, bestSan, bestPvSan, playedPvSan, bestPv: best.pv, playedPv: reply?.pv ?? [], fenBefore: p.fenBefore, fenAfter: p.fenAfter,
       explanation: ex, scoreAfter, isBestMove,
     });
   }
