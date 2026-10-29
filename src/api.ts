@@ -11,7 +11,10 @@ export interface GameSummary {
   endTime: number;
   opening: string;
   rated: boolean;
+  /** Where the game came from. Missing means Chess.com (older cached data). */
+  platform?: Platform;
 }
+export type Platform = 'chesscom' | 'lichess' | 'pgn';
 
 const BASE = 'https://api.chess.com/pub/player/';
 
@@ -59,6 +62,7 @@ export async function fetchMonth(url: string): Promise<GameSummary[]> {
       endTime: g.end_time,
       opening: openingFromPgn(g.pgn),
       rated: g.rated,
+      platform: 'chesscom' as const,
     }))
     .sort((a, b) => b.endTime - a.endTime);
 }
@@ -72,6 +76,7 @@ export function resultFor(g: GameSummary, user: string): 'win' | 'loss' | 'draw'
 }
 
 export function fmtTimeControl(tc: string, cls: string): string {
+  if (!tc || tc === '-' || !/^\d/.test(tc)) return '';
   if (cls === 'daily' || tc.includes('/')) {
     const secs = +tc.split('/')[1];
     const d = Math.round(secs / 86400);

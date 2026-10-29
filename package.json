@@ -1,13 +1,14 @@
 {
   "name": "chess-review",
   "version": "1.0.0",
-  "description": "Chess.com game review in the browser with Stockfish",
+  "description": "Chess game review and training in the browser with Stockfish",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "deploy": "vercel --prod",
-    "deploy:gh-pages-legacy": "npm run build && gh-pages -d dist --dotfiles -m 'Deploy site'"
+    "deploy:gh-pages-legacy": "npm run build && gh-pages -d dist --dotfiles -m 'Deploy site'",
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "",
@@ -20,9 +21,11 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
+    "fake-indexeddb": "^6.2.6",
     "gh-pages": "^6.3.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "vite": "^8.3.5"
+    "vite": "^8.3.5",
+    "vitest": "^4.1.12"
   }
 }

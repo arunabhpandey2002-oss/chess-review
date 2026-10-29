@@ -6,90 +6,143 @@ import './style.css';
 import { Chessground } from 'chessground';
 import type { Api as CgApi } from 'chessground/api';
 import type { Key } from 'chessground/types';
+import type { Color } from 'chess.js';
 import { fetchArchives, fetchMonth, fetchProfile, resultFor, fmtTimeControl, REASONS, type GameSummary } from './api';
+import { fetchLichessGames, fetchLichessGame, fetchLichessProfile } from './sources';
 import { EnginePool, type PosEval } from './engine';
 import { parseGame, reviewGame, summarize, terminalEval, fmtScore, type Ply, type MoveReview, type Book } from './review';
 import { CLS_META, CLS_ORDER, winPct, type Cls } from './classify';
+import { buildMoments, buildSummary, type Moment, type GameSummaryView } from './coach';
+import { levelForRating, LEVEL_LABEL, type Level } from './moments';
+import { MOTIF_INFO, SKILL_LABEL, ROLE_PHRASE } from './concepts';
+import * as store from './store';
+import type { Puzzle, StoredReview } from './store';
+import { Trainer, releaseTrainerEngine } from './trainer';
+import { renderHomePanel, renderPuzzles, renderTrain, renderHistory, renderImport, renderData, destroyTrainer, recordAttempt, newPuzzle, rememberGame, storedGame, SITE_LABEL, type Ctx, type Site } from './pages';
+import { $, esc, cap, srcChip, applyMotionClass, reducedMotion, boardDescription } from './ui';
+import { isDue } from './srs';
 
 const DEFAULT_USER = 'Arunabh-pandey';
-const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector(sel) as T;
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 const app = $('#app');
+applyMotionClass();
+window.matchMedia?.('(prefers-reduced-motion: reduce)').addEventListener?.('change', applyMotionClass);
 
 // ---------------- state ----------------
 const state = {
   user: '',
+  site: 'chesscom' as Site,
   archives: [] as string[],
   loadedMonths: 0,
+  exhausted: false,
   games: [] as GameSummary[],
   gamesById: new Map<string, GameSummary>(),
   profile: null as null | { username: string; name?: string; avatar?: string },
+  rating: 0,
 };
+const pk = () => store.profileKey(state.site, state.user);
 let book: Book | null = null;
 const bookPromise = fetch(`${import.meta.env.BASE_URL}book.json`).then((r) => r.json()).then((b) => (book = b)).catch(() => null);
 
 function params() {
   const p = new URLSearchParams(location.search);
-  return { user: p.get('user') || DEFAULT_USER, game: p.get('game') };
+  const site = (p.get('site') === 'lichess' ? 'lichess' : 'chesscom') as Site;
+  return { user: p.get('user') || DEFAULT_USER, site, game: p.get('game'), view: p.get('view'), ply: p.get('ply'), p: p.get('p'), tag: p.get('tag') };
 }
 function navigate(q: Record<string, string | null>, replace = false) {
   const p = new URLSearchParams(location.search);
   for (const [k, v] of Object.entries(q)) v == null ? p.delete(k) : p.set(k, v);
+  if (q.view !== undefined && q.game === undefined && q.view) p.delete('game');
+  if (q.game) p.delete('view');
+  if (p.get('site') === 'chesscom') p.delete('site');
   const url = `${location.pathname}?${p.toString()}`;
   replace ? history.replaceState(null, '', url) : history.pushState(null, '', url);
   route();
 }
 window.addEventListener('popstate', () => route());
 
+const levelOverride = (): Level | null => (localStorage.getItem('cr-level') as Level | null) || null;
+const ctx: Ctx = {
+  app,
+  get site() { return state.site; },
+  get user() { return state.user; },
+  get pk() { return pk(); },
+  navigate: (q) => navigate(q),
+  level: (rating?: number) => levelOverride() ?? levelForRating(rating ?? (state.rating || null)),
+  setLevel: (l) => { l ? localStorage.setItem('cr-level', l) : localStorage.removeItem('cr-level'); },
+  levelOverride,
+};
+
 // ---------------- header ----------------
+async function renderTabs(active: string) {
+  const el = $('#tabs');
+  let due = 0;
+  try { due = (await store.byProfile<Puzzle>('puzzles', pk())).filter((p) => isDue(p.srs, Date.now())).length; } catch { /* no IndexedDB */ }
+  const tabs: [string, string][] = [['', 'Games'], ['puzzles', `Mistakes to Master${due ? ` <span class="badge-n" aria-label="${due} due">${due}</span>` : ''}`], ['history', 'History'], ['import', 'Import'], ['data', 'Your data']];
+  el.innerHTML = tabs.map(([v, label]) => `<a href="?${new URLSearchParams({ user: state.user, ...(state.site === 'lichess' ? { site: 'lichess' } : {}), ...(v ? { view: v } : {}) })}" data-view="${v}" class="${active === v ? 'on' : ''}" ${active === v ? 'aria-current="page"' : ''}>${label}</a>`).join('');
+  el.querySelectorAll<HTMLAnchorElement>('a').forEach((a) => (a.onclick = (e) => { e.preventDefault(); navigate({ view: a.dataset.view || null, game: null, p: null, tag: null, ply: null }); }));
+}
+
 function renderHeader() {
   const h = $('#user-chip');
   const u = state.profile?.username ?? state.user;
   h.innerHTML = `
     ${state.profile?.avatar ? `<img src="${esc(state.profile.avatar)}" alt="">` : `<span class="avatar-ph">${esc(u.slice(0, 1).toUpperCase())}</span>`}
-    <span class="uname">${esc(u)}</span>
+    <span class="uname">${esc(u)} <span class="muted small">${SITE_LABEL[state.site]}</span></span>
     <button class="link" id="change-user" title="Review another player's games">Change</button>`;
   $('#change-user').onclick = () => {
-    h.innerHTML = `<form id="user-form"><input id="user-input" placeholder="Chess.com username" autocomplete="off" spellcheck="false" value="${esc(state.user)}"><button>Go</button></form>`;
+    h.innerHTML = `<form id="user-form"><select id="site-input" aria-label="Platform"><option value="chesscom" ${state.site === 'chesscom' ? 'selected' : ''}>Chess.com</option><option value="lichess" ${state.site === 'lichess' ? 'selected' : ''}>Lichess</option></select><input id="user-input" aria-label="Username" placeholder="Username" autocomplete="off" spellcheck="false" value="${esc(state.user)}"><button>Go</button></form>`;
     const inp = $<HTMLInputElement>('#user-input');
     inp.focus(); inp.select();
-    $('#user-form').onsubmit = (e) => { e.preventDefault(); const v = inp.value.trim(); if (v) navigate({ user: v, game: null }); };
-    inp.onblur = () => setTimeout(() => { if (document.activeElement?.id !== 'user-input') renderHeader(); }, 150);
+    $('#user-form').onsubmit = (e) => { e.preventDefault(); const v = inp.value.trim(); if (v) navigate({ user: v, site: $<HTMLSelectElement>('#site-input').value, game: null, view: null }); };
+    h.addEventListener('focusout', () => setTimeout(() => { if (!h.contains(document.activeElement)) renderHeader(); }, 200));
   };
 }
 
 // ---------------- routing ----------------
 let currentReview: ReviewView | null = null;
 async function route() {
-  const { user, game } = params();
-  if (user.toLowerCase() !== state.user.toLowerCase()) {
-    state.user = user; state.archives = []; state.loadedMonths = 0; state.games = []; state.gamesById.clear(); state.profile = null;
+  const { user, site, game, view, ply, p, tag } = params();
+  if (user.toLowerCase() !== state.user.toLowerCase() || site !== state.site) {
+    state.user = user; state.site = site; state.archives = []; state.loadedMonths = 0; state.exhausted = false; state.games = []; state.gamesById.clear(); state.profile = null; state.rating = 0;
     renderHeader();
-    fetchProfile(user).then((p) => { if (state.user === user) { state.profile = p; renderHeader(); } }).catch(() => {});
+    const prof = site === 'lichess' ? fetchLichessProfile(user) : fetchProfile(user);
+    prof.then((pr) => { if (state.user === user) { state.profile = pr; renderHeader(); } }).catch(() => {});
+    store.ensureProfile(site, user).catch(() => {});
   }
   document.title = game ? 'Game Review · Chess Review' : `${state.user} · Chess Review`;
+  renderTabs(game ? '' : view ?? '');
+  if (!game || view) { currentReview?.destroy(); currentReview = null; }
+  if (view !== 'train') destroyTrainer();
+  try {
+    if (view === 'puzzles') return await renderPuzzles(ctx, tag);
+    if (view === 'train') return await renderTrain(ctx, p);
+    if (view === 'history') return await renderHistory(ctx);
+    if (view === 'import') return await renderImport(ctx);
+    if (view === 'data') return await renderData(ctx);
+  } catch (e) { app.innerHTML = `<div class="error">Something went wrong: ${esc(String((e as Error)?.message ?? e))}</div>`; return; }
   if (game) {
-    if (currentReview && currentReview.game.id === game) return;
+    if (currentReview && currentReview.game.id === game) { if (ply) currentReview.go(+ply); return; }
     currentReview?.destroy();
     currentReview = null;
     app.innerHTML = `<div class="loading">Loading game…</div>`;
     try {
       const g = await findGame(game);
-      if (!g) { app.innerHTML = `<div class="error">Couldn't find that game in ${esc(state.user)}'s recent archives. <a href="#" id="back">Back to games</a></div>`; $('#back').onclick = (e) => { e.preventDefault(); navigate({ game: null }); }; return; }
+      if (!g) { app.innerHTML = `<div class="error">Couldn't find that game for ${esc(state.user)}. <a href="#" id="back">Back to games</a></div>`; $('#back').onclick = (e) => { e.preventDefault(); navigate({ game: null }); }; return; }
+      if (/\[Result "\*"\]/.test(g.game.pgn)) { app.innerHTML = `<div class="error">This game is still in progress. Only finished games are reviewed. <a href="#" id="back">Back to games</a></div>`; $('#back').onclick = (e) => { e.preventDefault(); navigate({ game: null }); }; return; }
       await bookPromise;
-      currentReview = new ReviewView(g, state.user);
+      currentReview = new ReviewView(g.game, state.user, g.myColor);
+      if (ply) currentReview.go(+ply);
     } catch (e) {
       showError(e);
     }
   } else {
-    currentReview?.destroy();
-    currentReview = null;
     renderGameList();
   }
 }
 
 function showError(e: unknown) {
-  const msg = (e as Error)?.message === 'not-found' ? `No Chess.com player called “${esc(state.user)}”.` : `Couldn't reach Chess.com (${esc(String((e as Error)?.message ?? e))}).`;
+  const where = SITE_LABEL[state.site];
+  const msg = (e as Error)?.message === 'not-found' ? `No ${where} player called “${esc(state.user)}”.` : `Couldn't reach ${where} (${esc(String((e as Error)?.message ?? e))}).`;
   app.innerHTML = `<div class="error">${msg} <button class="btn" id="retry">Try again</button></div>`;
   $('#retry').onclick = () => { state.user = ''; route(); };
 }
@@ -97,37 +150,58 @@ function showError(e: unknown) {
 async function ensureArchives() {
   if (!state.archives.length) state.archives = await fetchArchives(state.user);
 }
+function addGames(games: GameSummary[]) {
+  for (const g of games) if (!state.gamesById.has(g.id)) { state.gamesById.set(g.id, g); state.games.push(g); }
+  state.games.sort((a, b) => b.endTime - a.endTime);
+}
 async function loadNextMonth(): Promise<boolean> {
+  if (state.site === 'lichess') {
+    if (state.exhausted) return false;
+    const oldest = state.games.length ? state.games[state.games.length - 1].endTime * 1000 - 1 : undefined;
+    const games = await fetchLichessGames(state.user, 30, oldest);
+    state.loadedMonths++;
+    if (games.length < 10) state.exhausted = true;
+    addGames(games);
+    return games.length > 0;
+  }
   await ensureArchives();
   const idx = state.archives.length - 1 - state.loadedMonths;
   if (idx < 0) return false;
   const games = await fetchMonth(state.archives[idx]);
   state.loadedMonths++;
-  for (const g of games) if (!state.gamesById.has(g.id)) { state.gamesById.set(g.id, g); state.games.push(g); }
-  state.games.sort((a, b) => b.endTime - a.endTime);
+  addGames(games);
   return true;
 }
-async function findGame(id: string): Promise<GameSummary | null> {
+const myColorIn = (g: GameSummary, user: string): Color => (g.black.username.toLowerCase() === user.toLowerCase() ? 'b' : 'w');
+
+async function findGame(id: string): Promise<{ game: GameSummary; myColor: Color } | null> {
+  const wrap = (g: GameSummary | null | undefined, c?: Color) => (g ? { game: g, myColor: c ?? myColorIn(g, state.user) } : null);
+  if (state.gamesById.has(id)) return wrap(state.gamesById.get(id));
+  try { const s = await storedGame(pk(), id); if (s) return wrap(s.game, s.myColor); } catch { /* no IndexedDB */ }
+  if (id.startsWith('pgn-')) return null;
+  if (id.startsWith('li-')) return wrap(await fetchLichessGame(id.slice(3)));
+  if (state.site === 'lichess') return null;
   for (let tries = 0; tries < 24; tries++) {
-    if (state.gamesById.has(id)) return state.gamesById.get(id)!;
+    if (state.gamesById.has(id)) return wrap(state.gamesById.get(id));
     if (!(await loadNextMonth())) return null;
   }
-  return state.gamesById.get(id) ?? null;
+  return wrap(state.gamesById.get(id));
 }
 
 // ---------------- game list ----------------
 async function renderGameList() {
   app.innerHTML = `
     <section class="games">
+      <div id="home-panel"></div>
       <div class="games-head"><h1>Recent games</h1><span class="muted" id="games-sub"></span></div>
-      <div id="game-list" class="game-list"><div class="loading">Loading games from Chess.com…</div></div>
+      <div id="game-list" class="game-list"><div class="loading">Loading games from ${SITE_LABEL[state.site]}…</div></div>
       <div class="more"><button class="btn" id="more" hidden>Load older games</button></div>
     </section>`;
+  renderHomePanel($('#home-panel'), ctx).catch(() => { $('#home-panel').innerHTML = ''; });
   try {
     if (!state.loadedMonths) {
       await loadNextMonth();
-      // make sure there's something to show even early in a month
-      while (state.games.length < 10 && (await loadNextMonth()));
+      while (state.site === 'chesscom' && state.games.length < 10 && (await loadNextMonth()));
     }
   } catch (e) { showError(e); return; }
   drawGameList();
@@ -137,16 +211,16 @@ function drawGameList() {
   const list = $('#game-list');
   if (!list) return;
   const u = state.user;
-  if (!state.games.length) list.innerHTML = `<div class="empty">No standard games found for ${esc(u)}.</div>`;
+  if (!state.games.length) list.innerHTML = `<div class="empty">No finished standard games found for ${esc(u)}.</div>`;
   else list.innerHTML = state.games.map((g) => {
     const meWhite = g.white.username.toLowerCase() === u.toLowerCase();
     const me = meWhite ? g.white : g.black;
     const opp = meWhite ? g.black : g.white;
     const res = resultFor(g, u);
     const reason = REASONS[res === 'win' ? opp.result : me.result] ?? (res === 'win' ? opp.result : me.result);
-    const d = new Date(g.endTime * 1000);
     const moves = Math.ceil((g.pgn.match(/\s\d+\.\s/g)?.length ?? 0));
-    return `<a class="game-row" href="?user=${encodeURIComponent(u)}&game=${g.id}" data-id="${g.id}">
+    const q = new URLSearchParams({ user: u, ...(state.site === 'lichess' ? { site: 'lichess' } : {}), game: g.id });
+    return `<a class="game-row" href="?${q}" data-id="${g.id}">
       <span class="res res-${res}">${res === 'win' ? 'W' : res === 'loss' ? 'L' : '½'}</span>
       <span class="g-main">
         <span class="g-players"><span class="pc ${meWhite ? 'pw' : 'pb'}"></span><b>${esc(me.username)}</b> <span class="muted">${me.rating}</span> <span class="vs">vs</span> <span class="pc ${meWhite ? 'pb' : 'pw'}"></span><b>${esc(opp.username)}</b> <span class="muted">${opp.rating}</span></span>
@@ -154,16 +228,16 @@ function drawGameList() {
       </span>
       <span class="g-side">
         <span>${esc(cap(g.timeClass))} · ${esc(fmtTimeControl(g.timeControl, g.timeClass))}</span>
-        <span class="muted">${d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })} · ${moves} moves · ${esc(res === 'draw' ? 'draw by ' + reason : (res === 'win' ? 'won by ' : 'lost by ') + reason)}</span>
+        <span class="muted">${new Date(g.endTime * 1000).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })} · ${moves} moves · ${esc(res === 'draw' ? 'draw by ' + reason : (res === 'win' ? 'won by ' : 'lost by ') + reason)}</span>
       </span>
       <span class="g-go">Review ›</span>
     </a>`;
   }).join('');
   list.querySelectorAll<HTMLAnchorElement>('.game-row').forEach((a) => a.onclick = (e) => { e.preventDefault(); navigate({ game: a.dataset.id! }); });
   const sub = $('#games-sub');
-  if (sub) sub.textContent = `${state.games.length} games · ${state.loadedMonths} of ${state.archives.length} months loaded`;
+  if (sub) sub.textContent = state.site === 'lichess' ? `${state.games.length} games from Lichess` : `${state.games.length} games · ${state.loadedMonths} of ${state.archives.length} months loaded`;
   const more = $<HTMLButtonElement>('#more');
-  more.hidden = state.loadedMonths >= state.archives.length;
+  more.hidden = state.site === 'lichess' ? state.exhausted : state.loadedMonths >= state.archives.length;
   more.onclick = async () => {
     more.disabled = true; more.textContent = 'Loading…';
     try { await loadNextMonth(); } catch (e) { more.textContent = 'Failed, retry'; more.disabled = false; return; }
@@ -171,7 +245,6 @@ function drawGameList() {
     drawGameList();
   };
 }
-const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 // ---------------- analysis cache ----------------
 const WIN_TIP = "Estimated from the engine's evaluation using the Lichess formula; it reflects how good the position is, not real-world odds.";
@@ -230,12 +303,21 @@ class ReviewView {
   private raf = 0;
   private resizeObs?: ResizeObserver;
 
-  constructor(game: GameSummary, user: string) {
+  me: Color;
+  moments: Moment[] = [];
+  coachSummary: GameSummaryView | null = null;
+  coachKey = '';
+  trainer: Trainer | null = null;
+  puzzles = new Map<number, Puzzle>();
+
+  constructor(game: GameSummary, user: string, me?: Color) {
     this.game = game;
     this.user = user;
     const parsed = parseGame(game.pgn);
     this.plies = parsed.plies;
-    this.orientation = game.black.username.toLowerCase() === user.toLowerCase() ? 'black' : 'white';
+    this.me = me ?? (game.black.username.toLowerCase() === user.toLowerCase() ? 'b' : 'w');
+    this.orientation = this.me === 'b' ? 'black' : 'white';
+    if (this.plies.length) state.rating = (this.me === 'w' ? game.white : game.black).rating || state.rating;
     this.render();
     this.ply = 0;
     this.startAnalysis();
@@ -246,6 +328,7 @@ class ReviewView {
 
   destroy() {
     this.destroyed = true;
+    this.closeTrainer();
     document.removeEventListener('keydown', this.keyHandler);
     this.resizeObs?.disconnect();
     pool?.destroy();
@@ -255,8 +338,8 @@ class ReviewView {
 
   render() {
     const g = this.game;
-    const res = resultFor(g, this.user);
-    const meWhite = g.white.username.toLowerCase() === this.user.toLowerCase();
+    const meWhite = this.me === 'w';
+    const res = resultFor(g, (meWhite ? g.white : g.black).username);
     const reasonKey = res === 'win' ? (meWhite ? g.black.result : g.white.result) : (meWhite ? g.white.result : g.black.result);
     const resultStr = /1-0|0-1|1\/2-1\/2/.exec(g.pgn.match(/\[Result "([^"]+)"\]/)?.[1] ?? '')?.[0] ?? '';
     app.innerHTML = `
@@ -266,17 +349,20 @@ class ReviewView {
         <div class="title"><b>${esc(g.white.username)}</b> (${g.white.rating}) vs <b>${esc(g.black.username)}</b> (${g.black.rating}) <span class="muted">· ${esc(resultStr)} by ${esc(REASONS[reasonKey] ?? reasonKey)} · ${esc(cap(g.timeClass))} ${esc(fmtTimeControl(g.timeControl, g.timeClass))} · ${new Date(g.endTime * 1000).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span></div>
         <div class="top-actions">
           <select id="depth" title="Engine strength">${Object.entries(DEPTHS).map(([k, v]) => `<option value="${k}" ${k === this.depthKey ? 'selected' : ''}>${v.label}</option>`).join('')}</select>
-          <a class="btn ghost" href="${esc(g.url)}" target="_blank" rel="noopener">Chess.com ↗</a>
+          ${g.url ? `<a class="btn ghost" href="${esc(g.url)}" target="_blank" rel="noopener">${SITE_LABEL[g.platform ?? 'chesscom']} ↗</a>` : ''}
         </div>
       </div>
+      <div id="coach" class="coach" aria-live="polite"></div>
+      <h2 class="sr-only">Move-by-move review</h2>
       <div class="review-grid">
         <div class="board-col">
           <div class="player" id="p-top"></div>
           <div class="board-area">
             <div class="evalbar" id="evalbar"><div class="fill"></div><span class="evaltext"></span></div>
-            <div class="board-wrap"><div id="board" class="cg-wrap-host"></div><div id="badge" class="badge" hidden></div></div>
+            <div class="board-wrap"><div id="board" class="cg-wrap-host" role="img" aria-label="Chess board"></div><div id="badge" class="badge" hidden></div></div>
           </div>
           <div class="player" id="p-bot"></div>
+          <div class="sr-only" id="move-announce" aria-live="polite"></div>
           <div class="controls">
             <button class="ctl" id="c-first" title="Start (↑)">⏮</button>
             <button class="ctl" id="c-prev" title="Previous (←)">◀</button>
@@ -313,7 +399,7 @@ class ReviewView {
     });
     this.cg = Chessground($('#board'), {
       fen: this.fens[0], orientation: this.orientation, viewOnly: true, coordinates: true,
-      animation: { enabled: true, duration: 180 },
+      animation: { enabled: !reducedMotion(), duration: 180 },
       drawable: { enabled: false, visible: true },
     });
     this.resizeObs = new ResizeObserver(() => this.cg.redrawAll());
@@ -364,6 +450,7 @@ class ReviewView {
     this.drawMoveList();
     this.drawGraph();
     this.drawSummary();
+    this.drawCoach();
     this.update();
   }
 
@@ -392,7 +479,9 @@ class ReviewView {
   }
 
   onKey(e: KeyboardEvent) {
-    if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'SELECT') return;
+    if (this.trainer) { if (e.key === 'Escape') this.closeTrainer(); return; }
+    const tg = (e.target as HTMLElement)?.tagName;
+    if (tg === 'INPUT' || tg === 'SELECT' || tg === 'TEXTAREA' || tg === 'BUTTON' && (e.key === 'Enter' || e.key === ' ')) return;
     if (e.key === 'ArrowLeft') this.go(this.ply - 1);
     else if (e.key === 'ArrowRight') this.go(this.ply + 1);
     else if (e.key === 'ArrowUp' || e.key === 'Home') this.go(0);
@@ -421,6 +510,9 @@ class ReviewView {
       check: mv && mv.san.includes('+') || mv?.san.includes('#') ? (fen.split(' ')[1] === 'w' ? 'white' : 'black') : false,
     });
     this.cg.setAutoShapes(shapes);
+    $('#board').setAttribute('aria-label', boardDescription(fen));
+    const ann = $('#move-announce');
+    if (ann) ann.textContent = mv ? `${mv.moveNumber}${mv.color === 'w' ? '.' : '...'} ${mv.san}${rv ? `, ${CLS_META[rv.cls].label}` : ''}` : 'Starting position';
     // badge
     const badge = $('#badge');
     if (mv && rv) {
@@ -432,6 +524,7 @@ class ReviewView {
       badge.style.left = `calc(${(left + 1) * 12.5}% - 2.1%)`;
       badge.style.top = `calc(${top * 12.5}% - 1.6%)`;
       badge.style.background = m.color;
+      badge.style.color = m.fg;
       badge.textContent = m.icon;
       badge.title = m.label;
     } else badge.hidden = true;
@@ -499,7 +592,7 @@ class ReviewView {
     const nt = this.notation;
     el.innerHTML = `
       <div class="mc-head">
-        <span class="icon" style="background:${m.color}">${m.icon}</span>
+        <span class="icon" style="background:${m.color};color:${m.fg}">${m.icon}</span>
         <span class="mc-title">${num}${esc(mv.san)} <span style="color:${m.color}">is ${rv.cls === 'book' ? 'a book move' : rv.cls === 'forced' ? 'forced' : rv.cls === 'miss' ? 'a miss' : (/^[aeiou]/.test(m.label.toLowerCase()) ? 'an ' : rv.cls === 'best' ? 'the ' : 'a ') + m.label.toLowerCase() + (rv.cls === 'best' ? ' move' : rv.cls === 'brilliant' || rv.cls === 'great' || rv.cls === 'excellent' || rv.cls === 'good' ? ' move' : '')}</span></span>
         <span class="mc-eval">${fmtScore(rv.scoreAfter)}</span>
       </div>
@@ -513,6 +606,7 @@ class ReviewView {
       this.notation = !this.notation;
       localStorage.setItem('cr-notation', this.notation ? '1' : '0');
       this.drawMoveCard();
+      this.renderCoach();
     };
   }
 
@@ -526,7 +620,7 @@ class ReviewView {
         if (!p) return '<span class="mv empty"></span>';
         const r = this.reviews[j];
         const m = r ? CLS_META[r.cls] : null;
-        return `<span class="mv" data-ply="${j + 1}" title="${m ? m.label : 'Analysing…'}">${m ? `<span class="icon sm" style="background:${m.color}">${m.icon}</span>` : '<span class="icon sm pending"></span>'}<span class="san" ${m && ['inaccuracy', 'mistake', 'miss', 'blunder', 'brilliant', 'great'].includes(r!.cls) ? `style="color:${m.color}"` : ''}>${esc(p.san)}</span></span>`;
+        return `<span class="mv" data-ply="${j + 1}" title="${m ? m.label : 'Analysing…'}">${m ? `<span class="icon sm" style="background:${m.color};color:${m.fg}">${m.icon}</span>` : '<span class="icon sm pending"></span>'}<span class="san" ${m && ['inaccuracy', 'mistake', 'miss', 'blunder', 'brilliant', 'great'].includes(r!.cls) ? `style="color:${m.color}"` : ''}>${esc(p.san)}</span></span>`;
       };
       rows.push(`<div class="mrow"><span class="num">${this.plies[i].moveNumber}.</span>${cell(i)}${cell(i + 1)}</div>`);
     }
@@ -564,6 +658,155 @@ class ReviewView {
       <line class="cursor" x1="${x}" x2="${x}" y1="0" y2="${H}" stroke="#81b64c" stroke-width="2"/>${dots}`;
   }
 
+  // ---------------- coach: summary, critical moments, retry ----------------
+  get myRating() { return (this.me === 'w' ? this.game.white : this.game.black).rating; }
+  get level(): Level { return levelOverride() ?? levelForRating(this.myRating || null); }
+
+  drawCoach() {
+    const el = $('#coach');
+    if (!el) return;
+    const n = this.fens.length;
+    if (this.done < n) {
+      el.innerHTML = `<div class="card coach-wait"><b>Coach summary</b> <span class="muted">appears when the analysis finishes (${Math.round((this.done / n) * 100)}%).</span></div>`;
+      return;
+    }
+    const key = `${this.depthKey}|${this.level}`;
+    if (this.coachKey !== key) {
+      this.coachKey = key;
+      this.moments = buildMoments(this.plies, this.evals, this.reviews, this.me, this.level);
+      const g = this.game;
+      const meSide = this.me === 'w' ? g.white : g.black;
+      const opp = this.me === 'w' ? g.black : g.white;
+      const res = resultFor(g, meSide.username);
+      const reasonKey = res === 'win' ? opp.result : meSide.result;
+      const reason = REASONS[reasonKey] ?? reasonKey;
+      const resultText = res === 'win' ? `You won by ${reason}` : res === 'loss' ? `You lost by ${reason}` : `The game was drawn by ${reason}`;
+      this.coachSummary = buildSummary({ plies: this.plies, evals: this.evals, reviews: this.reviews, me: this.me, moments: this.moments, opening: g.opening, opponent: opp.username, resultText, timeControl: g.timeControl });
+      this.persist().then(() => this.renderCoach()).catch((e) => { console.warn('could not save review', e); this.renderCoach(); });
+    }
+    this.renderCoach();
+  }
+
+  async persist() {
+    const g = this.game;
+    const key = pk();
+    const s = this.coachSummary!;
+    const sum = summarize(this.plies, this.evals, this.reviews);
+    const meSide = this.me === 'w' ? g.white : g.black;
+    await rememberGame(key, g, this.me);
+    const rv: StoredReview = {
+      key: `${key}|${g.id}`, profileKey: key, gameId: g.id, platform: g.platform ?? 'chesscom', url: g.url,
+      white: g.white.username, black: g.black.username, myColor: this.me, result: resultFor(g, meSide.username), opening: g.opening, endTime: g.endTime,
+      accuracy: this.me === 'w' ? sum.accW : sum.accB, errorTags: s.errorTags,
+      moments: this.moments.map((m) => ({ ply: m.ply, tag: m.tags.primary.id, moveNumber: m.moveNumber })),
+      story: renderText(s.story.join(' '), 'san'), reviewedAt: Date.now(),
+    };
+    await store.put('reviews', rv);
+    for (const m of this.moments) {
+      const p = await store.savePuzzle(newPuzzle({
+        id: `${key}|${g.id}|${m.ply}`, profileKey: key, gameId: g.id, gameUrl: g.url, platform: g.platform ?? 'chesscom',
+        white: g.white.username, black: g.black.username, endTime: g.endTime, phase: m.phase,
+        core: { ...m, lines: m.lines, reply: m.reply },
+      }));
+      this.puzzles.set(m.ply, p);
+    }
+    renderTabs('');
+  }
+
+  renderCoach() {
+    const el = $('#coach');
+    const s = this.coachSummary;
+    if (!el || !s) return;
+    const nt = this.notation;
+    const T = (t: string) => esc(renderText(t, nt ? 'san' : 'words'));
+    const lvl = this.level;
+    const phaseRow = s.phases.filter((p) => p.moves).map((p) => `<li><b>${cap(p.phase)}</b>: ${esc(p.label)}${p.accuracy != null ? ` <span class="muted">(accuracy ${p.accuracy.toFixed(0)}, ${p.moves} moves${p.mistakes + p.blunders ? `, ${p.mistakes + p.blunders} error${p.mistakes + p.blunders > 1 ? 's' : ''}` : ''})</span>` : ''}</li>`).join('');
+    const statusOf = (m: Moment) => {
+      const p = this.puzzles.get(m.ply);
+      const h = p?.srs.history ?? [];
+      if (!h.length) return '<span class="st st-new">Not tried</span>';
+      const last = h[h.length - 1];
+      return last.solved ? `<span class="st st-scheduled">✓ Solved${last.hints ? ` with ${last.hints} hint${last.hints > 1 ? 's' : ''}` : ''}</span>` : '<span class="st st-due">Not solved yet</span>';
+    };
+    el.innerHTML = `
+      <div class="card coach-card">
+        <div class="coach-head">
+          <h2>Game summary</h2>
+          <label class="lvl">Explanations for <select id="lvl" aria-label="Explanation level">${(Object.keys(LEVEL_LABEL) as Level[]).map((l) => `<option value="${l}" ${l === lvl ? 'selected' : ''}>${esc(LEVEL_LABEL[l])}</option>`).join('')}</select></label>
+        </div>
+        <p class="story">${s.story.map(T).join(' ')} ${srcChip('rules')}</p>
+        <dl class="coach-facts">
+          ${s.turning ? `<div><dt>Turning point</dt><dd>${T(s.turning)}</dd></div>` : ''}
+          ${s.strongest ? `<div><dt>Strongest decision</dt><dd>${T(s.strongest)}</dd></div>` : ''}
+          ${s.improvement ? `<div><dt>Main improvement</dt><dd>${T(s.improvement)}</dd></div>` : ''}
+          <div><dt>By phase ${srcChip('estimate')}</dt><dd><ul class="phases">${phaseRow}</ul></dd></div>
+          <div><dt>Time</dt><dd>${s.time.map(esc).join(' ')}</dd></div>
+        </dl>
+        <div class="action"><b>Do this next:</b> ${T(s.action)}</div>
+      </div>
+      <div class="moments">
+        <h2>Critical moments <span class="muted small">${this.moments.length ? `${this.moments.length} position${this.moments.length > 1 ? 's' : ''} to retry · saved to Mistakes to Master` : ''}</span></h2>
+        ${this.moments.length ? `<div class="moment-list">${this.moments.map((m, i) => {
+          const cm = CLS_META[m.cls as Cls] ?? CLS_META.mistake;
+          const t = m.tags.primary;
+          return `<div class="moment" data-i="${i}">
+            <div class="mini" data-fen="${esc(m.fenBefore)}" data-color="${m.color}" data-last="${esc(m.prevUci ?? '')}"></div>
+            <div class="m-body">
+              <div class="m-title"><span class="icon sm" style="background:${cm.color};color:${cm.fg}" aria-hidden="true">${cm.icon}</span> <b>Move ${m.moveNumber}</b> <span class="muted">${cm.label} · ${esc(m.phase)}</span></div>
+              <div>${esc(cap(ROLE_PHRASE[t.id] ?? MOTIF_INFO[t.motif].name))}</div>
+              <div class="m-tags"><span class="tag">${esc(MOTIF_INFO[t.motif].name)}</span><span class="tag">${esc(SKILL_LABEL[t.skill])}</span> ${statusOf(m)}</div>
+              <div class="m-act"><button class="btn primary" data-retry="${i}">Retry position</button><button class="btn ghost" data-show="${m.ply}">Show in game</button></div>
+            </div></div>`;
+        }).join('')}</div>` : `<p class="muted">No critical moments for you in this game: no move of yours lost a clear, teachable amount in a position that was still undecided.</p>`}
+      </div>`;
+    (window as any).__coach = { moments: this.moments.length, summary: true };
+    el.querySelectorAll<HTMLElement>('.mini').forEach((m) => Chessground(m, { fen: m.dataset.fen!, orientation: m.dataset.color === 'w' ? 'white' : 'black', viewOnly: true, coordinates: false, animation: { enabled: false }, lastMove: m.dataset.last ? [m.dataset.last.slice(0, 2) as Key, m.dataset.last.slice(2, 4) as Key] : undefined, drawable: { enabled: false, visible: false } }));
+    $<HTMLSelectElement>('#lvl', el).onchange = (e) => { ctx.setLevel((e.target as HTMLSelectElement).value as Level); this.drawCoach(); };
+    el.querySelectorAll<HTMLButtonElement>('[data-retry]').forEach((b) => (b.onclick = () => this.openTrainer(+b.dataset.retry!)));
+    el.querySelectorAll<HTMLButtonElement>('[data-show]').forEach((b) => (b.onclick = () => { this.go(+b.dataset.show! + 1); $('#board').scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' }); }));
+  }
+
+  openTrainer(i: number) {
+    this.closeTrainer();
+    const m = this.moments[i];
+    if (!m) return;
+    const ov = document.createElement('div');
+    ov.className = 'overlay';
+    ov.setAttribute('role', 'dialog');
+    ov.setAttribute('aria-modal', 'true');
+    ov.setAttribute('aria-label', `Retry move ${m.moveNumber}`);
+    ov.innerHTML = '<div class="overlay-inner"></div>';
+    document.body.appendChild(ov);
+    document.body.classList.add('modal-open');
+    const g = this.game;
+    this.trainer = new Trainer(ov.firstElementChild as HTMLElement, {
+      core: m, level: this.level,
+      title: `Critical moment ${i + 1} of ${this.moments.length} · move ${m.moveNumber}`,
+      subtitle: `${g.white.username} vs ${g.black.username}`,
+      onResult: async (r) => {
+        const p = this.puzzles.get(m.ply);
+        if (p) this.puzzles.set(m.ply, await recordAttempt(p, r));
+        renderTabs('');
+      },
+      onClose: () => this.closeTrainer(),
+      closeLabel: 'Back to review',
+      onNext: () => (i + 1 < this.moments.length ? this.openTrainer(i + 1) : this.closeTrainer()),
+      nextLabel: i + 1 < this.moments.length ? 'Next moment' : 'Back to review',
+    });
+    (ov.querySelector('#tr-input') as HTMLElement | null)?.focus({ preventScroll: true });
+    (window as any).__trainer = this.trainer;
+  }
+
+  closeTrainer() {
+    if (!this.trainer) return;
+    this.trainer.destroy();
+    this.trainer = null;
+    releaseTrainerEngine();
+    document.querySelector('.overlay')?.remove();
+    document.body.classList.remove('modal-open');
+    if (!this.destroyed) this.renderCoach();
+  }
+
   drawSummary() {
     const el = $('#summary');
     if (!el) return;
@@ -581,7 +824,7 @@ class ReviewView {
       <table class="counts">${shown.map((c) => {
         const w = s.counts.w[c] ?? 0, b = s.counts.b[c] ?? 0;
         const m = CLS_META[c];
-        return `<tr data-cls="${c}" class="${w + b ? '' : 'zero'}"><td class="cw">${w}</td><td class="cl"><span class="icon sm" style="background:${m.color}">${m.icon}</span>${m.label}</td><td class="cb">${b}</td></tr>`;
+        return `<tr data-cls="${c}" class="${w + b ? '' : 'zero'}"><td class="cw">${w}</td><td class="cl"><span class="icon sm" style="background:${m.color};color:${m.fg}">${m.icon}</span>${m.label}</td><td class="cb">${b}</td></tr>`;
       }).join('')}</table>`;
     el.querySelectorAll<HTMLElement>('tr[data-cls]').forEach((tr) => tr.onclick = () => {
       // jump to the next move with this class
@@ -596,5 +839,6 @@ class ReviewView {
 
 // boot
 const { user } = params();
+void releaseTrainerEngine;
 if (!new URLSearchParams(location.search).get('user')) history.replaceState(null, '', `${location.pathname}?user=${encodeURIComponent(user)}${location.search.includes('game=') ? '&' + location.search.slice(1) : ''}`);
 route();

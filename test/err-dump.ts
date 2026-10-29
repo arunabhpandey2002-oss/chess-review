@@ -1,0 +1,11 @@
+import { readFileSync } from 'node:fs';
+import { parseGame, reviewGame, type Book } from '../src/review';
+import { playerErrors } from '../src/coach';
+import { scoreMoment, levelForRating } from '../src/moments';
+const [pgnPath, evPath, who] = process.argv.slice(2);
+const { plies, headers } = parseGame(readFileSync(pgnPath, 'utf8'));
+const evals = JSON.parse(readFileSync(evPath, 'utf8'));
+const reviews = reviewGame({ plies, evals, book: JSON.parse(readFileSync('public/book.json', 'utf8')) as Book });
+const me = headers.White.toLowerCase() === who.toLowerCase() ? 'w' : 'b';
+const level = levelForRating(+(me === 'w' ? headers.WhiteElo : headers.BlackElo));
+for (const e of playerErrors(plies, evals, reviews, me)) console.log(plies[e.i].moveNumber, plies[e.i].san, e.cls, e.loss.toFixed(1), e.wpBest.toFixed(0), e.wpPlayed.toFixed(0), e.tags.primary.id, e.tags.solutionTag.id, JSON.stringify(scoreMoment(e, level)));

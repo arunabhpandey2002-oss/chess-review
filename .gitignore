@@ -5,3 +5,7 @@ test/*.evals.json
 shots-live/
 shots-vercel/
 shots-words
+!test/game.pgn.native20.evals.json
+!test/g_186092857180.pgn.native18.evals.json
+shots-learn/
+shots-learn-live/

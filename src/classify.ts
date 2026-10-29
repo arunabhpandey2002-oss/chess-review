@@ -5,18 +5,19 @@ export type Cls =
   | 'brilliant' | 'great' | 'best' | 'excellent' | 'good' | 'book' | 'forced'
   | 'inaccuracy' | 'mistake' | 'miss' | 'blunder';
 
-export const CLS_META: Record<Cls, { label: string; icon: string; color: string }> = {
-  brilliant: { label: 'Brilliant', icon: '!!', color: '#1baca6' },
-  great: { label: 'Great', icon: '!', color: '#5c8bb0' },
-  best: { label: 'Best', icon: '★', color: '#81b64c' },
-  excellent: { label: 'Excellent', icon: '👍', color: '#96bc4b' },
-  good: { label: 'Good', icon: '✓', color: '#95b776' },
-  book: { label: 'Book', icon: '📖', color: '#a88865' },
-  forced: { label: 'Forced', icon: '→', color: '#96af8b' },
-  inaccuracy: { label: 'Inaccuracy', icon: '?!', color: '#f0c15c' },
-  mistake: { label: 'Mistake', icon: '?', color: '#e6912c' },
-  miss: { label: 'Miss', icon: '✕', color: '#ee6b55' },
-  blunder: { label: 'Blunder', icon: '??', color: '#ca3431' },
+// Okabe-Ito based palette (distinguishable with common colour-vision deficiencies); every class also has a distinct icon.
+export const CLS_META: Record<Cls, { label: string; icon: string; color: string; fg: string }> = {
+  brilliant: { label: 'Brilliant', icon: '!!', color: '#0072B2', fg: '#fff' },
+  great: { label: 'Great', icon: '!', color: '#56B4E9', fg: '#10202b' },
+  best: { label: 'Best', icon: '★', color: '#009E73', fg: '#fff' },
+  excellent: { label: 'Excellent', icon: '👍', color: '#3fb58f', fg: '#0d231b' },
+  good: { label: 'Good', icon: '✓', color: '#7fbf9f', fg: '#10231a' },
+  book: { label: 'Book', icon: '📖', color: '#a88865', fg: '#1f160c' },
+  forced: { label: 'Forced', icon: '→', color: '#8a9a90', fg: '#111' },
+  inaccuracy: { label: 'Inaccuracy', icon: '?!', color: '#F0E442', fg: '#222' },
+  mistake: { label: 'Mistake', icon: '?', color: '#E69F00', fg: '#1d1300' },
+  miss: { label: 'Miss', icon: '✕', color: '#CC79A7', fg: '#1f0f18' },
+  blunder: { label: 'Blunder', icon: '??', color: '#D55E00', fg: '#fff' },
 };
 
 export const CLS_ORDER: Cls[] = [

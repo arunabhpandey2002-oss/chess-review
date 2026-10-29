@@ -113,7 +113,7 @@ export function fmtScore(s: Score | null | undefined): string {
   return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1);
 }
 
-function evalWords(s: Score, pov: Color): string {
+export function evalWords(s: Score, pov: Color): string {
   void pov;
   if (s.mate !== null && s.mate !== 0) return `a forced mate in ${Math.abs(s.mate)} for ${s.mate > 0 ? 'White' : 'Black'}`;
   const a = Math.abs(s.cp);
@@ -126,19 +126,19 @@ function evalWords(s: Score, pov: Color): string {
 }
 
 /** Engine eval from pov in pawns (mates mapped to +/-100). */
-function povPawns(s: Score, pov: Color): number {
+export function povPawns(s: Score, pov: Color): number {
   const cp = pov === 'w' ? s.cp : -s.cp;
   return Math.max(-100, Math.min(100, cp / 100));
 }
 
-function balance(fen: string, pov: Color): number {
+export function balance(fen: string, pov: Color): number {
   const c = new Chess(fen);
   return material(c, pov) - material(c, pov === 'w' ? 'b' : 'w');
 }
 
 /** What makes a given line good for `pov`, in concrete terms. Claims are only made when the
  *  engine evaluation agrees with the material outcome of the line. */
-function lineFacts(fen: string, line: { score: Score; pv: string[] } | undefined, pov: Color, prev: Move | null): string | null {
+export function lineFacts(fen: string, line: { score: Score; pv: string[] } | undefined, pov: Color, prev: Move | null): string | null {
   if (!line || !line.pv.length) return null;
   const s = line.score;
   const c = new Chess(fen);
@@ -174,7 +174,7 @@ function lineFacts(fen: string, line: { score: Score; pv: string[] } | undefined
 }
 
 /** What goes wrong after the played move: mate allowed or material lost (measured from before the move). */
-function threatFacts(ply: Ply, reply: { score: Score; pv: string[] } | undefined, mover: Color): { text: string; net: number; hung: boolean } | null {
+export function threatFacts(ply: Ply, reply: { score: Score; pv: string[] } | undefined, mover: Color): { text: string; net: number; hung: boolean } | null {
   if (!reply) return null;
   const opp: Color = mover === 'w' ? 'b' : 'w';
   const s = reply.score;
@@ -202,7 +202,7 @@ function threatFacts(ply: Ply, reply: { score: Score; pv: string[] } | undefined
 }
 
 /** A piece (>= minor) left en prise by the played move that the engine's reply actually takes for >= 3 net. */
-function hungPiece(ply: Ply, reply: { score: Score; pv: string[] } | undefined, mover: Color) {
+export function hungPiece(ply: Ply, reply: { score: Score; pv: string[] } | undefined, mover: Color) {
   if (!reply || !reply.pv.length) return null;
   const h = hangingAfter(ply.fenAfter, mover);
   if (!h || VAL[h.type] < 3 || reply.pv[0].slice(2, 4) !== h.sq) return null;

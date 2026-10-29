@@ -1,13 +1,28 @@
 # Chess Review
 
-A static web app that does a Chess.com-style game review in the browser.
-Enter a Chess.com username (or use `?user=NAME`), pick a game, and Stockfish 19 (WASM lite, single-threaded) reviews every move.
+A static web app that reviews your chess games in the browser and turns your mistakes into training.
+Enter a Chess.com or Lichess username, or paste a PGN, pick a finished game, and Stockfish 19 (WASM lite) reviews every move.
+
+## Learning loop
+- Game summary at the top: story, turning point, strongest decision, main improvement, phase performance, time notes and one recommended action.
+- Up to 3 critical moments, chosen for your level (beginner under 1000, intermediate 1000-1800, advanced over 1800; switchable).
+- Retry each moment with the eval hidden: drag, click or type a move, 4 staged hints, then the explanation and an optional play-out against the engine.
+- Every moment is saved as a personal puzzle in "Mistakes to Master" and scheduled with spaced repetition (SM-2 style).
+- History shows recurring error types once you have reviewed a few games, with the sample size.
+- Explanations are generated from rules on verified engine facts, not by an AI model. Labels show the source: Engine (Stockfish), Classification (formula), Explanation (generated from rules), Estimate.
+- All your data stays in this browser (IndexedDB). "Your data" lets you export, import or delete it.
+
+Design and roadmap: docs/PRODUCT_PLAN.md.
+
+## Tests
+    npm test                      # Vitest unit tests (test/unit)
+    node test/e2e-learn.mjs       # Playwright E2E of the learning loop; BASE=https://... to run against a deployment
 
 Live: https://chess-review-ashen.vercel.app/
 
-## Any Chess.com player can use it
+## Any Chess.com or Lichess player can use it
 - Open the site and type a username with the "Change" link, or share a link like `https://chess-review-ashen.vercel.app/?user=hikaru`.
-- With no `?user=`, it opens on Arunabh-pandey.
+- With no `?user=`, it opens on Arunabh-pandey. Add `&site=lichess` for a Lichess username.
 - Games come straight from Chess.com's free public API (`api.chess.com/pub/player/NAME/games/...`), called from the visitor's own browser. No login, key or server is needed, and only public games are shown.
 - The engine runs on the visitor's own device. Nothing is uploaded anywhere. Results are cached in the browser's localStorage.
 
@@ -44,4 +59,4 @@ Legacy: the site used to be on GitHub Pages (`npm run deploy:gh-pages-legacy`, `
 
 ## Licences
 Stockfish (GPLv3) and chessground (GPLv3) are bundled, so the distributed site is GPLv3; publish this source alongside it.
-Not affiliated with Chess.com.
+Not affiliated with Chess.com or Lichess.
