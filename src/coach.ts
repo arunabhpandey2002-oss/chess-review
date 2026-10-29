@@ -10,7 +10,7 @@ import { selectMoments, type Level, type MomentCandidate } from './moments';
 import { wpWords, noticeFor, type MomentCore } from './explain';
 import { tokMove } from './words';
 
-export interface Moment extends MomentCore { score: number; why: string[]; phase: Phase; clockLeft: number | null; spent: number | null }
+export interface Moment extends MomentCore { score: number; why: string[]; phase: Phase; clockLeft: number | null; spent: number | null; clockBase?: number | null }
 
 export function parseClock(s?: string): number | null {
   if (!s) return null;
@@ -69,7 +69,9 @@ export function playerErrors(plies: Ply[], evals: (PosEval | null)[], reviews: (
   return out;
 }
 
-export function buildMoments(plies: Ply[], evals: (PosEval | null)[], reviews: (MoveReview | null)[], me: Color, level: Level): Moment[] {
+export function buildMoments(plies: Ply[], evals: (PosEval | null)[], reviews: (MoveReview | null)[], me: Color, level: Level, timeControl?: string): Moment[] {
+  const tc = parseTimeControl(timeControl);
+  const spentAll = timeSpent(plies, tc);
   const errs = playerErrors(plies, evals, reviews, me);
   const chosen = selectMoments(errs, level, 3);
   return chosen.map((c) => {
@@ -83,7 +85,7 @@ export function buildMoments(plies: Ply[], evals: (PosEval | null)[], reviews: (
       reply: evals[c.i + 1]?.lines[0] ? { ...evals[c.i + 1]!.lines[0], pv: evals[c.i + 1]!.lines[0].pv.slice(0, 12) } : null,
       wpBest: c.wpBest, wpPlayed: c.wpPlayed, loss: c.loss, cls: c.cls, tags: c.tags,
       prevUci: prev?.uci, prevFen: prev?.fenBefore, score: c.score, why: c.why, phase: phaseOf(p.fenBefore, c.i),
-      clockLeft: parseClock(p.clock), spent: null,
+      clockLeft: parseClock(p.clock), spent: spentAll[c.i] ?? null, clockBase: tc?.base ?? null,
     };
   });
 }

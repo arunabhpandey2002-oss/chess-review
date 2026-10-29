@@ -4,6 +4,7 @@ import type { Key } from 'chessground/types';
 import * as store from './store';
 import type { Puzzle, StoredReview, StoredGame } from './store';
 import { schedule, reactivate, isDue, srsStatus, newSrs } from './srs';
+import { topCauses, type Diagnosis } from './diagnose';
 import { recurringErrors, topInsight, confidenceNote, tagPhrase, MIN_GAMES_FOR_INSIGHT } from './insights';
 import { MOTIF_INFO, SKILL_LABEL } from './concepts';
 import { LEVEL_LABEL, type Level } from './moments';
@@ -43,6 +44,14 @@ export async function recordAttempt(p: Puzzle, r: TrainResult): Promise<Puzzle> 
   return next;
 }
 
+/** Save the answer to "what were you thinking" on the puzzle. */
+export async function recordDiagnosis(p: Puzzle, d: Diagnosis): Promise<Puzzle> {
+  const fresh = (await store.get<Puzzle>('puzzles', p.id)) ?? p;
+  const next: Puzzle = { ...fresh, diagnosis: d };
+  await store.put('puzzles', next);
+  return next;
+}
+
 export function puzzleTitle(p: Puzzle): string {
   return `Move ${p.core.moveNumber} · ${p.core.color === 'w' ? 'White' : 'Black'} to play`;
 }
@@ -70,6 +79,8 @@ export async function renderHomePanel(el: HTMLElement, ctx: Ctx) {
   const due = sortQueue(puzzles.filter((p) => isDue(p.srs, now)), now);
   const insight = topInsight(reviews);
   const mastered = puzzles.filter((p) => p.srs.retired).length;
+  const diags = puzzles.flatMap((p) => (p.diagnosis ? [p.diagnosis] : []));
+  const causes = topCauses(diags);
   if (!puzzles.length && !reviews.length) {
     el.innerHTML = `<div class="card home-card"><h2>Your training</h2><p>Open any game below. When the review finishes you get a short summary, up to three positions to retry, and those positions are saved as your own puzzles for spaced review.</p></div>`;
     return;
@@ -85,6 +96,7 @@ export async function renderHomePanel(el: HTMLElement, ctx: Ctx) {
         : `<p>Nothing is due. ${puzzles.length ? `Next review ${fmtWhen(Math.min(...puzzles.filter((p) => !p.srs.retired).map((p) => p.srs.due).concat([Infinity])), now)}.` : ''}</p>`}
       ${insight ? `<div class="insight"><b>Pattern:</b> ${esc(insight.text)} <span class="muted small">${esc(insight.note)}</span> <span class="src src-estimate" title="Counted from your reviewed games">Estimate</span></div>`
         : reviews.length < MIN_GAMES_FOR_INSIGHT ? `<p class="muted small">Review ${MIN_GAMES_FOR_INSIGHT - reviews.length} more game${MIN_GAMES_FOR_INSIGHT - reviews.length === 1 ? '' : 's'} to see your recurring patterns.</p>` : ''}
+      ${causes.length ? `<div class="insight" id="why-causes"><b>Why you go wrong:</b> ${causes.map((c) => `${esc(c.label)} (${c.n})`).join(' · ')} <span class="muted small">from ${diags.length} answer${diags.length === 1 ? '' : 's'}</span> <span class="src src-estimate" title="Counted from your answers, checked against the board">Estimate</span></div>` : ''}
     </div>`;
   el.querySelectorAll<HTMLElement>('.mini').forEach((m) => miniBoard(m, m.dataset.fen!, m.dataset.color as 'w' | 'b'));
   el.querySelectorAll<HTMLButtonElement>('.due-pos').forEach((b) => (b.onclick = () => ctx.navigate({ view: 'train', p: b.dataset.id! })));
@@ -156,6 +168,7 @@ export async function renderTrain(ctx: Ctx, onlyId: string | null) {
       core: p.core, level: ctx.level(),
       title: puzzleTitle(p), subtitle: puzzleSub(p),
       onResult: async (r) => { if (r.solved) solved++; await recordAttempt(p, r); },
+      rating: p.rating, prior: p.diagnosis, onDiagnosis: async (d) => { await recordDiagnosis(p, d); },
       onNext: () => { i++; show(); }, nextLabel: i + 1 < queue.length ? 'Next position' : 'Finish',
       onClose: () => ctx.navigate({ view: 'puzzles', p: null }), closeLabel: 'Stop',
     });

@@ -11,7 +11,8 @@ import type { Level } from './moments';
 import { MOTIF_INFO, SKILL_LABEL } from './concepts';
 import { uciToMove, pvToSan, formatPv } from './tactics';
 import { lineItems, renderText } from './words';
-import { fmtScore } from './review';
+import { diagnose, clockOf, CHOICES, VERDICT_LABEL, CAUSE_LABEL, type Diagnosis, type Choice } from './diagnose';
+import { openSparring } from './sparring';
 import { $, esc, srcChip, reducedMotion, boardDescription, legalDests, parseTyped } from './ui';
 
 export interface TrainResult { solved: boolean; attempts: number; hints: number; revealed: boolean; close: number; move?: string }
@@ -25,6 +26,11 @@ export interface TrainerOpts {
   closeLabel?: string;
   nextLabel?: string;
   onNext?: () => void;
+  /** Rating used to set the play-it-out engine strength. */
+  rating?: number | null;
+  /** A saved answer to "what were you thinking"; when set we don't ask again. */
+  prior?: Diagnosis | null;
+  onDiagnosis?: (d: Diagnosis) => void | Promise<void>;
 }
 
 const colorName = (c: Color) => (c === 'w' ? 'white' : 'black');
@@ -45,8 +51,7 @@ export class Trainer {
   finished = false;
   busy = false;
   tried = new Map<string, Verdict>();
-  playout = 0;
-  playFen = '';
+  diag: Diagnosis | null = null;
   destroyed = false;
 
   constructor(host: HTMLElement, o: TrainerOpts) {
@@ -99,11 +104,11 @@ export class Trainer {
     $('#tr-type', this.host).onsubmit = (e) => {
       e.preventDefault();
       const inp = $<HTMLInputElement>('#tr-input', this.host);
-      const fen = this.playFen || m.fenBefore;
+      const fen = m.fenBefore;
       const uci = parseTyped(fen, inp.value);
       if (!uci) { this.status(`“${inp.value}” is not a legal move here.`, 'warn'); return; }
       inp.value = '';
-      if (this.playFen) this.playoutMove(uci); else this.tryMove(uci);
+      this.tryMove(uci);
     };
     $('#tr-hint', this.host).onclick = () => this.showHint();
     $('#tr-reveal', this.host).onclick = () => this.reveal();
@@ -121,7 +126,7 @@ export class Trainer {
 
   setBoard(fen: string, last?: string) {
     const c = new Chess(fen);
-    const moverToPlay = c.turn() === this.o.core.color && !this.finished || (this.playFen && c.turn() === this.o.core.color);
+    const moverToPlay = c.turn() === this.o.core.color && !this.finished;
     this.cg.set({
       fen,
       turnColor: colorName(c.turn()),
@@ -133,15 +138,14 @@ export class Trainer {
   }
 
   onBoardMove(orig: string, dest: string) {
-    const fen = this.playFen || this.o.core.fenBefore;
-    const c = new Chess(fen);
+    const c = new Chess(this.o.core.fenBefore);
     const p = c.get(orig as any);
     let uci = orig + dest;
     if (p?.type === 'p' && (dest[1] === '8' || dest[1] === '1')) {
       const best = this.o.core.bestUci;
       uci += best.startsWith(uci) && best.length === 5 ? best[4] : 'q';
     }
-    if (this.playFen) this.playoutMove(uci); else this.tryMove(uci);
+    this.tryMove(uci);
   }
 
   async evalCandidate(uci: string): Promise<Score | null> {
@@ -221,18 +225,56 @@ export class Trainer {
 
   async finish(solved: boolean, uci: string, san: string, revealed = false) {
     this.finished = true;
-    const m = this.o.core;
     const res: TrainResult = { solved, attempts: this.attempts, hints: this.hintsShown, revealed, close: this.close, move: uci };
     this.cg.set({ movable: { color: undefined, dests: new Map() }, highlight: { custom: new Map() } });
+    $('#tr-hint', this.host).hidden = true;
+    $('#tr-reveal', this.host).hidden = true;
+    $('#tr-type', this.host).hidden = true;
+    const result = this.o.onResult(res);
+    if (this.o.prior) { this.diag = this.o.prior; this.showAnswer(solved, uci, san); }
+    else this.askWhy(solved, uci, san);
+    await result;
+  }
+
+  /** Before the answer: what were you thinking when you played the game move? */
+  askWhy(solved: boolean, uci: string, san: string) {
+    const m = this.o.core;
+    this.status(solved ? `✓ ${esc(san)} works. One quick question before the explanation.` : 'One quick question before the answer.', solved ? 'good' : '');
+    const el = $('#tr-lesson', this.host);
+    el.hidden = false;
+    el.innerHTML = `
+      <div class="why-card" role="group" aria-labelledby="why-q">
+        <h3 id="why-q">In the game you played ${esc(m.playedSan)}. What were you thinking?</h3>
+        <div class="why-chips">${CHOICES.map((c) => `<button class="chip why" data-why="${c.id}">${esc(c.label)}</button>`).join('')}</div>
+        <button class="btn ghost small" id="why-skip">Skip</button>
+      </div>`;
+    el.querySelectorAll<HTMLButtonElement>('[data-why]').forEach((b) => (b.onclick = async () => {
+      const d = diagnose(m, b.dataset.why as Choice, clockOf(m));
+      this.diag = d;
+      this.showAnswer(solved, uci, san);
+      try { await this.o.onDiagnosis?.(d); } catch (e) { console.warn('could not save diagnosis', e); }
+    }));
+    $('#why-skip', this.host).onclick = () => this.showAnswer(solved, uci, san);
+    (el.querySelector('[data-why]') as HTMLElement | null)?.focus({ preventScroll: true });
+  }
+
+  showAnswer(solved: boolean, uci: string, san: string) {
+    const m = this.o.core;
     this.cg.setAutoShapes([{ orig: m.bestUci.slice(0, 2) as Key, dest: m.bestUci.slice(2, 4) as Key, brush: 'green' }]);
     const isBest = uci === m.bestUci;
     if (solved) this.status(`✓ ${esc(san)} works${isBest ? '. It is the engine\'s top choice' : `. The engine's top choice was ${esc(m.bestSan)}, but yours is good enough`}. Solved in ${this.attempts} ${this.attempts === 1 ? 'try' : 'tries'}${this.hintsShown ? ` with ${this.hintsShown} hint${this.hintsShown > 1 ? 's' : ''}` : ''}.`, 'good');
     else this.status(`The answer is ${esc(m.bestSan)}. This position will come back soon so you can try it again.`, 'warn');
-    $('#tr-hint', this.host).hidden = true;
-    $('#tr-reveal', this.host).hidden = true;
-    $('#tr-type', this.host).hidden = true;
     this.drawLesson(uci);
-    await this.o.onResult(res);
+  }
+
+  diagnosisHtml(nt: boolean): string {
+    const d = this.diag;
+    if (!d) return '';
+    const choice = CHOICES.find((c) => c.id === d.choice)?.label ?? '';
+    return `<div class="lsec diag" id="tr-diag"><h3>Why it went wrong</h3>
+      <p class="muted">You said: “${esc(choice)}”. <b class="verdict ${d.verdict}">${esc(VERDICT_LABEL[d.verdict])}.</b></p>
+      ${d.lines.map((l) => `<p>${esc(renderText(l.text, nt ? 'san' : 'words'))} ${srcChip(l.src)}</p>`).join('')}
+      <p class="muted small">Saved as: ${esc(CAUSE_LABEL[d.cause])}</p></div>`;
   }
 
   drawLesson(movedUci: string) {
@@ -248,74 +290,16 @@ export class Trainer {
     const el = $('#tr-lesson', this.host);
     el.hidden = false;
     el.innerHTML = `
+      ${this.diagnosisHtml(nt)}
       <div class="lesson-tags"><span class="tag">${esc(MOTIF_INFO[t.motif].name)}</span><span class="tag">${esc(SKILL_LABEL[t.skill])}</span><span class="tag cls" style="background:${cm.color};color:${cm.fg}">${cm.icon} ${esc(cm.label)}</span> ${srcChip('formula')}</div>
       ${lesson.sections.map((s) => `<div class="lsec"><h3>${esc(s.label)} ${srcChip(s.src)}</h3><p>${esc(renderText(s.text, nt ? 'san' : 'words'))}</p></div>`).join('')}
       <div class="lsec"><h3>Best line ${srcChip('engine')}</h3>${lineText}</div>
       ${replyText ? `<div class="lsec"><h3>What happens after ${esc(m.playedSan)} ${srcChip('engine')}</h3>${replyText}</div>` : ''}
       <div class="tr-after">
-        <button class="btn" id="tr-playout">Play it out against the engine</button>
+        <button class="btn" id="tr-playout">Play it out vs the engine</button>
         ${this.o.onNext ? `<button class="btn primary" id="tr-next">${esc(this.o.nextLabel ?? 'Next')}</button>` : ''}
       </div>`;
-    $('#tr-playout', this.host).onclick = () => this.startPlayout(movedUci);
+    $('#tr-playout', this.host).onclick = () => openSparring({ core: m, rating: this.o.rating, title: `Play it out · move ${m.moveNumber}` });
     if (this.o.onNext) $('#tr-next', this.host).onclick = () => this.o.onNext!();
-  }
-
-  // ---- play-out: a few moves against the engine from the solution ----
-  async startPlayout(uci: string) {
-    const btn = $<HTMLButtonElement>('#tr-playout', this.host);
-    btn.disabled = true;
-    const c = new Chess(this.o.core.fenBefore);
-    uciToMove(c, uci);
-    this.playFen = c.fen();
-    this.playout = 0;
-    this.cg.setAutoShapes([]);
-    $('#tr-type', this.host).hidden = false;
-    await this.engineReply();
-  }
-
-  async engineReply() {
-    const c = new Chess(this.playFen);
-    if (c.isGameOver()) { this.endPlayout(c); return; }
-    this.status('Engine is thinking…');
-    let ev;
-    try { ev = await engine().analyse(this.playFen, 12, 1, 2000); } catch { return; }
-    if (this.destroyed) return;
-    const u = ev.lines[0]?.pv[0];
-    if (!u) { this.endPlayout(c); return; }
-    const mv = uciToMove(c, u)!;
-    this.playFen = c.fen();
-    this.setBoard(this.playFen, u);
-    if (c.isGameOver()) { this.endPlayout(c); return; }
-    this.status(`Engine played ${esc(mv.san)}. Your move (${3 - this.playout} left in this play-out).`);
-  }
-
-  async playoutMove(uci: string) {
-    const c = new Chess(this.playFen);
-    const mv = uciToMove(c, uci);
-    if (!mv) { this.setBoard(this.playFen); return; }
-    this.playFen = c.fen();
-    this.setBoard(this.playFen, uci);
-    this.playout++;
-    if (c.isGameOver() || this.playout >= 3) { this.endPlayout(c); return; }
-    await this.engineReply();
-  }
-
-  async endPlayout(c: Chess) {
-    this.cg.set({ movable: { color: undefined, dests: new Map() } });
-    $('#tr-type', this.host).hidden = true;
-    let txt = 'Play-out finished.';
-    if (c.isCheckmate()) txt = `Checkmate. ${c.turn() === this.o.core.color ? 'The engine won.' : 'You won.'}`;
-    else if (c.isDraw()) txt = 'The play-out ended in a draw.';
-    else {
-      try {
-        const ev = await engine().analyse(c.fen(), 14, 1, 3000);
-        const s = ev.lines[0]?.score;
-        if (s) txt = `Play-out finished. Engine evaluation now: ${fmtScore(s)} ${srcChip('engine')}`;
-      } catch { /* ignore */ }
-    }
-    this.playFen = '';
-    this.status(txt);
-    const btn = $<HTMLButtonElement>('#tr-playout', this.host);
-    if (btn) { btn.disabled = false; btn.textContent = 'Play it out again'; }
   }
 }

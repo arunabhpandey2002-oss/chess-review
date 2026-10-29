@@ -18,6 +18,8 @@ export interface PosEval {
   lines: Line[]; // sorted by MultiPV rank (best first)
   depth: number;
   terminal?: 'checkmate' | 'stalemate' | 'draw';
+  /** The move the engine actually chose (differs from lines[0] when its strength is limited). */
+  best?: string;
 }
 
 export const MATE_BASE = 100000;
@@ -48,7 +50,7 @@ class EngineWorker {
   private onLine: ((l: string) => void) | null = null;
   busy = false;
 
-  constructor() {
+  constructor(options: string[] = []) {
     this.w = new Worker(engineUrl());
     this.w.onmessage = (ev) => {
       const text = typeof ev.data === 'string' ? ev.data : String(ev.data);
@@ -58,6 +60,7 @@ class EngineWorker {
       this.onLine = (l) => {
         if (l === 'uciok') {
           this.send('setoption name Hash value 32');
+          for (const o of options) this.send(`setoption name ${o}`);
           this.send('isready');
         } else if (l === 'readyok') {
           this.onLine = (x) => this.handle(x);
@@ -120,7 +123,7 @@ class EngineWorker {
       const depth = lines.length ? lines[0].depth : 0;
       this.job = null;
       this.busy = false;
-      job.resolve({ lines, depth });
+      job.resolve({ lines, depth, best: best && best !== '(none)' ? best : undefined });
     }
   }
 
@@ -135,8 +138,9 @@ export class EnginePool {
   private workers: EngineWorker[] = [];
   private queue: Job[] = [];
 
-  constructor(size: number) {
-    for (let i = 0; i < size; i++) this.workers.push(new EngineWorker());
+  /** `options` are extra UCI options, e.g. ['UCI_LimitStrength value true', 'UCI_Elo value 1400']. */
+  constructor(size: number, options: string[] = []) {
+    for (let i = 0; i < size; i++) this.workers.push(new EngineWorker(options));
   }
 
   static defaultSize(): number {

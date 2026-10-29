@@ -6,7 +6,9 @@ Enter a Chess.com or Lichess username, or paste a PGN, pick a finished game, and
 ## Learning loop
 - Game summary at the top: story, turning point, strongest decision, main improvement, phase performance, time notes and one recommended action.
 - Up to 3 critical moments, chosen for your level (beginner under 1000, intermediate 1000-1800, advanced over 1800; switchable).
-- Retry each moment with the eval hidden: drag, click or type a move, 4 staged hints, then the explanation and an optional play-out against the engine.
+- Retry each moment with the eval hidden: drag, click or type a move, 4 staged hints, then the explanation.
+- Why-you-erred coach: before the answer, tap what you were thinking (missed their threat, thought it was safe, attacking something else, missed a better move, short on time). The app checks that against the board facts and the engine line and says whether it matches, in 1-3 sourced sentences. Answers are saved, and the home panel shows your top causes.
+- Play it out: from any moment (list or lesson), play the rest of the game against Stockfish set near your rating (UCI_Elo from 1320; below that skill 0 with a shallow search). Take back, restart, resign or stop. You get the result plus up to two engine-checked takeaways: whether you kept the advantage and your biggest slip with the better move.
 - Every moment is saved as a personal puzzle in "Mistakes to Master" and scheduled with spaced repetition (SM-2 style).
 - History shows recurring error types once you have reviewed a few games, with the sample size.
 - Explanations are generated from rules on verified engine facts, not by an AI model. Labels show the source: Engine (Stockfish), Classification (formula), Explanation (generated from rules), Estimate.
@@ -17,6 +19,7 @@ Design and roadmap: docs/PRODUCT_PLAN.md.
 ## Tests
     npm test                      # Vitest unit tests (test/unit)
     node test/e2e-learn.mjs       # Playwright E2E of the learning loop; BASE=https://... to run against a deployment
+    node test/e2e-coach.mjs       # Playwright E2E of the why-you-erred coach and Play it out (desktop + phone)
 
 Live: https://chess-review-ashen.vercel.app/
 

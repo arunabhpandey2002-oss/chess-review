@@ -1,4 +1,5 @@
 // Local-first storage: everything lives in this browser's IndexedDB. Nothing is uploaded.
+import type { Diagnosis } from './diagnose';
 import type { GameSummary, Platform } from './api';
 import type { MomentCore } from './explain';
 import type { SrsState } from './srs';
@@ -41,6 +42,10 @@ export interface Puzzle {
   core: MomentCore;
   srs: SrsState;
   createdAt: number;
+  /** Your rating in that game (sets the play-it-out engine strength). */
+  rating?: number | null;
+  /** Your answer to "what were you thinking" and what the board showed. */
+  diagnosis?: Diagnosis;
 }
 
 export const profileKey = (platform: string, user: string) => `${platform}:${user.toLowerCase()}`;
@@ -103,7 +108,7 @@ export async function ensureProfile(platform: string, username: string): Promise
 /** Saves a puzzle, keeping existing SRS progress if this moment was saved before. */
 export async function savePuzzle(p: Puzzle): Promise<Puzzle> {
   const old = await get<Puzzle>('puzzles', p.id);
-  const merged = old ? { ...p, srs: old.srs, createdAt: old.createdAt } : p;
+  const merged = old ? { ...p, srs: old.srs, createdAt: old.createdAt, diagnosis: old.diagnosis ?? p.diagnosis } : p;
   await put('puzzles', merged);
   return merged;
 }

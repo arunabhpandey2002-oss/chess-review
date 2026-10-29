@@ -58,14 +58,16 @@ await page.fill('#tr-input', core.best);
 await page.press('#tr-input', 'Enter');
 await page.waitForSelector('.tr-status.good', { timeout: 20000 });
 ok('best move accepted', true, core.best);
+await page.click('#why-skip');
 await page.waitForSelector('.tr-lesson:not([hidden]) .lsec');
 const lesson = (await page.locator('.tr-lesson').innerText()).replace(/\s+/g, ' ');
 ok('lesson explains why', /What happened/.test(lesson) && /works/.test(lesson), lesson.slice(0, 200));
 await page.screenshot({ path: `${OUT}/03-retry-solved.png` });
 // play out vs engine
 await page.click('#tr-playout');
-await page.waitForFunction(() => /Engine played|finished/.test(document.querySelector('#tr-status')?.textContent || ''), null, { timeout: 30000 });
-ok('play-out against engine starts', true, (await page.locator('#tr-status').innerText()).slice(0, 80));
+await page.waitForSelector('.sp-overlay #sp-board cg-board');
+ok('play-out against engine opens', true, (await page.locator('#sp-status').innerText()).slice(0, 80));
+await page.click('#sp-close');
 await page.click('#tr-close');
 await page.waitForSelector('.overlay', { state: 'detached' });
 const st = await page.locator('.moment').first().locator('.st').innerText();
@@ -85,6 +87,7 @@ await page.click('#train');
 await page.waitForSelector('.trainer');
 ok('due session opens a trainer', true, await page.locator('#train-count').innerText());
 await page.click('#tr-reveal');
+if (await page.locator('#why-skip').count()) await page.click('#why-skip');
 await page.waitForSelector('.tr-status.warn');
 ok('reveal schedules a quick repeat', /come back soon/.test(await page.locator('#tr-status').innerText()));
 // home panel

@@ -18,7 +18,8 @@ import { MOTIF_INFO, SKILL_LABEL, ROLE_PHRASE } from './concepts';
 import * as store from './store';
 import type { Puzzle, StoredReview } from './store';
 import { Trainer, releaseTrainerEngine } from './trainer';
-import { renderHomePanel, renderPuzzles, renderTrain, renderHistory, renderImport, renderData, destroyTrainer, recordAttempt, newPuzzle, rememberGame, storedGame, SITE_LABEL, type Ctx, type Site } from './pages';
+import { openSparring } from './sparring';
+import { renderHomePanel, renderPuzzles, renderTrain, renderHistory, renderImport, renderData, destroyTrainer, recordAttempt, recordDiagnosis, newPuzzle, rememberGame, storedGame, SITE_LABEL, type Ctx, type Site } from './pages';
 import { $, esc, cap, srcChip, applyMotionClass, reducedMotion, boardDescription } from './ui';
 import { isDue } from './srs';
 
@@ -479,7 +480,9 @@ class ReviewView {
   }
 
   onKey(e: KeyboardEvent) {
+    if (document.querySelector('.sp-overlay')) return; // the play-it-out dialog handles its own keys
     if (this.trainer) { if (e.key === 'Escape') this.closeTrainer(); return; }
+    if (document.querySelector('.overlay')) return;
     const tg = (e.target as HTMLElement)?.tagName;
     if (tg === 'INPUT' || tg === 'SELECT' || tg === 'TEXTAREA' || tg === 'BUTTON' && (e.key === 'Enter' || e.key === ' ')) return;
     if (e.key === 'ArrowLeft') this.go(this.ply - 1);
@@ -673,7 +676,7 @@ class ReviewView {
     const key = `${this.depthKey}|${this.level}`;
     if (this.coachKey !== key) {
       this.coachKey = key;
-      this.moments = buildMoments(this.plies, this.evals, this.reviews, this.me, this.level);
+      this.moments = buildMoments(this.plies, this.evals, this.reviews, this.me, this.level, this.game.timeControl);
       const g = this.game;
       const meSide = this.me === 'w' ? g.white : g.black;
       const opp = this.me === 'w' ? g.black : g.white;
@@ -706,7 +709,7 @@ class ReviewView {
       const p = await store.savePuzzle(newPuzzle({
         id: `${key}|${g.id}|${m.ply}`, profileKey: key, gameId: g.id, gameUrl: g.url, platform: g.platform ?? 'chesscom',
         white: g.white.username, black: g.black.username, endTime: g.endTime, phase: m.phase,
-        core: { ...m, lines: m.lines, reply: m.reply },
+        core: { ...m, lines: m.lines, reply: m.reply }, rating: this.myRating || null,
       }));
       this.puzzles.set(m.ply, p);
     }
@@ -755,14 +758,18 @@ class ReviewView {
               <div class="m-title"><span class="icon sm" style="background:${cm.color};color:${cm.fg}" aria-hidden="true">${cm.icon}</span> <b>Move ${m.moveNumber}</b> <span class="muted">${cm.label} · ${esc(m.phase)}</span></div>
               <div>${esc(cap(ROLE_PHRASE[t.id] ?? MOTIF_INFO[t.motif].name))}</div>
               <div class="m-tags"><span class="tag">${esc(MOTIF_INFO[t.motif].name)}</span><span class="tag">${esc(SKILL_LABEL[t.skill])}</span> ${statusOf(m)}</div>
-              <div class="m-act"><button class="btn primary" data-retry="${i}">Retry position</button><button class="btn ghost" data-show="${m.ply}">Show in game</button></div>
+              <div class="m-act"><button class="btn primary" data-retry="${i}">Retry position</button><button class="btn" data-play="${i}">Play it out</button><button class="btn ghost" data-show="${m.ply}">Show in game</button></div>
             </div></div>`;
         }).join('')}</div>` : `<p class="muted">No critical moments for you in this game: no move of yours lost a clear, teachable amount in a position that was still undecided.</p>`}
       </div>`;
-    (window as any).__coach = { moments: this.moments.length, summary: true };
+    (window as any).__coach = { moments: this.moments.length, summary: true, played: this.moments.map((m) => m.playedSan) };
     el.querySelectorAll<HTMLElement>('.mini').forEach((m) => Chessground(m, { fen: m.dataset.fen!, orientation: m.dataset.color === 'w' ? 'white' : 'black', viewOnly: true, coordinates: false, animation: { enabled: false }, lastMove: m.dataset.last ? [m.dataset.last.slice(0, 2) as Key, m.dataset.last.slice(2, 4) as Key] : undefined, drawable: { enabled: false, visible: false } }));
     $<HTMLSelectElement>('#lvl', el).onchange = (e) => { ctx.setLevel((e.target as HTMLSelectElement).value as Level); this.drawCoach(); };
     el.querySelectorAll<HTMLButtonElement>('[data-retry]').forEach((b) => (b.onclick = () => this.openTrainer(+b.dataset.retry!)));
+    el.querySelectorAll<HTMLButtonElement>('[data-play]').forEach((b) => (b.onclick = () => {
+      const m = this.moments[+b.dataset.play!];
+      if (m) openSparring({ core: m, rating: this.myRating, title: `Play it out · move ${m.moveNumber}` });
+    }));
     el.querySelectorAll<HTMLButtonElement>('[data-show]').forEach((b) => (b.onclick = () => { this.go(+b.dataset.show! + 1); $('#board').scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' }); }));
   }
 
@@ -790,6 +797,12 @@ class ReviewView {
       },
       onClose: () => this.closeTrainer(),
       closeLabel: 'Back to review',
+      rating: this.myRating,
+      prior: this.puzzles.get(m.ply)?.diagnosis,
+      onDiagnosis: async (d) => {
+        const p = this.puzzles.get(m.ply);
+        if (p) this.puzzles.set(m.ply, await recordDiagnosis(p, d));
+      },
       onNext: () => (i + 1 < this.moments.length ? this.openTrainer(i + 1) : this.closeTrainer()),
       nextLabel: i + 1 < this.moments.length ? 'Next moment' : 'Back to review',
     });
@@ -802,8 +815,8 @@ class ReviewView {
     this.trainer.destroy();
     this.trainer = null;
     releaseTrainerEngine();
-    document.querySelector('.overlay')?.remove();
-    document.body.classList.remove('modal-open');
+    document.querySelector('.overlay:not(.sp-overlay)')?.remove();
+    if (!document.querySelector('.overlay')) document.body.classList.remove('modal-open');
     if (!this.destroyed) this.renderCoach();
   }
 
