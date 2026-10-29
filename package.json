@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "deploy": "npm run build && gh-pages -d dist --dotfiles -m 'Deploy site'"
+    "deploy": "vercel --prod",
+    "deploy:gh-pages-legacy": "npm run build && gh-pages -d dist --dotfiles -m 'Deploy site'"
   },
   "keywords": [],
   "author": "",

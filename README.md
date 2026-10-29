@@ -3,10 +3,10 @@
 A static web app that does a Chess.com-style game review in the browser.
 Enter a Chess.com username (or use `?user=NAME`), pick a game, and Stockfish 19 (WASM lite, single-threaded) reviews every move.
 
-Live: https://arunabhpandey2002-oss.github.io/chess-review/
+Live: https://chess-review-ashen.vercel.app/
 
 ## Any Chess.com player can use it
-- Open the site and type a username with the "Change" link, or share a link like `https://arunabhpandey2002-oss.github.io/chess-review/?user=hikaru`.
+- Open the site and type a username with the "Change" link, or share a link like `https://chess-review-ashen.vercel.app/?user=hikaru`.
 - With no `?user=`, it opens on Arunabh-pandey.
 - Games come straight from Chess.com's free public API (`api.chess.com/pub/player/NAME/games/...`), called from the visitor's own browser. No login, key or server is needed, and only public games are shown.
 - The engine runs on the visitor's own device. Nothing is uploaded anywhere. Results are cached in the browser's localStorage.
@@ -29,12 +29,18 @@ Loss = win% before (best move) minus win% after the played move, from the mover'
 - Decided positions (<= 3% or >= 97%): a move that newly hangs a piece of >= 3 points that the engine takes is a Blunder.
 Accuracy uses the Lichess per-move formula 103.1668*exp(-0.04354*loss) - 3.1669 and its volatility-weighted/harmonic game mean.
 
-## Deploy updates (GitHub Pages)
-    git add -A && git commit -m "your change" && git push
-    npm run deploy
+## Deploy updates (Vercel)
+Hosted on Vercel as the project `chess-review`. `vercel.json` sets the build: `npm ci`, `npm run build`, output `dist`.
 
-`npm run deploy` builds the site and pushes `dist/` to the `gh-pages` branch, which GitHub Pages serves. The site updates within a minute or two.
-`base: './'` in vite.config.ts means the build also works on any other static host (Netlify, Vercel) without changes.
+- **Automatic (once Git is connected):** push to `main` and Vercel builds and deploys production. Pushes to other branches get preview URLs.
+    git add -A && git commit -m "your change" && git push
+- **Manual:** `npm run deploy` runs `vercel --prod`. It needs the Vercel CLI (`npm i -g vercel`) and a one-time `vercel login` and `vercel link` to the `chess-review` project.
+
+To turn on automatic deploys: on GitHub, open Settings, Applications, Vercel, Configure, and add `chess-review` to the repositories Vercel can access. Then in Vercel open the project, Settings, Git, and connect `arunabhpandey2002-oss/chess-review`.
+
+Legacy: the site used to be on GitHub Pages (`npm run deploy:gh-pages-legacy`, `gh-pages` branch). Pages is off now that the repo is private.
+
+`base: './'` in vite.config.ts means the build also works on any other static host.
 
 ## Licences
 Stockfish (GPLv3) and chessground (GPLv3) are bundled, so the distributed site is GPLv3; publish this source alongside it.
