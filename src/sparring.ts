@@ -4,7 +4,14 @@ import { Chess, type Color } from 'chess.js';
 import { Chessground } from 'chessground';
 import type { Api as CgApi } from 'chessground/api';
 import type { Key } from 'chessground/types';
-import { EnginePool } from './engine';
+import { EnginePool, type PosEval, type Score } from './engine';
+import { VTree } from './tree';
+import { terminalEval } from './review';
+import { levelForRating, type Level } from './moments';
+import { compareLines, type LineIn } from './compare';
+import { analyseReplay, renderReplayReview, renderCompare } from './replay-view';
+import * as store from './store';
+import { newSrs } from './srs';
 import { winPct } from './classify';
 import type { MomentCore } from './explain';
 import { uciToMove, pvToSan, formatPv } from './tactics';
@@ -17,7 +24,15 @@ interface PosInfo { wp: number; bestUci: string | null }
 
 const colorName = (c: Color) => (c === 'w' ? 'white' : 'black');
 
-export interface SparringOpts { core: MomentCore; rating?: number | null; title: string; onClose?: () => void }
+export interface Original { ucis: string[]; evals: (Score | null)[] }
+export interface SparringOpts {
+  core: MomentCore; rating?: number | null; title: string; onClose?: () => void;
+  level?: Level;
+  /** The game's own continuation from this position (for "Compare with original"); may load lazily. */
+  original?: Original | (() => Promise<Original | null>) | null;
+  /** Where to save the replay locally: profile and the source puzzle/moment id. */
+  profileKey?: string; sourceId?: string;
+}
 
 export class Sparring {
   o: SparringOpts;
@@ -35,6 +50,11 @@ export class Sparring {
   play: EnginePool;
   ana: EnginePool;
   cache = new Map<string, Promise<PosInfo>>();
+  evals = new Map<string, Promise<PosEval | null>>();
+  tree: VTree;
+  node: string;
+  replayId: string;
+  outcomeKind: Outcome | null = null;
   prevFocus: Element | null;
   onHash = () => this.close();
   onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.stopPropagation(); this.close(); } };
@@ -48,6 +68,9 @@ export class Sparring {
     this.play = new EnginePool(1, this.st.options);
     this.ana = new EnginePool(1);
     this.cache.set(this.start, Promise.resolve({ wp: o.core.wpBest, bestUci: o.core.bestUci }));
+    this.tree = new VTree(this.start);
+    this.node = this.tree.root.id;
+    this.replayId = `${o.sourceId ?? 'moment'}|replay|${Date.now().toString(36)}`;
     this.prevFocus = document.activeElement;
     this.ov = document.createElement('div');
     this.ov.className = 'overlay sp-overlay';
@@ -163,6 +186,8 @@ export class Sparring {
     if (!mv) return false;
     this.hist.push({ uci, san: mv.san, fenBefore, by });
     this.fen = c.fen();
+    const n = this.tree.add(this.node, uci, 'replay', { record: false });
+    if (n) this.node = n.id;
     return true;
   }
 
@@ -216,7 +241,9 @@ export class Sparring {
     while (this.hist.length) {
       const h = this.hist.pop()!;
       this.fen = h.fenBefore;
-      if (h.by === this.me) break;
+      const n = this.tree.node(this.node);
+      if (n?.parent) this.node = n.parent;
+      if (h.by === this.me) { if (n) this.tree.markTakenBack(n.id); break; }
     }
     this.sync();
     this.status('Move taken back. Your move.');
@@ -226,6 +253,9 @@ export class Sparring {
     this.gen++;
     this.thinking = false;
     this.over = false;
+    const first = this.tree.path(this.node)[0];
+    if (first) this.tree.markTakenBack(first.id);
+    this.node = this.tree.root.id;
     this.hist = [];
     this.fen = this.start;
     $('#sp-end', this.host).hidden = true;
@@ -240,15 +270,103 @@ export class Sparring {
       const c = new Chess(fen);
       if (c.isCheckmate()) p = Promise.resolve({ wp: c.turn() === this.me ? 0 : 100, bestUci: null });
       else if (c.isDraw()) p = Promise.resolve({ wp: 50, bestUci: null });
-      else p = this.ana.analyse(fen, 12, 1, 1500).then((ev) => ({ wp: ev.lines[0] ? winPct(ev.lines[0].score, this.me) : 50, bestUci: ev.lines[0]?.pv[0] ?? null }));
+      else p = this.pos(fen).then((ev) => ({ wp: ev?.lines[0] ? winPct(ev.lines[0].score, this.me) : 50, bestUci: ev?.lines[0]?.pv[0] ?? null }));
       this.cache.set(fen, p);
     }
     return p;
   }
 
+  /** Engine evaluation of a position for the review (depth 12, two lines), analysed once. */
+  pos(fen: string): Promise<PosEval | null> {
+    let p = this.evals.get(fen);
+    if (!p) {
+      const t = terminalEval(fen);
+      p = t ? Promise.resolve(t) : this.ana.analyse(fen, 12, 2, 1500).catch(() => null);
+      this.evals.set(fen, p);
+    }
+    return p;
+  }
+
+  async loadOriginal(): Promise<Original | null> {
+    const o = this.o.original;
+    if (!o) return null;
+    if (typeof o === 'function') { try { this.o.original = await o(); } catch { this.o.original = null; } return this.o.original as Original | null; }
+    return o;
+  }
+
+  /** Save this replay (all attempts, including taken-back moves) on this device. */
+  async persist(extra: Partial<store.StoredReplay> = {}) {
+    if (!this.o.profileKey) return;
+    const orig = await this.loadOriginal();
+    const rec: store.StoredReplay = {
+      id: this.replayId, profileKey: this.o.profileKey, sourceId: this.o.sourceId ?? '', startFen: this.start, myColor: this.me,
+      line: this.hist.map((h) => h.uci), original: orig?.ucis ?? [], tree: this.tree.json(), outcome: this.outcomeKind ?? 'stopped', createdAt: Date.now(), ...extra,
+    };
+    try { const old = await store.get<store.StoredReplay>('replays', rec.id); await store.put('replays', { ...old, ...rec, createdAt: old?.createdAt ?? rec.createdAt }); } catch { /* storage unavailable */ }
+  }
+
+  get level(): Level { return this.o.level ?? levelForRating(this.o.rating); }
+
+  /** "Review this game": the same review pipeline as a real game, on the played-out line. */
+  async reviewThis() {
+    const el = $('#sp-end', this.host);
+    const g = this.gen;
+    el.innerHTML = '<p class="muted" role="status">Reviewing your replay with the engine…</p>';
+    const fens = [this.start, ...this.hist.map((h) => this.after(h))];
+    const evals = await Promise.all(fens.map((f) => this.pos(f)));
+    if (g !== this.gen) return;
+    const data = analyseReplay(this.start, this.hist.map((h) => h.uci), evals, this.me, this.level);
+    await this.persist({ evals: evals.map((e) => e?.lines[0]?.score ?? null), reviewedAt: Date.now() });
+    renderReplayReview(el, data, { level: this.level, nt: this.nt, hasOriginal: !!this.o.original,
+      onCompare: () => this.compare(), onAgain: () => this.restart(),
+      onSave: this.o.profileKey ? (m) => this.savePuzzle(m) : undefined });
+    (window as any).__replayReview = data;
+  }
+
+  async savePuzzle(m: import('./coach').Moment): Promise<boolean> {
+    if (!this.o.profileKey) return false;
+    const src = this.o.sourceId ?? '';
+    const [, gameId = 'replay'] = src.split('|');
+    try {
+      await store.savePuzzle({ id: `${this.replayId}|${m.ply}`, profileKey: this.o.profileKey, gameId, gameUrl: '', platform: 'replay', white: this.me === 'w' ? 'You' : 'Engine', black: this.me === 'b' ? 'You' : 'Engine',
+        endTime: Math.floor(Date.now() / 1000), phase: m.phase, core: m, srs: newSrs(Date.now()), createdAt: Date.now(), rating: this.o.rating ?? null, source: 'replay' });
+      return true;
+    } catch { return false; }
+  }
+
+  /** "Compare with original": both lines from the shared position, aligned, with divergences explained. */
+  async compare() {
+    const el = $('#sp-end', this.host);
+    const g = this.gen;
+    el.innerHTML = '<p class="muted" role="status">Lining up your replay with the game…</p>';
+    const orig = await this.loadOriginal();
+    if (g !== this.gen) return;
+    if (!orig || !orig.ucis.length) { el.innerHTML = '<p class="muted">The original game continuation is not available on this device.</p>'; return; }
+    const n = Math.min(orig.ucis.length, Math.max(this.hist.length, 12) + 2, 40);
+    const ucis = orig.ucis.slice(0, n);
+    const ofens: string[] = [this.start];
+    { const c = new Chess(this.start); for (const u of ucis) { if (!uciToMove(c, u)) break; ofens.push(c.fen()); } }
+    const oev = await Promise.all(ofens.map(async (f, i) => orig.evals[i] ?? (await this.pos(f))?.lines[0]?.score ?? termScore(f)));
+    const rfens = [this.start, ...this.hist.map((h) => this.after(h))];
+    const rev = await Promise.all(rfens.map(async (f) => (await this.pos(f))?.lines[0]?.score ?? termScore(f)));
+    // the start position: use the same number for both lines
+    rev[0] = oev[0] = oev[0] ?? rev[0];
+    const taken: LineIn[] = this.tree.branches().filter((b) => b.some((x) => x.kind === 'taken-back')).slice(0, 6).map((b) => ({ id: 'taken-back', ucis: b.map((x) => x.uci), evals: [] }));
+    for (const t of taken) {
+      const fs = [this.start]; const c = new Chess(this.start); for (const u of t.ucis) { uciToMove(c, u); fs.push(c.fen()); }
+      t.evals = await Promise.all(fs.map(async (f) => (await this.pos(f))?.lines[0]?.score ?? termScore(f)));
+    }
+    if (g !== this.gen) return;
+    const cmp = compareLines(this.start, this.me, { id: 'original', ucis, evals: oev }, { id: 'replay', ucis: this.hist.map((h) => h.uci), evals: rev }, taken);
+    renderCompare(el, cmp, { nt: this.nt, onBack: () => this.reviewThis(), onAgain: () => this.restart() });
+    (window as any).__compare = cmp;
+  }
+
   async end(outcome: Outcome) {
     if (this.over) return;
     this.over = true;
+    this.outcomeKind = outcome;
+    void this.persist();
     this.gen++;
     this.thinking = false;
     this.sync();
@@ -272,8 +390,10 @@ export class Sparring {
       el.innerHTML = `
         <h3>${esc(s.result)}</h3>
         <ul class="sp-take">${s.takeaways.map((t) => `<li>${this.txt(t.text)} ${srcChip(t.src)}</li>`).join('')}</ul>
-        <div class="tr-after"><button class="btn primary" id="sp-again">Play again from the start</button></div>`;
+        <div class="tr-after"><button class="btn primary" id="sp-review">Review this game</button>${this.o.original ? '<button class="btn" id="sp-compare">Compare with original</button>' : ''}<button class="btn ghost" id="sp-again">Play again</button></div>`;
       $('#sp-again', this.host).onclick = () => this.restart();
+      $('#sp-review', this.host).onclick = () => this.reviewThis();
+      const cb = $('#sp-compare', this.host); if (cb) cb.onclick = () => this.compare();
       this.status(esc(s.result), outcome === 'mate-win' ? 'good' : outcome === 'mate-loss' || outcome === 'resigned' ? 'bad' : '');
       (window as any).__sparringSummary = s;
     } catch {
@@ -297,5 +417,12 @@ export class Sparring {
     this.o.onClose?.();
   }
 }
+
+const termScore = (fen: string): Score | null => {
+  const c = new Chess(fen);
+  if (c.isCheckmate()) return { cp: c.turn() === 'w' ? -100000 : 100000, mate: 0 };
+  if (c.isGameOver()) return { cp: 0, mate: null };
+  return null;
+};
 
 export function openSparring(o: SparringOpts): Sparring { return new Sparring(o); }

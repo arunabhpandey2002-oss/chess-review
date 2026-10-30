@@ -46,3 +46,13 @@ export function topInsight(reviews: ReviewLike[]): { text: string; note: string;
 export function dueCount(items: { srs: SrsState }[], now: number): number {
   return items.filter((p) => isDue(p.srs, now)).length;
 }
+
+/** How much a recurring pattern can be trusted, from how many games show it out of how many were reviewed. */
+export type Evidence = 'anecdote' | 'possible' | 'emerging' | 'stronger';
+export const EVIDENCE_LABEL: Record<Evidence, string> = { anecdote: 'One game only', possible: 'Possible pattern', emerging: 'Emerging pattern', stronger: 'Stronger pattern' };
+export function evidenceLevel(games: number, of: number): Evidence {
+  if (games <= 1) return 'anecdote';
+  if (games >= 5 && of >= 10 && games / of >= 0.4) return 'stronger';
+  if (games >= 3 && of >= 5 && games / of >= 0.3) return 'emerging';
+  return 'possible';
+}

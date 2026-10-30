@@ -6,13 +6,18 @@ import type { Key } from 'chessground/types';
 import { EnginePool, type Score } from './engine';
 import { winPct, CLS_META } from './classify';
 import { judge, type Verdict } from './retry';
-import { buildHints, explainMoment, type MomentCore, type Hint } from './explain';
+import { buildHints, type MomentCore, type Hint } from './explain';
+import { lessonFor } from './lesson';
+import { bandFor, bandSolves, type Band } from './evidence';
+import { ledger } from './ledger';
 import type { Level } from './moments';
 import { MOTIF_INFO, SKILL_LABEL } from './concepts';
 import { uciToMove, pvToSan, formatPv } from './tactics';
 import { lineItems, renderText } from './words';
 import { diagnose, clockOf, CHOICES, VERDICT_LABEL, CAUSE_LABEL, type Diagnosis, type Choice } from './diagnose';
-import { openSparring } from './sparring';
+import { openSparring, type SparringOpts } from './sparring';
+import { put as storePut, type ExplanationReport } from './store';
+const putReport = (r: ExplanationReport) => storePut('reports', r);
 import { $, esc, srcChip, dlgHead, reducedMotion, boardDescription, legalDests, parseTyped } from './ui';
 
 export interface TrainResult { solved: boolean; attempts: number; hints: number; revealed: boolean; close: number; move?: string }
@@ -31,6 +36,10 @@ export interface TrainerOpts {
   /** A saved answer to "what were you thinking"; when set we don't ask again. */
   prior?: Diagnosis | null;
   onDiagnosis?: (d: Diagnosis) => void | Promise<void>;
+  /** Passed to "Play it out": the game's continuation and where to save the replay. */
+  replay?: Pick<SparringOpts, 'original' | 'profileKey' | 'sourceId'>;
+  /** Opens this position in the analysis workspace. */
+  onAnalyse?: (m: MomentCore) => void;
 }
 
 const colorName = (c: Color) => (c === 'w' ? 'white' : 'black');
@@ -51,6 +60,8 @@ export class Trainer {
   finished = false;
   busy = false;
   tried = new Map<string, Verdict>();
+  bands = new Map<string, Band>();
+  lastRecord: import('./evidence').ExplanationRecord | null = null;
   diag: Diagnosis | null = null;
   destroyed = false;
 
@@ -148,19 +159,36 @@ export class Trainer {
     this.tryMove(uci);
   }
 
-  async evalCandidate(uci: string): Promise<Score | null> {
+  async evalCandidate(uci: string): Promise<{ score: Score; pv: string[] } | null> {
     const m = this.o.core;
     const l = m.lines.find((x) => x.pv[0] === uci);
-    if (l) return l.score;
-    if (uci === m.playedUci && m.reply) return m.reply.score;
+    if (l) return { score: l.score, pv: l.pv };
+    if (uci === m.playedUci && m.reply) return { score: m.reply.score, pv: [uci, ...m.reply.pv] };
     const c = new Chess(m.fenBefore);
     if (!uciToMove(c, uci)) return null;
-    if (c.isCheckmate()) return { cp: m.color === 'w' ? 100000 : -100000, mate: m.color === 'w' ? 1 : -1 } as Score;
-    if (c.isDraw()) return { cp: 0, mate: null };
+    if (c.isCheckmate()) return { score: { cp: m.color === 'w' ? 100000 : -100000, mate: m.color === 'w' ? 1 : -1 } as Score, pv: [uci] };
+    if (c.isDraw()) return { score: { cp: 0, mate: null }, pv: [uci] };
     try {
       const ev = await engine().analyse(c.fen(), 16, 1, 4000);
-      return ev.lines[0]?.score ?? null;
+      const ln = ev.lines[0];
+      return ln ? { score: ln.score, pv: [uci, ...ln.pv] } : null;
     } catch { return null; }
+  }
+
+  /** Grade a retry into a band (best / acceptable / playable / fails) and map it to the trainer verdict. */
+  grade(uci: string, sc: { score: Score; pv: string[] }): { verdict: Verdict; band: Band } {
+    const m = this.o.core;
+    const level = this.o.level;
+    const isPlayed = uci === m.playedUci;
+    const onlyMove = new Chess(m.fenBefore).moves().length === 1 || (!!m.lines[1] && m.wpBest - winPct(m.lines[1].score, m.color) >= 15);
+    const band = bandFor({
+      level, legal: true, isPlayed, isBest: uci === m.bestUci, wpBest: m.wpBest, wpPlayed: m.wpPlayed, wpCand: winPct(sc.score, m.color),
+      bestMates: mateFor(m.lines[0].score, m.color), candMates: mateFor(sc.score, m.color), onlyMove,
+      candNet: ledger(m.fenBefore, sc.pv, m.color, 8).netChange, bestNet: ledger(m.fenBefore, m.lines[0].pv, m.color, 8).netChange,
+    });
+    const old = judge({ wpBest: m.wpBest, wpPlayed: m.wpPlayed, wpCand: winPct(sc.score, m.color), isPlayed, bestMates: mateFor(m.lines[0].score, m.color), candMates: mateFor(sc.score, m.color) });
+    const verdict: Verdict = isPlayed ? 'played' : bandSolves(band, level) ? 'correct' : band === 'playable' || old === 'close' ? 'close' : 'wrong';
+    return { verdict, band };
   }
 
   async tryMove(uci: string) {
@@ -179,7 +207,9 @@ export class Trainer {
       const sc = await this.evalCandidate(uci);
       if (this.destroyed) return;
       if (!sc) { this.busy = false; this.attempts--; this.status('Could not check that move. Try again.', 'warn'); this.setBoard(m.fenBefore); return; }
-      verdict = judge({ wpBest: m.wpBest, wpPlayed: m.wpPlayed, wpCand: winPct(sc, m.color), isPlayed: uci === m.playedUci, bestMates: mateFor(m.lines[0].score, m.color), candMates: mateFor(sc, m.color) });
+      const g = this.grade(uci, sc);
+      verdict = g.verdict;
+      this.bands.set(uci, g.band);
       this.tried.set(uci, verdict);
     }
     this.busy = false;
@@ -189,6 +219,7 @@ export class Trainer {
     }
     if (verdict === 'close') this.close++;
     const msg = verdict === 'played' ? `${esc(mv.san)} is the move from the game. Look for something better.`
+      : verdict === 'close' && this.bands.get(uci) === 'playable' ? `${esc(mv.san)} is playable and better than the game move, but at your level look for the move that keeps the full advantage. Try again.`
       : verdict === 'close' ? `${esc(mv.san)} is better than the game move, but there is something stronger. Try again.`
       : `${esc(mv.san)} is not it. Try again${this.hintsShown < 4 ? ', or take a hint' : ''}.`;
     this.status(msg, verdict === 'close' ? 'warn' : 'bad');
@@ -245,7 +276,8 @@ export class Trainer {
     el.innerHTML = `
       <div class="why-card" role="group" aria-labelledby="why-q">
         <h3 id="why-q">In the game you played ${esc(m.playedSan)}. What were you thinking?</h3>
-        <div class="why-chips">${CHOICES.map((c) => `<button class="chip why" data-why="${c.id}">${esc(c.label)}</button>`).join('')}</div>
+        <div class="why-chips">${CHOICES.map((c, i) => `<button class="chip why${i >= 6 ? ' why-more' : ''}" data-why="${c.id}"${i >= 6 ? ' hidden' : ''}>${esc(c.label)}</button>`).join('')}</div>
+        <button class="btn ghost small" id="why-more" aria-expanded="false">More answers</button>
         <button class="btn ghost small" id="why-skip">Skip</button>
       </div>`;
     el.querySelectorAll<HTMLButtonElement>('[data-why]').forEach((b) => (b.onclick = async () => {
@@ -255,6 +287,11 @@ export class Trainer {
       try { await this.o.onDiagnosis?.(d); } catch (e) { console.warn('could not save diagnosis', e); }
     }));
     $('#why-skip', this.host).onclick = () => this.showAnswer(solved, uci, san);
+    $('#why-more', this.host).onclick = (e) => {
+      el.querySelectorAll<HTMLElement>('.why-more').forEach((x) => (x.hidden = false));
+      (e.currentTarget as HTMLElement).remove();
+      (el.querySelector('.why-more') as HTMLElement | null)?.focus({ preventScroll: true });
+    };
     (el.querySelector('[data-why]') as HTMLElement | null)?.focus({ preventScroll: true });
   }
 
@@ -262,7 +299,8 @@ export class Trainer {
     const m = this.o.core;
     this.cg.setAutoShapes([{ orig: m.bestUci.slice(0, 2) as Key, dest: m.bestUci.slice(2, 4) as Key, brush: 'green' }]);
     const isBest = uci === m.bestUci;
-    if (solved) this.status(`✓ ${esc(san)} works${isBest ? '. It is the engine\'s top choice' : `. The engine's top choice was ${esc(m.bestSan)}, but yours is good enough`}. Solved in ${this.attempts} ${this.attempts === 1 ? 'try' : 'tries'}${this.hintsShown ? ` with ${this.hintsShown} hint${this.hintsShown > 1 ? 's' : ''}` : ''}.`, 'good');
+    const band = this.bands.get(uci);
+    if (solved) this.status(`✓ ${esc(san)} works${isBest ? '. It is the engine\'s top choice' : band === 'playable' ? `. It is playable: it keeps most of the advantage, though ${esc(m.bestSan)} keeps more` : `. The engine slightly prefers ${esc(m.bestSan)}, but yours solves the same problem`}. Solved in ${this.attempts} ${this.attempts === 1 ? 'try' : 'tries'}${this.hintsShown ? ` with ${this.hintsShown} hint${this.hintsShown > 1 ? 's' : ''}` : ''}.`, 'good');
     else this.status(`The answer is ${esc(m.bestSan)}. This position will come back soon so you can try it again.`, 'warn');
     this.drawLesson(uci);
   }
@@ -272,15 +310,16 @@ export class Trainer {
     if (!d) return '';
     const choice = CHOICES.find((c) => c.id === d.choice)?.label ?? '';
     return `<div class="lsec diag" id="tr-diag"><h3>Why it went wrong</h3>
-      <p class="muted">You said: “${esc(choice)}”. <b class="verdict ${d.verdict}">${esc(VERDICT_LABEL[d.verdict])}.</b></p>
+      <p class="muted">You said: “${esc(choice)}”. <b class="verdict ${d.verdict}">${esc(d.summary ?? VERDICT_LABEL[d.verdict])}.</b></p>
       ${d.lines.map((l) => `<p>${esc(renderText(l.text, nt ? 'san' : 'words'))} ${srcChip(l.src)}</p>`).join('')}
-      <p class="muted small">Saved as: ${esc(CAUSE_LABEL[d.cause])}</p></div>`;
+      <p class="muted small">Saved as: ${esc(CAUSE_LABEL[d.cause])}${d.category ? ` · practice area: ${esc(d.category)}` : ''}</p></div>`;
   }
 
   drawLesson(movedUci: string) {
     const m = this.o.core;
     const nt = localStorage.getItem('cr-notation') === '1';
-    const lesson = explainMoment(m, this.o.level);
+    const lesson = lessonFor(m, { level: this.o.level, response: this.diag?.choice ?? null });
+    this.lastRecord = lesson.record;
     const best = m.lines[0];
     const lineText = nt ? esc(formatPv(m.fenBefore, pvToSan(m.fenBefore, best.pv, lesson.linePlies)))
       : `<ol class="pvw">${lineItems(m.fenBefore, best.pv, lesson.linePlies).map((t) => `<li>${esc(t)}</li>`).join('')}</ol>`;
@@ -291,15 +330,34 @@ export class Trainer {
     el.hidden = false;
     el.innerHTML = `
       ${this.diagnosisHtml(nt)}
-      <div class="lesson-tags"><span class="tag">${esc(MOTIF_INFO[t.motif].name)}</span><span class="tag">${esc(SKILL_LABEL[t.skill])}</span><span class="tag cls" style="background:${cm.color};color:${cm.fg}">${cm.icon} ${esc(cm.label)}</span> ${srcChip('formula')}</div>
+      <div class="lesson-tags"><span class="tag">${esc(lesson.record.primaryConcept)}</span>${lesson.record.secondaryConcept ? `<span class="tag">${esc(lesson.record.secondaryConcept)}</span>` : ''}${lesson.lowConfidence ? '<span class="tag">Mainly positional</span>' : ''}<span class="tag cls" style="background:${cm.color};color:${cm.fg}">${cm.icon} ${esc(cm.label)}</span> ${srcChip('formula')}</div>
       ${lesson.sections.map((s) => `<div class="lsec"><h3>${esc(s.label)} ${srcChip(s.src)}</h3><p>${esc(renderText(s.text, nt ? 'san' : 'words'))}</p></div>`).join('')}
       <div class="lsec"><h3>Best line ${srcChip('engine')}</h3>${lineText}</div>
       ${replyText ? `<div class="lsec"><h3>What happens after ${esc(m.playedSan)} ${srcChip('engine')}</h3>${replyText}</div>` : ''}
       <div class="tr-after">
         <button class="btn" id="tr-playout">Play it out vs the engine</button>
+        ${this.o.onAnalyse ? '<button class="btn ghost" id="tr-analyse">Open in analysis</button>' : ''}
         ${this.o.onNext ? `<button class="btn primary" id="tr-next">${esc(this.o.nextLabel ?? 'Next')}</button>` : ''}
-      </div>`;
-    $('#tr-playout', this.host).onclick = () => openSparring({ core: m, rating: this.o.rating, title: `Play it out · move ${m.moveNumber}` });
+      </div>
+      <details class="tr-report"><summary>Something wrong with this explanation?</summary>
+        <form id="tr-rep"><fieldset><legend class="muted small">It is…</legend>
+          <label><input type="radio" name="rk" value="incorrect" required> Incorrect</label><label><input type="radio" name="rk" value="unclear"> Unclear</label><label><input type="radio" name="rk" value="too-advanced"> Too advanced</label></fieldset>
+          <label class="muted small" for="tr-rnote">What should it say? (optional)</label><textarea id="tr-rnote" rows="2" maxlength="500"></textarea>
+          <button class="btn sm">Save report</button> <span class="small" id="tr-rmsg" role="status" aria-live="polite"></span>
+          <p class="muted small">Saved on this device with the position and the facts used, and included in your data export. Nothing is sent anywhere.</p></form></details>`;
+    $('#tr-rep', this.host).onsubmit = async (e) => {
+      e.preventDefault();
+      const kind = (this.host.querySelector<HTMLInputElement>('input[name="rk"]:checked')?.value ?? 'unclear') as 'incorrect' | 'unclear' | 'too-advanced';
+      const pk = this.o.replay?.profileKey ?? 'local';
+      const puzzleId = this.o.replay?.sourceId ?? `${m.fenBefore}|${m.playedUci}`;
+      try {
+        await putReport({ id: `${puzzleId}|${Date.now().toString(36)}`, profileKey: pk, puzzleId, kind, note: $<HTMLTextAreaElement>('#tr-rnote', this.host).value.slice(0, 500), level: this.o.level,
+          record: { ...lesson.record, fen: m.fenBefore, played: m.playedUci, best: m.bestUci }, text: lesson.sections.map((x) => `${x.label}: ${x.text}`).join('\n'), createdAt: Date.now() });
+        $('#tr-rmsg', this.host).textContent = 'Thanks, saved. You can export it from Data.';
+      } catch { $('#tr-rmsg', this.host).textContent = 'Could not save the report.'; }
+    };
+    $('#tr-playout', this.host).onclick = () => openSparring({ core: m, rating: this.o.rating, level: this.o.level, title: `Play it out · move ${m.moveNumber}`, ...this.o.replay });
     if (this.o.onNext) $('#tr-next', this.host).onclick = () => this.o.onNext!();
+    if (this.o.onAnalyse) $('#tr-analyse', this.host).onclick = () => this.o.onAnalyse!(m);
   }
 }

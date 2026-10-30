@@ -21,6 +21,11 @@ import * as store from './store';
 import type { Puzzle, StoredReview } from './store';
 import { Trainer, releaseTrainerEngine } from './trainer';
 import { openSparring } from './sparring';
+import { originalFrom } from './original';
+import { coachFor, saveReview } from './persist';
+import { batch } from './batch';
+import { renderWorkspace, destroyWorkspace, createWorkspace, lessonDoc } from './workspace';
+import { renderBatchPanel } from './batch-ui';
 import { renderHomePanel, renderPuzzles, renderTrain, renderHistory, renderImport, renderData, destroyTrainer, recordAttempt, recordDiagnosis, newPuzzle, rememberGame, storedGame, SITE_LABEL, type Ctx, type Site } from './pages';
 import { $, esc, cap, srcChip, applyMotionClass, reducedMotion, boardDescription } from './ui';
 import { isDue } from './srs';
@@ -49,7 +54,7 @@ const bookPromise = fetch(`${import.meta.env.BASE_URL}book.json`).then((r) => r.
 function params() {
   const p = new URLSearchParams(location.search);
   const site = (p.get('site') === 'lichess' ? 'lichess' : 'chesscom') as Site;
-  return { user: p.get('user') || DEFAULT_USER, site, game: p.get('game'), view: p.get('view'), ply: p.get('ply'), p: p.get('p'), tag: p.get('tag') };
+  return { user: p.get('user') || DEFAULT_USER, site, game: p.get('game'), view: p.get('view'), ply: p.get('ply'), p: p.get('p'), tag: p.get('tag'), ws: p.get('ws') };
 }
 function navigate(q: Record<string, string | null>, replace = false) {
   const p = new URLSearchParams(location.search);
@@ -104,24 +109,27 @@ function renderHeader() {
 // ---------------- routing ----------------
 let currentReview: ReviewView | null = null;
 async function route() {
-  const { user, site, game, view, ply, p, tag } = params();
+  const { user, site, game, view, ply, p, tag, ws } = params();
   if (user.toLowerCase() !== state.user.toLowerCase() || site !== state.site) {
     state.user = user; state.site = site; state.archives = []; state.loadedMonths = 0; state.exhausted = false; state.games = []; state.gamesById.clear(); state.profile = null; state.rating = 0;
     renderHeader();
     const prof = site === 'lichess' ? fetchLichessProfile(user) : fetchProfile(user);
     prof.then((pr) => { if (state.user === user) { state.profile = pr; renderHeader(); } }).catch(() => {});
     store.ensureProfile(site, user).catch(() => {});
+    void bookPromise.then(() => batch.restore(pk(), book)).catch(() => {});
   }
   document.title = game ? 'Game Review · rook-i.e. mistakes' : `${state.user} · rook-i.e. mistakes`;
   renderTabs(game ? '' : view ?? '');
   if (!game || view) { currentReview?.destroy(); currentReview = null; }
   if (view !== 'train') destroyTrainer();
+  if (view !== 'analysis') destroyWorkspace();
   try {
     if (view === 'puzzles') return await renderPuzzles(ctx, tag);
     if (view === 'train') return await renderTrain(ctx, p);
     if (view === 'history') return await renderHistory(ctx);
     if (view === 'import') return await renderImport(ctx);
     if (view === 'data') return await renderData(ctx);
+    if (view === 'analysis') { document.title = 'Analysis · rook-i.e. mistakes'; return await renderWorkspace(app, pk(), ws ?? undefined, () => (history.length > 1 ? history.back() : navigate({ view: null, ws: null }))); }
   } catch (e) { app.innerHTML = `<div class="error">Something went wrong: ${esc(String((e as Error)?.message ?? e))}</div>`; return; }
   if (game) {
     if (currentReview && currentReview.game.id === game) { if (ply) currentReview.go(+ply); return; }
@@ -195,11 +203,17 @@ async function renderGameList() {
   app.innerHTML = `
     <section class="games">
       <div id="home-panel"></div>
+      <div id="batch-panel" class="batch-panel"></div>
       <div class="games-head"><h1>Recent games</h1><span class="muted" id="games-sub"></span></div>
       <div id="game-list" class="game-list"><div class="loading">Loading games…</div></div>
       <div class="more"><button class="btn" id="more" hidden>Load older games</button></div>
     </section>`;
   renderHomePanel($('#home-panel'), ctx).catch(() => { $('#home-panel').innerHTML = ''; });
+  renderBatchPanel($('#batch-panel'), {
+    pk: pk(), user: state.user, level: ctx.level(), rating: state.rating || null, games: () => state.games,
+    loadMore: async () => { try { const more = await loadNextMonth(); drawGameList(); return more; } catch { return false; } },
+    book: () => book, openGame: (id) => navigate({ game: id }), train: () => navigate({ view: 'train', p: null }),
+  }).catch(() => { $('#batch-panel').innerHTML = ''; });
   try {
     if (!state.loadedMonths) {
       await loadNextMonth();
@@ -335,6 +349,7 @@ class ReviewView {
     this.resizeObs?.disconnect();
     pool?.destroy();
     pool = null;
+    void batch.hold(false);
     this.cg?.destroy();
   }
 
@@ -420,6 +435,7 @@ class ReviewView {
     this.done = this.evals.filter(Boolean).length;
     this.recompute();
     if (this.done === fens.length) { this.drawProgress(); return; }
+    void batch.hold(true);
     const myPool = (pool = new EnginePool(EnginePool.defaultSize()));
     const t0 = performance.now();
     fens.forEach((fen, i) => {
@@ -433,6 +449,7 @@ class ReviewView {
           console.info(`analysis done in ${((performance.now() - t0) / 1000).toFixed(1)}s`);
           myPool.destroy();
           if (pool === myPool) pool = null;
+          void batch.hold(false);
         }
         this.scheduleRecompute();
       }).catch(() => {});
@@ -691,43 +708,18 @@ class ReviewView {
     const key = `${this.depthKey}|${this.level}`;
     if (this.coachKey !== key) {
       this.coachKey = key;
-      this.moments = buildMoments(this.plies, this.evals, this.reviews, this.me, this.level, this.game.timeControl);
-      const g = this.game;
-      const meSide = this.me === 'w' ? g.white : g.black;
-      const opp = this.me === 'w' ? g.black : g.white;
-      const res = resultFor(g, meSide.username);
-      const reasonKey = res === 'win' ? opp.result : meSide.result;
-      const reason = REASONS[reasonKey] ?? reasonKey;
-      const resultText = res === 'win' ? `You won by ${reason}` : res === 'loss' ? `You lost by ${reason}` : `The game was drawn by ${reason}`;
-      this.coachSummary = buildSummary({ plies: this.plies, evals: this.evals, reviews: this.reviews, me: this.me, moments: this.moments, opening: g.opening, opponent: opp.username, resultText, timeControl: g.timeControl });
+      const c = coachFor(this.game, this.me, this.plies, this.evals, this.reviews, this.level);
+      this.moments = c.moments;
+      this.coachSummary = c.summary;
       this.persist().then(() => this.renderCoach()).catch((e) => { console.warn('could not save review', e); this.renderCoach(); });
     }
     this.renderCoach();
   }
 
   async persist() {
-    const g = this.game;
-    const key = pk();
-    const s = this.coachSummary!;
-    const sum = summarize(this.plies, this.evals, this.reviews);
-    const meSide = this.me === 'w' ? g.white : g.black;
-    await rememberGame(key, g, this.me);
-    const rv: StoredReview = {
-      key: `${key}|${g.id}`, profileKey: key, gameId: g.id, platform: g.platform ?? 'chesscom', url: g.url,
-      white: g.white.username, black: g.black.username, myColor: this.me, result: resultFor(g, meSide.username), opening: g.opening, endTime: g.endTime,
-      accuracy: this.me === 'w' ? sum.accW : sum.accB, errorTags: s.errorTags,
-      moments: this.moments.map((m) => ({ ply: m.ply, tag: m.tags.primary.id, moveNumber: m.moveNumber })),
-      story: renderText(s.story.join(' '), 'san'), reviewedAt: Date.now(),
-    };
-    await store.put('reviews', rv);
-    for (const m of this.moments) {
-      const p = await store.savePuzzle(newPuzzle({
-        id: `${key}|${g.id}|${m.ply}`, profileKey: key, gameId: g.id, gameUrl: g.url, platform: g.platform ?? 'chesscom',
-        white: g.white.username, black: g.black.username, endTime: g.endTime, phase: m.phase,
-        core: { ...m, lines: m.lines, reply: m.reply }, rating: this.myRating || null,
-      }));
-      this.puzzles.set(m.ply, p);
-    }
+    const saved = await saveReview(pk(), this.game, this.me, this.plies, this.evals, this.reviews, this.moments, this.coachSummary!, this.myRating || null,
+      { analysis: { mode: 'full', depth: DEPTHS[this.depthKey]?.depth ?? 18 } });
+    for (const [k, p] of saved) this.puzzles.set(k, p);
     renderTabs('');
   }
 
@@ -789,9 +781,15 @@ class ReviewView {
     el.querySelectorAll<HTMLButtonElement>('[data-retry]').forEach((b) => (b.onclick = () => this.openTrainer(+b.dataset.retry!)));
     el.querySelectorAll<HTMLButtonElement>('[data-play]').forEach((b) => (b.onclick = () => {
       const m = this.moments[+b.dataset.play!];
-      if (m) openSparring({ core: m, rating: this.myRating, title: `Play it out · move ${m.moveNumber}` });
+      if (m) openSparring({ core: m, rating: this.myRating, level: this.level, title: `Play it out · move ${m.moveNumber}`, ...this.replayLink(m) });
     }));
     el.querySelectorAll<HTMLButtonElement>('[data-show]').forEach((b) => (b.onclick = () => { this.go(+b.dataset.show! + 1); $('#board').scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' }); }));
+  }
+
+  /** Links a play-out to this game: its own continuation (for "Compare with original") and where to save. */
+  replayLink(m: Moment) {
+    const key = pk();
+    return { original: originalFrom(this.plies, this.evals, m.fenBefore, m.playedUci), profileKey: key, sourceId: `${key}|${this.game.id}|${m.ply}` };
   }
 
   openTrainer(i: number) {
@@ -824,6 +822,8 @@ class ReviewView {
         const p = this.puzzles.get(m.ply);
         if (p) this.puzzles.set(m.ply, await recordDiagnosis(p, d));
       },
+      replay: this.replayLink(m),
+      onAnalyse: async (mm) => { const id = await createWorkspace(pk(), lessonDoc(mm, mm.color, `${g.white.username} vs ${g.black.username} · move ${mm.moveNumber}`)); this.closeTrainer(); navigate({ view: 'analysis', ws: id }); },
       onNext: () => (i + 1 < this.moments.length ? this.openTrainer(i + 1) : this.closeTrainer()),
       nextLabel: i + 1 < this.moments.length ? 'Next moment' : 'Back to review',
     });

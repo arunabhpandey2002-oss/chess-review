@@ -8,14 +8,22 @@ import { MOTIF_INFO } from './concepts';
 import { allowedSquares, groundCheck, type MomentCore, type Source } from './explain';
 import { tokMove } from './words';
 
-export type Choice = 'no-see' | 'thought-safe' | 'attacking' | 'missed-better' | 'time';
-export const CHOICES: { id: Choice; label: string }[] = [
-  { id: 'no-see', label: "I didn't see their threat" },
-  { id: 'thought-safe', label: 'I saw it but thought I was safe' },
-  { id: 'attacking', label: 'I was attacking something else' },
-  { id: 'missed-better', label: 'I missed a better move for me' },
-  { id: 'time', label: 'I was short on time / guessed' },
+export type Choice = 'no-see' | 'misjudged' | 'stopped-early' | 'assumed-recapture' | 'attacking' | 'thought-safe' | 'missed-better' | 'too-fast' | 'time' | 'dont-remember' | 'other';
+/** The thinking questionnaire. Old saved ids (no-see, thought-safe, attacking, missed-better, time) keep their meaning. */
+export const CHOICES: { id: Choice; label: string; category: string }[] = [
+  { id: 'no-see', label: "I didn't notice their threat", category: 'Threat awareness' },
+  { id: 'misjudged', label: 'I noticed it but misjudged it', category: 'Evaluation' },
+  { id: 'stopped-early', label: 'I stopped calculating too early', category: 'Calculation depth' },
+  { id: 'assumed-recapture', label: 'I assumed I could recapture', category: 'Calculation depth' },
+  { id: 'attacking', label: 'I was focused on my own attack', category: 'Opponent-threat awareness' },
+  { id: 'thought-safe', label: 'I thought the piece was defended', category: 'Piece safety' },
+  { id: 'missed-better', label: "I didn't consider another move", category: 'Forcing-move discipline' },
+  { id: 'too-fast', label: 'I moved too quickly', category: 'Decision process' },
+  { id: 'time', label: 'I was low on time', category: 'Time management' },
+  { id: 'dont-remember', label: "I don't remember", category: '' },
+  { id: 'other', label: 'Something else', category: '' },
 ];
+export const categoryOf = (c: Choice) => CHOICES.find((x) => x.id === c)?.category ?? '';
 
 export type Cause = 'missed-threat' | 'misjudged-safety' | 'tunnel-vision' | 'missed-chance' | 'time' | 'unclear';
 export const CAUSE_LABEL: Record<Cause, string> = {
@@ -27,11 +35,19 @@ export const CAUSE_LABEL: Record<Cause, string> = {
   unclear: 'Positional choice',
 };
 /** Which cause each answer claims, so we can say whether the facts agree. */
-const CLAIM: Record<Choice, Cause> = { 'no-see': 'missed-threat', 'thought-safe': 'misjudged-safety', attacking: 'tunnel-vision', 'missed-better': 'missed-chance', time: 'time' };
+const CLAIM: Record<Choice, Cause> = {
+  'no-see': 'missed-threat', misjudged: 'misjudged-safety', 'stopped-early': 'missed-threat', 'assumed-recapture': 'misjudged-safety', attacking: 'tunnel-vision',
+  'thought-safe': 'misjudged-safety', 'missed-better': 'missed-chance', 'too-fast': 'time', time: 'time', 'dont-remember': 'unclear', other: 'unclear',
+};
+/** What each cause looks like on the board, for "matches part: X, but also Y". */
+const CAUSE_PART: Record<Cause, string> = {
+  'missed-threat': 'there was a threat to deal with', 'misjudged-safety': 'the piece was not as safe as it looked', 'tunnel-vision': 'your move did aim at something',
+  'missed-chance': 'a stronger move was available', time: 'the clock was short', unclear: 'the move was a positional choice',
+};
 
-export type Verdict = 'matches' | 'partly' | 'differs';
+export type Verdict = 'matches' | 'partly' | 'differs' | 'unchecked';
 export interface DiagLine { text: string; src: Source }
-export interface Diagnosis { choice: Choice; cause: Cause; verdict: Verdict; lines: DiagLine[]; t: number }
+export interface Diagnosis { choice: Choice; cause: Cause; verdict: Verdict; lines: DiagLine[]; t: number; summary?: string; category?: string }
 
 const NAME: Record<PieceSymbol, string> = { p: 'pawn', n: 'knight', b: 'bishop', r: 'rook', q: 'queen', k: 'king' };
 const opp = (c: Color): Color => (c === 'w' ? 'b' : 'w');
@@ -241,10 +257,42 @@ export function diagnose(m: MomentCore, choice: Choice, clock?: ClockFacts | nul
       lines.push(sBest(f));
       if (f.allowed) lines.push(...core(f, actual).slice(0, 1));
       break;
+    case 'misjudged':
+      if (f.allowed && f.target && (f.target.defenders.length || f.target.cheaper)) { verdict = 'matches'; lines.push(...[sSafety(f), sPunish(f)].filter((x): x is DiagLine => !!x).slice(0, 2)); }
+      else if (f.allowed) { verdict = 'partly'; lines.push(...core(f, actual)); }
+      else { verdict = 'differs'; lines.push({ text: `After ${f.played} the engine finds no way for them to win material or mate.`, src: 'engine' }, sBest(f)); }
+      break;
+    case 'stopped-early': {
+      const firstLoss = lossPly(m);
+      if (f.allowed && (f.mateIn != null ? f.mateIn >= 2 : firstLoss >= 3)) { verdict = 'matches'; lines.push({ text: f.mateIn != null ? `The mate takes ${f.mateIn} moves, so it only shows up if you look several moves ahead.` : `The material is lost ${Math.ceil(firstLoss / 2)} moves into the engine line, beyond a short calculation.`, src: 'engine' }, ...core(f, actual).slice(0, 1)); }
+      else if (f.allowed) { verdict = 'partly'; lines.push({ text: `The loss comes right away, on their first reply, so it was visible without a long calculation.`, src: 'engine' }, ...core(f, actual).slice(0, 1)); }
+      else { verdict = f.missedChance ? 'matches' : 'differs'; lines.push(sBest(f)); }
+      break;
+    }
+    case 'assumed-recapture': {
+      const t = f.target;
+      if (f.allowed && t && t.defenders.length && (t.defenderPinned || t.defenderAttacked || t.cheaper || t.attackers > t.defenders.length)) { verdict = 'matches'; lines.push(...[sSafety(f), sPunish(f)].filter((x): x is DiagLine => !!x).slice(0, 2)); }
+      else if (f.allowed && t && !t.defenders.length) { verdict = 'differs'; lines.push({ text: `There was no recapture: after ${f.played}, nothing defended your ${NAME[t.type]} on ${t.sq}.`, src: 'rules' }, ...[sPunish(f)].filter((x): x is DiagLine => !!x)); }
+      else if (f.allowed) { verdict = 'partly'; lines.push(...core(f, actual)); }
+      else { verdict = 'differs'; lines.push({ text: `After ${f.played} the engine finds no way for them to win material or mate.`, src: 'engine' }, sBest(f)); }
+      break;
+    }
+    case 'too-fast': {
+      const sp = f.clock?.spent;
+      if (sp == null) { verdict = 'unchecked'; lines.push({ text: 'No move times were recorded for this game, so the speed of the move cannot be checked.', src: 'rules' }); }
+      else if (sp <= 5) { verdict = 'matches'; cause = actual === 'unclear' ? 'time' : actual; lines.push(sClock(f)!); }
+      else { verdict = 'differs'; lines.push({ text: `${sClock(f)!.text.replace(/\.$/, '')}, which is not a rushed move.`, src: 'rules' }); }
+      lines.push(...core(f, actual).slice(0, 1));
+      break;
+    }
+    case 'dont-remember': case 'other':
+      verdict = 'unchecked';
+      lines.push(...core(f, actual));
+      break;
     case 'time': {
       const short = shortOnTime(f.clock);
       const ck = sClock(f);
-      if (short == null) { verdict = 'partly'; lines.push({ text: 'No clock times were recorded for this game, so time pressure cannot be checked.', src: 'rules' }); }
+      if (short == null) { verdict = 'unchecked'; lines.push({ text: 'No clock times were recorded for this game, so time pressure cannot be checked.', src: 'rules' }); }
       else if (short) { verdict = 'matches'; cause = 'time'; lines.push(ck!); }
       else { verdict = 'differs'; lines.push({ text: `${ck!.text.replace(/\.$/, '')}, so the clock was not short.`, src: 'rules' }); }
       lines.push(...core(f, actual).slice(0, 1));
@@ -254,10 +302,31 @@ export function diagnose(m: MomentCore, choice: Choice, clock?: ClockFacts | nul
   // Every sentence must name only squares that exist in the position or the lines.
   const allowedSq = allowedSquares(m);
   const safe = lines.filter((l) => groundCheck(l.text.replace(/⟦[^⟧]*⟧/g, ''), allowedSq));
-  return { choice, cause, verdict: verdict!, lines: safe.slice(0, 3), t: now };
+  return { choice, cause, verdict: verdict!, lines: safe.slice(0, 3), t: now, summary: verdictSummary(choice, verdict!, actual), category: categoryOf(choice) };
 }
 
-export const VERDICT_LABEL: Record<Verdict, string> = { matches: 'That matches the board', partly: 'Partly', differs: 'The board says otherwise' };
+/** First ply (1-based, after the game move) at which the reply line takes our material. */
+function lossPly(m: MomentCore): number {
+  const c = new Chess(m.fenAfter);
+  const pv = m.reply?.pv ?? [];
+  for (let i = 0; i < Math.min(pv.length, 12); i++) {
+    const x = uciToMove(c, pv[i]);
+    if (!x) break;
+    if (x.captured && x.color !== m.color) return i + 1;
+  }
+  return 99;
+}
+
+/** One specific sentence instead of a vague "Partly". */
+export function verdictSummary(choice: Choice, v: Verdict, actual: Cause): string {
+  const claimed = CAUSE_PART[CLAIM[choice]];
+  if (v === 'matches') return 'That matches the board';
+  if (v === 'unchecked') return choice === 'dont-remember' || choice === 'other' ? 'Here is what the board shows' : 'This cannot be checked from the game record';
+  if (v === 'differs') return `The board says otherwise: ${CAUSE_PART[actual]}`;
+  return CLAIM[choice] === actual ? `Matches part: ${claimed}, but the details differ` : `Matches part: ${claimed}, but also ${CAUSE_PART[actual]}`;
+}
+
+export const VERDICT_LABEL: Record<Verdict, string> = { matches: 'That matches the board', partly: 'Matches part of it', differs: 'The board says otherwise', unchecked: 'Here is what the board shows' };
 export const claimOf = (c: Choice) => CLAIM[c];
 
 /** Top causes across saved diagnoses (for the home panel). */

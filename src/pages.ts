@@ -3,6 +3,9 @@ import { safeUrl } from './safe';
 import { Chessground } from 'chessground';
 import type { Key } from 'chessground/types';
 import * as store from './store';
+import { createWorkspace, lessonDoc } from './workspace';
+import { parseImport } from './tree';
+import { originalForPuzzle } from './original';
 import type { Puzzle, StoredReview, StoredGame } from './store';
 import { schedule, reactivate, isDue, srsStatus, newSrs } from './srs';
 import { topCauses, type Diagnosis } from './diagnose';
@@ -170,6 +173,8 @@ export async function renderTrain(ctx: Ctx, onlyId: string | null) {
       title: puzzleTitle(p), subtitle: puzzleSub(p),
       onResult: async (r) => { if (r.solved) solved++; await recordAttempt(p, r); },
       rating: p.rating, prior: p.diagnosis, onDiagnosis: async (d) => { await recordDiagnosis(p, d); },
+      replay: { profileKey: p.profileKey, sourceId: p.id, original: p.source && p.source !== 'game' ? null : () => originalForPuzzle(p.profileKey, p.gameId, p.core.fenBefore, p.core.playedUci) },
+      onAnalyse: async (m) => { const id = await createWorkspace(ctx.pk, lessonDoc(m, m.color, `${puzzleTitle(p)}`)); ctx.navigate({ view: 'analysis', ws: id, p: null }); },
       onNext: () => { i++; show(); }, nextLabel: i + 1 < queue.length ? 'Next position' : 'Finish',
       onClose: () => ctx.navigate({ view: 'puzzles', p: null }), closeLabel: 'Stop',
     });
@@ -212,6 +217,10 @@ export async function renderImport(ctx: Ctx) {
           <label for="src-user">Username</label>
           <div class="row"><select id="src-site" aria-label="Where the games are"><option value="chesscom" ${ctx.site === 'chesscom' ? 'selected' : ''}>Chess.com</option><option value="lichess" ${ctx.site === 'lichess' ? 'selected' : ''}>Lichess</option></select><input id="src-user" required spellcheck="false" autocomplete="off" value="${esc(ctx.user)}"><button class="btn primary">Load games</button></div>
           <p class="muted small">Public, finished standard games only.</p></form>
+        <form class="card" id="f-ws"><h2>Analyse a position</h2>
+          <label for="ws-text">FEN or PGN (optional)</label><textarea id="ws-text" rows="3" spellcheck="false" placeholder="Leave empty for the starting position"></textarea>
+          <div class="row"><button class="btn">Open in analysis</button></div><div id="ws-msg2" role="status" aria-live="polite"></div>
+          <p class="muted small">A board with the engine, variations and "Save as puzzle". Nothing is uploaded.</p></form>
         <form class="card wide" id="f-pgn"><h2>Paste or upload PGN</h2>
           <label for="pgn-text">PGN (one or more games)</label><textarea id="pgn-text" rows="7" spellcheck="false" placeholder='[Event "..."]&#10;1. e4 e5 2. Nf3 ...  1-0'></textarea>
           <div class="row"><label class="filebtn btn ghost">Upload .pgn<input type="file" id="pgn-file" accept=".pgn,.txt,application/x-chess-pgn" hidden></label>
@@ -223,6 +232,15 @@ export async function renderImport(ctx: Ctx) {
       </div>
       ${games.length ? `<h2>Imported PGN games</h2><div class="hist-list">${games.map((g) => `<a class="game-row" href="#" data-game="${esc(g.game.id)}"><span class="res">PGN</span><span class="g-main"><span class="g-players"><b>${esc(g.game.white.username)}</b> <span class="vs">vs</span> <b>${esc(g.game.black.username)}</b></span><span class="g-meta">${fmtDate(g.game.endTime)} · you played ${g.myColor === 'b' ? 'Black' : 'White'}</span></span><span class="g-go">Review ›</span></a>`).join('')}</div>` : ''}
     </section>`;
+  $('#f-ws').onsubmit = async (e) => {
+    e.preventDefault();
+    const t = $<HTMLTextAreaElement>('#ws-text').value;
+    const r = t.trim() ? parseImport(t) : { fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', ucis: [], headers: {} as Record<string, string> };
+    if (!r) { $('#ws-msg2').textContent = 'That is not a FEN or PGN I can read.'; return; }
+    const title = r.headers.White && r.headers.Black ? `${r.headers.White} vs ${r.headers.Black}` : r.ucis.length ? 'Imported line' : 'Position';
+    const id = await createWorkspace(ctx.pk, { title, startFen: r.fen, lines: r.ucis.length ? [{ ucis: r.ucis, kind: 'imported' }] : [], source: 'import' });
+    ctx.navigate({ view: 'analysis', ws: id });
+  };
   $('#f-user').onsubmit = (e) => { e.preventDefault(); const v = $<HTMLInputElement>('#src-user').value.trim(); if (v) ctx.navigate({ site: $<HTMLSelectElement>('#src-site').value, user: v, view: null, game: null }); };
   $<HTMLInputElement>('#pgn-file').onchange = async (e) => {
     const f = (e.target as HTMLInputElement).files?.[0];

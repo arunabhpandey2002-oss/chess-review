@@ -28,6 +28,7 @@ describe('why-you-erred diagnosis (game 186092857180)', () => {
   it('"I thought I was safe" on 15.exd5: the queen was defended but a cheaper knight could take it', () => {
     const d = diagnose(by('exd5'), 'thought-safe', noClock);
     expect(d.verdict).toBe('partly');
+    expect(d.summary).toBe('Matches part: the piece was not as safe as it looked, but also there was a threat to deal with');
     expect(txt(d)).toMatch(/queen on d3 was defended by your .*but it can be taken by their knight on f4, which is worth less/);
   });
   it('10.Rg1 allowed nothing; the real issue was the missed Ne5', () => {
@@ -67,6 +68,30 @@ describe('why-you-erred diagnosis (game 186092857180)', () => {
         expect(['rules', 'engine']).toContain(l.src);
         expect(groundCheck(renderText(l.text, 'san'), allowedSquares(m))).toBe(true);
       }
+    }
+  });
+  it('new answers: assumed recapture, stopped early, misjudged, moved fast, don\'t remember', () => {
+    const m = by('exd5');
+    expect(diagnose(m, 'assumed-recapture', noClock).verdict).toBe('matches');
+    expect(diagnose(m, 'misjudged', noClock).verdict).toBe('matches');
+    expect(diagnose(m, 'stopped-early', noClock).verdict).toBe('partly');
+    expect(txt(diagnose(m, 'stopped-early', noClock))).toMatch(/comes right away/);
+    expect(diagnose(m, 'too-fast', noClock).verdict).toBe('unchecked');
+    expect(diagnose(m, 'too-fast', { left: 300, spent: 2, base: 600 }).verdict).toBe('matches');
+    const dr = diagnose(m, 'dont-remember', noClock);
+    expect(dr.verdict).toBe('unchecked');
+    expect(dr.summary).toBe('Here is what the board shows');
+    expect(CHOICES).toHaveLength(11);
+    for (const c of CHOICES) if (!['dont-remember', 'other'].includes(c.id)) expect(c.category).not.toBe('');
+  });
+  it('no vague "Partly", and a diagnosis never contradicts the selected answer', () => {
+    for (const m of ms) for (const c of CHOICES) {
+      const d = diagnose(m, c.id, clockOf(m));
+      expect(d.summary).not.toMatch(/^Partly/);
+      if (d.verdict === 'partly') expect(d.summary).toMatch(/^Matches part: .+, but (also|the details)/);
+      // "matches" must never be paired with text saying there was nothing of the kind
+      if (d.verdict === 'matches') expect(txt(d)).not.toMatch(/There was no threat to miss|There was no recapture|not a rushed move|was not short/);
+      if (d.verdict === 'differs' && c.id === 'no-see') expect(errorFacts(m).allowed).toBe(false);
     }
   });
   it('top causes count saved answers', () => {

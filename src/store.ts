@@ -9,8 +9,8 @@ import { MOTIF_INFO, SKILL_LABEL } from './concepts';
 import { safeUrl } from './safe';
 
 export const DB_NAME = 'chess-review';
-const DB_VERSION = 1;
-export const STORES = ['profiles', 'games', 'reviews', 'puzzles'] as const;
+const DB_VERSION = 2;
+export const STORES = ['profiles', 'games', 'reviews', 'puzzles', 'evalcache', 'jobs', 'meta', 'replays', 'workspace', 'reports'] as const;
 type StoreName = (typeof STORES)[number];
 
 export interface Profile { key: string; platform: Platform | 'chesscom'; username: string; level?: Level; createdAt: number; updatedAt: number }
@@ -29,6 +29,8 @@ export interface StoredReview {
   /** Distinct tag ids of the player's real mistakes in this game (for recurring-error stats). */
   errorTags: string[];
   moments: { ply: number; tag: string; moveNumber: number }[];
+  /** How this review was made: a full analysis on the review page, or a batch (screened, critical positions verified deeper). */
+  analysis?: { mode: 'full' | 'light' | 'standard' | 'deep'; depth: number; screenDepth?: number; verified?: number; stable?: number; ms?: number };
   story: string;
   reviewedAt: number;
 }
@@ -48,7 +50,33 @@ export interface Puzzle {
   rating?: number | null;
   /** Your answer to "what were you thinking" and what the board showed. */
   diagnosis?: Diagnosis;
+  /** Where the puzzle came from: a reviewed game (default), the analysis workspace, or a played-out replay. */
+  source?: 'game' | 'workspace' | 'replay';
+  /** Verification: depth the critical position was checked at, and whether the best move held. */
+  verify?: { depth: number; sameBest: boolean | null } | null;
 }
+
+/** A played-out continuation from a lesson ("Play it out"), saved with every attempt including taken-back moves. */
+export interface StoredReplay {
+  id: string;
+  profileKey: string;
+  /** The puzzle / moment this replay started from. */
+  sourceId: string;
+  startFen: string;
+  myColor: 'w' | 'b';
+  /** Main replay line and the original game continuation, as UCI from startFen. */
+  line: string[];
+  original: string[];
+  /** Variation tree with take-back branches (serialised tree.ts). */
+  tree: unknown;
+  outcome: string;
+  /** Per-ply evals of the replay line, once reviewed ("Review this game"). */
+  evals?: ({ cp: number; mate: number | null } | null)[];
+  reviewedAt?: number;
+  createdAt: number;
+}
+export interface WorkspaceDoc { id: string; profileKey: string; title: string; startFen: string; tree: unknown; orientation: 'white' | 'black'; source?: string; updatedAt: number; createdAt: number }
+export interface ExplanationReport { id: string; profileKey: string; puzzleId: string; kind: 'incorrect' | 'unclear' | 'too-advanced'; note: string; level: string; record: unknown; text: string; createdAt: number }
 
 export const profileKey = (platform: string, user: string) => `${platform}:${user.toLowerCase()}`;
 
@@ -63,7 +91,15 @@ function db(): Promise<IDBDatabase> {
       if (!d.objectStoreNames.contains('games')) d.createObjectStore('games', { keyPath: 'key' }).createIndex('profileKey', 'profileKey');
       if (!d.objectStoreNames.contains('reviews')) d.createObjectStore('reviews', { keyPath: 'key' }).createIndex('profileKey', 'profileKey');
       if (!d.objectStoreNames.contains('puzzles')) d.createObjectStore('puzzles', { keyPath: 'id' }).createIndex('profileKey', 'profileKey');
+      // v2: background analysis, replays, analysis workspace, explanation reports
+      if (!d.objectStoreNames.contains('evalcache')) d.createObjectStore('evalcache', { keyPath: 'key' });
+      if (!d.objectStoreNames.contains('jobs')) { const j = d.createObjectStore('jobs', { keyPath: 'id' }); j.createIndex('profileKey', 'profileKey'); j.createIndex('batchId', 'batchId'); }
+      if (!d.objectStoreNames.contains('meta')) d.createObjectStore('meta', { keyPath: 'key' });
+      if (!d.objectStoreNames.contains('replays')) d.createObjectStore('replays', { keyPath: 'id' }).createIndex('profileKey', 'profileKey');
+      if (!d.objectStoreNames.contains('workspace')) d.createObjectStore('workspace', { keyPath: 'id' }).createIndex('profileKey', 'profileKey');
+      if (!d.objectStoreNames.contains('reports')) d.createObjectStore('reports', { keyPath: 'id' }).createIndex('profileKey', 'profileKey');
     };
+    r.onblocked = () => console.warn('database upgrade is waiting for another tab to close');
     r.onsuccess = () => res(r.result);
     r.onerror = () => rej(r.error);
   });
@@ -89,7 +125,7 @@ async function tx<T>(store: StoreName, mode: IDBTransactionMode, fn: (s: IDBObje
 export const put = <T>(store: StoreName, v: T) => tx(store, 'readwrite', (s) => s.put(v)).then(() => undefined);
 export const get = <T>(store: StoreName, key: string) => tx<T>(store, 'readonly', (s) => s.get(key) as IDBRequest<T>);
 export const del = (store: StoreName, key: string) => tx(store, 'readwrite', (s) => s.delete(key)).then(() => undefined);
-export async function byProfile<T>(store: Exclude<StoreName, 'profiles'>, pk: string): Promise<T[]> {
+export async function byProfile<T>(store: Exclude<StoreName, 'profiles' | 'evalcache' | 'meta'>, pk: string): Promise<T[]> {
   const d = await db();
   return req(d.transaction(store).objectStore(store).index('profileKey').getAll(pk) as IDBRequest<T[]>);
 }
@@ -116,11 +152,15 @@ export async function savePuzzle(p: Puzzle): Promise<Puzzle> {
 }
 
 // ---------------- export / import / delete ----------------
-export interface Backup { app: 'chess-review'; version: 1; exportedAt: string; profiles: Profile[]; games: StoredGame[]; reviews: StoredReview[]; puzzles: Puzzle[] }
+export interface Backup {
+  app: 'chess-review'; version: 1 | 2; exportedAt: string; profiles: Profile[]; games: StoredGame[]; reviews: StoredReview[]; puzzles: Puzzle[];
+  replays?: StoredReplay[]; workspace?: WorkspaceDoc[]; reports?: ExplanationReport[];
+}
 
 export async function exportAll(): Promise<Backup> {
-  const [profiles, games, reviews, puzzles] = await Promise.all([all<Profile>('profiles'), all<StoredGame>('games'), all<StoredReview>('reviews'), all<Puzzle>('puzzles')]);
-  return { app: 'chess-review', version: 1, exportedAt: new Date().toISOString(), profiles, games, reviews, puzzles };
+  const [profiles, games, reviews, puzzles, replays, workspace, reports] = await Promise.all([all<Profile>('profiles'), all<StoredGame>('games'), all<StoredReview>('reviews'), all<Puzzle>('puzzles'),
+    all<StoredReplay>('replays'), all<WorkspaceDoc>('workspace'), all<ExplanationReport>('reports')]);
+  return { app: 'chess-review', version: 2, exportedAt: new Date().toISOString(), profiles, games, reviews, puzzles, replays, workspace, reports };
 }
 
 const MAX_BACKUP_BYTES = 50 * 1024 * 1024;
@@ -173,7 +213,22 @@ export function parseBackup(text: string): Backup {
   })) as Puzzle[];
   const levels = ['beginner', 'intermediate', 'advanced'] as const;
   const profiles = arr(x.profiles).filter((p) => typeof p.key === 'string').map((p) => ({ ...p, username: String(p.username ?? ''), level: p.level == null ? undefined : oneOf(p.level, levels, 'beginner'), createdAt: num(p.createdAt), updatedAt: num(p.updatedAt) })) as Profile[];
-  return { app: 'chess-review', version: 1, exportedAt: String(x.exportedAt ?? ''), profiles, games, reviews, puzzles };
+  const FEN_RE = /^[1-8pnbrqkPNBRQK/]+ [wb] [KQkq-]+ [a-h1-8-]+ \d+ \d+$/;
+  const UCI_RE = /^[a-h][1-8][a-h][1-8][qrbn]?$/;
+  const ucis = (v: unknown) => (Array.isArray(v) ? v.map(String).filter((u) => UCI_RE.test(u)).slice(0, 600) : []);
+  const replays = arr(x.replays).filter((r) => ID_RE.test(String(r.id)) && FEN_RE.test(String(r.startFen))).map((r) => ({
+    ...r, id: String(r.id), profileKey: String(r.profileKey ?? ''), sourceId: String(r.sourceId ?? ''), myColor: r.myColor === 'b' ? 'b' : 'w', line: ucis(r.line), original: ucis(r.original),
+    outcome: String(r.outcome ?? ''), createdAt: num(r.createdAt), reviewedAt: r.reviewedAt == null ? undefined : num(r.reviewedAt),
+    evals: Array.isArray(r.evals) ? r.evals.map((e: any) => (obj(e) ? { cp: num(e.cp), mate: e.mate == null ? null : int(e.mate) } : null)) : undefined,
+  })) as StoredReplay[];
+  const workspace = arr(x.workspace).filter((w) => ID_RE.test(String(w.id)) && FEN_RE.test(String(w.startFen))).map((w) => ({
+    ...w, id: String(w.id), profileKey: String(w.profileKey ?? ''), title: String(w.title ?? '').slice(0, 200), orientation: w.orientation === 'black' ? 'black' : 'white', updatedAt: num(w.updatedAt), createdAt: num(w.createdAt),
+  })) as WorkspaceDoc[];
+  const reports = arr(x.reports).filter((r) => ID_RE.test(String(r.id))).map((r) => ({
+    ...r, id: String(r.id), profileKey: String(r.profileKey ?? ''), puzzleId: String(r.puzzleId ?? ''), kind: oneOf(r.kind, ['incorrect', 'unclear', 'too-advanced'] as const, 'unclear'),
+    note: String(r.note ?? '').slice(0, 2000), level: String(r.level ?? ''), text: String(r.text ?? '').slice(0, 20000), createdAt: num(r.createdAt),
+  })) as ExplanationReport[];
+  return { app: 'chess-review', version: x.version === 2 ? 2 : 1, exportedAt: String(x.exportedAt ?? ''), profiles, games, reviews, puzzles, replays, workspace, reports };
 }
 
 export async function importAll(b: unknown): Promise<{ profiles: number; reviews: number; puzzles: number; games: number }> {
@@ -187,6 +242,9 @@ export async function importAll(b: unknown): Promise<{ profiles: number; reviews
     // keep whichever copy has more review history
     if (!old || (p.srs.history?.length ?? 0) >= (old.srs.history?.length ?? 0)) { await put('puzzles', p); n.puzzles++; }
   }
+  for (const r of x.replays ?? []) await put('replays', r);
+  for (const w of x.workspace ?? []) await put('workspace', w);
+  for (const r of x.reports ?? []) await put('reports', r);
   return n;
 }
 

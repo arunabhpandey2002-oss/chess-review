@@ -58,12 +58,12 @@ async function playOut(page, tag) {
   await page.click('#tr-reveal');
   await page.waitForSelector('.why-card');
   const pre = await page.evaluate(() => ({ chips: document.querySelectorAll('[data-why]').length, status: document.querySelector('#tr-status').textContent, lessons: document.querySelectorAll('.tr-lesson .lsec').length, best: window.__trainer.o.core.bestSan, arrows: window.__trainer.cg.state.drawable.autoShapes.length }));
-  ok('question shown before the answer', pre.chips === 5 && pre.lessons === 0 && pre.arrows === 0 && !pre.status.includes(pre.best), JSON.stringify(pre));
+  ok('question shown before the answer', pre.chips === 6 && pre.lessons === 0 && pre.arrows === 0 && !pre.status.includes(pre.best), JSON.stringify(pre));
   await page.screenshot({ path: `${OUT}/01-why-question.png` });
   await page.click('[data-why="thought-safe"]');
   await page.waitForSelector('#tr-diag');
   const diag = (await page.locator('#tr-diag').innerText()).replace(/\s+/g, ' ');
-  ok('diagnosis is grounded in the position', /queen on d3/.test(diag) && /knight on f4/.test(diag) && /Partly/.test(diag), diag.slice(0, 260));
+  ok('diagnosis is grounded in the position', /queen on d3/.test(diag) && /knight on f4/.test(diag) && /Matches part/.test(diag), diag.slice(0, 260));
   ok('diagnosis has source labels', (await page.locator('#tr-diag .src').count()) >= 1);
   ok('answer shown after the diagnosis', /The answer is/.test(await page.locator('#tr-status').innerText()));
   await page.locator('#tr-diag').scrollIntoViewIfNeeded();
