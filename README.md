@@ -13,6 +13,10 @@ Enter a username or paste a PGN, pick a finished game, and the in-browser engine
 - Play it out: from any moment (list or lesson), play the rest of the game against the engine set near your rating (UCI_Elo from 1320; below that skill 0 with a shallow search). Take back, restart, resign or stop. You get the result plus up to two engine-checked takeaways: whether you kept the advantage and your biggest slip with the better move.
 - Why is this best? From any move card, Explore shows the best move and the game move side by side: what each one changes on the board (attacks, defences, threats stopped or left), the opponent's best reply, and an honest size of the gap. Step through both engine lines with arrows, tap questions (the threat, why not my move, their reply, other moves), or try any move and get the engine's eval and reply. Engine and board facts only; no AI text.
 - Decided positions: when the mover was already under 10% or over 90% win chance before and after, the card says "... in a lost/won position" and explains that grades compare with the best move, not who is winning.
+- Analyse my recent games: queue the last 5, 10 or 25 games, games since the last batch, or picked games. Light, Standard or Deep. It shows an estimate first, runs in the background with pause, resume and cancel, survives a refresh, skips duplicates and unfinished games, and caches positions by engine version and settings. Pass 1 screens every position; pass 2 re-checks the critical ones deeper, and only verified positions become lessons and puzzles. It waits while a full review or the analysis board needs the engine.
+- Analysis board: open any lesson (or paste a PGN/FEN on Import) with the exact position. Variation tree (game line, engine lines, your moves, take-backs), undo/redo, make main line, delete, 1-5 engine lines at depth 12/16/20, Ask about a move, Compare with main line, Save as puzzle, copy/load FEN and PGN, keyboard arrows. Saved locally.
+- After Play it out: Review this game (same pipeline, saved and linked to the source moment) and Compare with original: both win% curves on one graph, mistakes aligned by move, a synced step-through, and each divergence explained with win% before and after, the board and material facts, and whether the same error came back. Take-backs are kept as variations.
+- Every explanation is built from a checked evidence record (engine facts, material ledger, board facts) and passes invariant checks before it shows; low-confidence positions fall back to the line itself. "Something wrong with this explanation?" saves a local report (incorrect, unclear, too advanced).
 - Every moment is saved as a personal puzzle in "Mistakes to Master" and scheduled with spaced repetition (SM-2 style).
 - History shows recurring error types once you have reviewed a few games, with the sample size.
 - Explanations are generated from rules on verified engine facts, not by an AI model. Labels show the source: Engine, Classification (formula), Explanation (generated from rules), Estimate.
@@ -27,6 +31,12 @@ Design and roadmap: docs/PRODUCT_PLAN.md.
     node test/e2e-coach.mjs       # Playwright E2E of the why-you-erred coach and Play it out (desktop + phone)
     npm run test:layout           # Playwright layout check: overflow, clipped text, tiny text on 5 screen sizes
     node test/e2e-xss.mjs         # Security check: script injection via URL, PGN and backup files
+    node test/e2e-batch.mjs       # Batch queue: estimate, run, refresh mid-batch and resume, cancel, summary, responsiveness
+    node test/e2e-workspace.mjs   # Analysis board: lesson to board, tree, engine lines, Ask, compare, save as puzzle, refresh
+    node test/e2e-replay.mjs      # Play it out, take-backs, Review this game, Compare with original
+    npx tsx test/build-corpus.ts  # Rebuild the explanation regression corpus (test/corpus/lessons.json)
+    npx tsx test/verify-corpus.ts # Re-check the corpus with native Stockfish (writes docs/CORPUS_NATIVE.md)
+    npx tsx test/stability.ts     # Standard vs Deep stability (writes docs/STABILITY.md)
     node test/e2e-csp.mjs         # Runs the app under the production security headers (CSP) locally
 
 Live: https://rook-ie-mistakes.vercel.app/ (the old https://chess-review-ashen.vercel.app/ still works)
