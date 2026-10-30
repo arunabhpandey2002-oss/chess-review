@@ -108,9 +108,9 @@ The vertical slice shipped now is M1–M6 plus the parts of M7 that the slice ne
 
 ## 9. Status (30 Oct 2026)
 Shipped: M1-M6. Results:
-- Regression corpus: 47 distinct lesson positions from 10 test games, both sides. Every case at all 3 levels and all 11 answers passes the invariants (0 violations); mechanism, solution and concept are pinned.
+- Regression corpus: 47 distinct lesson positions from 9 test games, both sides. Every case at all 3 levels and all 11 answers passes the invariants (0 violations); mechanism, solution and concept are pinned.
 - Native Stockfish depth 22 on the corpus: same best move 39/47; lesson's move within 3% of the best 47/47; played move still an error 47/47 (docs/CORPUS_NATIVE.md).
 - Standard vs Deep: docs/STABILITY.md (93% of full-depth lessons found by the two-pass batch, 100% same mechanism).
 - Unit tests 176/176; all E2E suites green.
 
-Deferred: opening a batch-analysed game in the full review re-analyses it (no evalcache reuse yet); no multi-tab lock for the batch; backup import drops cached analysis; workspace engine is fixed-depth (no infinite search); no Puzzles-page entry to the board; M7 and M8.
+Deferred: synthetic corpus cases for motifs the test games do not contain (skewer, zwischenzug, en passant, promotion, stalemate, repetition, tablebase); opening a batch-analysed game in the full review re-analyses it (no evalcache reuse yet); no multi-tab lock for the batch; backup import drops cached analysis; workspace engine is fixed-depth (no infinite search); no Puzzles-page entry to the board; M7 and M8.
