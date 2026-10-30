@@ -31,6 +31,7 @@ export async function renderBatchPanel(el: HTMLElement, c: BatchCtx) {
       $('#b-open', el).onclick = () => { open = true; void draw(); };
       return;
     }
+    if (el.querySelector('#b-form')) return; // keep the open form and the choices already made in it
     const reviewed = new Set((await store.byProfile<StoredReview>('reviews', c.pk)).map((r) => r.gameId));
     const lastEnd = m?.finishedAt ? Math.floor(m.createdAt / 1000) : 0;
     const defMode: Mode = phone() ? 'light' : 'standard';

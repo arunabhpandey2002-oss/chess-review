@@ -81,7 +81,7 @@ async function run(tag, viewport, mobile) {
     const per = all.jobs.filter((j) => j.status === 'done').map((j) => Math.round(j.result.ms / 1000));
     ok(`${tag}: time per game (Light, ${await page.evaluate(() => navigator.hardwareConcurrency)} cores)`, per.length >= 4, `${per.join(', ')} s; total ${Math.round((Date.now() - t0) / 1000)} s incl. refresh`);
     const pz = await page.evaluate(() => new Promise((res) => { const r = indexedDB.open('chess-review'); r.onsuccess = () => { const q = r.result.transaction('puzzles').objectStore('puzzles').getAll(); q.onsuccess = () => res(q.result.map((p) => ({ v: p.verify }))); }; }));
-    ok(`${tag}: lessons saved with verification`, pz.length === all.jobs.reduce((s, j) => s + (j.result?.moments ?? 0), 0) && pz.every((p) => p.v && p.v.depth === 16), `${pz.length} puzzles, ${pz.filter((p) => p.v?.sameBest).length} with the same best move at both depths`);
+    ok(`${tag}: lessons saved with verification`, pz.length === all.jobs.reduce((s, j) => s + (j.result?.moments ?? 0), 0) && pz.every((p) => p.v && p.v.depth === 16), `${pz.length} puzzles for ${all.jobs.reduce((s, j) => s + (j.result?.moments ?? 0), 0)} lessons, depths ${[...new Set(pz.map((p) => p.v?.depth))].join("/")}, ${pz.filter((p) => p.v?.sameBest).length} with the same best move at both depths`);
     await page.waitForTimeout(800);
     const home = await page.locator('#home-panel').innerText();
     const saved = +((home.match(/(\d+) saved positions?/) ?? [])[1] ?? -1);
