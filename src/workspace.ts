@@ -14,6 +14,7 @@ import { terminalEval, parseGame, reviewGame } from './review';
 import { tagMove, phaseOf } from './concepts';
 import { compareLines } from './compare';
 import { renderCompare } from './replay-view';
+import { loadOpenings, explore, openingName, pct3 } from './openings';
 import { newSrs } from './srs';
 import { batch } from './batch';
 import * as store from './store';
@@ -118,6 +119,7 @@ class Workspace {
                 <label>Depth <select id="ws-depth">${DEPTHS.map((d) => `<option${d === this.depth ? ' selected' : ''}>${d}</option>`).join('')}</select></label></span></div>
               <div id="ws-lines" aria-live="polite"></div>
             </div>
+            <section class="card ws-book" id="ws-book" aria-label="Opening explorer"></section>
             <div class="card ws-tree"><div class="ws-th"><h2>Moves</h2><span class="ws-tools">
               <button class="btn sm ghost" id="ws-undo" title="Undo (Ctrl+Z)">Undo</button><button class="btn sm ghost" id="ws-redo" title="Redo (Ctrl+Y)">Redo</button>
               <button class="btn sm ghost" id="ws-promote">Make main line</button><button class="btn sm ghost" id="ws-del">Delete from here</button></span></div>
@@ -197,7 +199,7 @@ class Workspace {
   }
   /** After any change: redraw board, moves, engine; `persist` saves the document. */
   changed(persist = true) {
-    this.sync(); this.drawMoves(); this.drawAsk(); this.analyse();
+    this.sync(); this.drawMoves(); this.drawAsk(); this.analyse(); void this.drawBook();
     $('#ws-cmpout', this.app).innerHTML = '';
     $<HTMLButtonElement>('#ws-undo', this.app).disabled = !this.tree.canUndo();
     $<HTMLButtonElement>('#ws-redo', this.app).disabled = !this.tree.canRedo();
@@ -216,6 +218,34 @@ class Workspace {
     this.cg.set({ fen: this.fen, turnColor: c.turn() === 'w' ? 'white' : 'black', check: c.inCheck(), lastMove: n.uci ? [n.uci.slice(0, 2) as Key, n.uci.slice(2, 4) as Key] : undefined,
       movable: { color: c.isGameOver() ? undefined : c.turn() === 'w' ? 'white' : 'black', dests: legalDests(this.fen) as Map<Key, Key[]> } });
     this.cg.setAutoShapes(this.last && this.engineOn ? this.last.lines.slice(0, 1).filter((l) => l.pv[0]).map((l) => ({ orig: l.pv[0].slice(0, 2) as Key, dest: l.pv[0].slice(2, 4) as Key, brush: 'paleGreen' })) : []);
+  }
+
+  /** Opening explorer: common moves here, how often, and how those games ended. Bundled data only. */
+  bookGen = 0;
+  async drawBook() {
+    const el = this.app.querySelector<HTMLElement>('#ws-book');
+    if (!el) return;
+    const g = ++this.bookGen;
+    const fen = this.fen;
+    const fens = [this.tree.root.fen, ...this.tree.path(this.node.id).map((n) => n.fen)];
+    const { data, book } = await loadOpenings();
+    if (g !== this.bookGen || !el.isConnected) return;
+    const nm = openingName(fens, book);
+    const head = `<h2>Opening explorer</h2><p class="small ob-name" id="ob-name">${nm ? `<b>${esc(nm.eco)}</b> ${esc(nm.name)}${nm.exact ? '' : ' <span class="muted">(last named position)</span>'}` : '<span class="muted">No named opening for this line.</span>'}</p>`;
+    if (!data) { el.innerHTML = `${head}<p class="muted small" id="ob-none">Opening statistics could not be loaded.</p>`; return; }
+    const v = explore(fen, data);
+    if (!v) { el.innerHTML = `${head}<p class="muted small" id="ob-none">No games in the sample reach this position.</p>${this.bookFoot(data.meta)}`; return; }
+    const w = new Chess(fen).turn() === 'w';
+    el.innerHTML = `${head}<table class="ob-tab"><thead><tr><th scope="col">Move</th><th scope="col">Games</th><th scope="col">White · draw · Black</th></tr></thead><tbody>${v.moves.map((m) => {
+      const [pw, pd, pb] = pct3(m.white, m.draws, m.black);
+      return `<tr><td><button class="btn sm ob-mv" data-u="${esc(m.uci)}" title="Play ${esc(m.san)}">${w ? '' : '…'}${esc(m.san)}</button></td><td class="num">${m.games.toLocaleString('en')} <span class="muted">${Math.round(m.share * 100)}%</span></td><td><div class="ob-bar" role="img" aria-label="White won ${pw}%, drawn ${pd}%, Black won ${pb}%"><span class="w" style="flex:${pw}">${pw >= 12 ? pw + '%' : ''}</span><span class="d" style="flex:${pd}">${pd >= 12 ? pd + '%' : ''}</span><span class="b" style="flex:${pb}">${pb >= 12 ? pb + '%' : ''}</span></div></td></tr>`;
+    }).join('')}</tbody></table><p class="muted small">${v.total.toLocaleString('en')} games reached this position.</p>${this.bookFoot(data.meta)}`;
+    el.querySelectorAll<HTMLButtonElement>('.ob-mv').forEach((b) => (b.onclick = () => this.play(b.dataset.u!, 'mine')));
+  }
+  bookFoot(m: { games: number; month: string; minRating: number; speeds: string; maxPly: number }) {
+    const [y, mo] = m.month.split('-');
+    const when = new Date(Date.UTC(+y, +mo - 1, 1)).toLocaleString('en', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+    return `<p class="muted small ob-src">Sample: ${m.games.toLocaleString('en')} rated online games from ${esc(when)}, both players rated ${m.minRating}+, ${esc(m.speeds)}; first ${m.maxPly / 2} moves. Public-domain data, stored with this app.</p>`;
   }
 
   drawMoves() {

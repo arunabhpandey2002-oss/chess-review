@@ -708,3 +708,18 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
 #ws-type { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; margin-top: 10px; }
 #ws-type label { white-space: nowrap; }
 #ws-type input { flex: 1 1 auto; min-width: 0; }
+
+/* Opening explorer (analysis board) */
+.ws-book .ob-name { margin: 0 0 6px; }
+.ob-tab { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ob-tab th { text-align: left; font-weight: 500; color: var(--muted, #888); font-size: 12px; padding: 0 4px 4px 0; }
+.ob-tab td { padding: 2px 4px 2px 0; vertical-align: middle; white-space: nowrap; }
+.ob-tab td.num { font-variant-numeric: tabular-nums; }
+.ob-tab td:last-child { width: 45%; min-width: 96px; }
+.ob-mv { min-width: 52px; }
+.ob-bar { display: flex; height: 18px; border-radius: 4px; overflow: hidden; font-size: 11px; line-height: 18px; border: 1px solid rgba(127,127,127,.35); }
+.ob-bar span { min-width: 0; text-align: center; overflow: hidden; }
+.ob-bar .w { background: #f2f2f2; color: #222; }
+.ob-bar .d { background: #9a9a9a; color: #111; }
+.ob-bar .b { background: #333; color: #eee; }
+.ob-src { margin: 6px 0 0; }
