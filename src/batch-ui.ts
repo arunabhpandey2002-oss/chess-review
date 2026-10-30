@@ -18,6 +18,10 @@ export async function renderBatchPanel(el: HTMLElement, c: BatchCtx) {
   let unsub: (() => void) | null = null;
   const draw = async () => {
     if (!el.isConnected) { unsub?.(); return; }
+    if (batch.elsewhere) {
+      el.innerHTML = `<div class="batch-row" id="b-elsewhere" role="status"><span class="muted small">Analysis is running in another tab. Results will appear here when it finishes.</span></div>`;
+      return;
+    }
     const m = batch.meta;
     const active = m && !m.cancelled && !m.finishedAt;
     if (active) return drawRun();

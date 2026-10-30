@@ -7,7 +7,8 @@ import { EnginePool, type PosEval } from './engine';
 import { parseGame, reviewGame, terminalEval, type Ply, type Book } from './review';
 import { winPct } from './classify';
 import type { Level } from './moments';
-import { ENGINE_NET } from './evidence';
+import { cacheKey } from './evalschema';
+import { getCached, putCached } from './evalcache';
 import { coachFor, saveReview } from './persist';
 import * as store from './store';
 import type { Puzzle, StoredReview } from './store';
@@ -29,8 +30,8 @@ export interface Job {
 }
 export interface BatchMeta { key: 'batch'; batchId: string; profileKey: string; mode: Mode; level: Level; rating: number | null; paused: boolean; cancelled?: boolean; createdAt: number; finishedAt?: number }
 
-const CFG = 'v1';
-export const cacheKey = (fen: string, depth: number, mpv: number) => `${fen}|sf19lite|${ENGINE_NET}|${CFG}|d${depth}|mpv${mpv}`;
+export { cacheKey };
+export const BATCH_LOCK = 'rook-ie-mistakes-batch';
 
 /** Higher runs first: losses, then draws, then wins; very short or aborted games last. */
 export function priorityOf(g: GameSummary, user: string): number {
@@ -103,6 +104,11 @@ class Runner {
   book: Book | null = null;
   lastSave = 0;
   held = false;
+  /** True while another tab of this browser holds the batch lock. */
+  elsewhere = false;
+  private release: (() => void) | null = null;
+  private watching = false;
+  private pk = '';
 
   /** Gives the engine to a full game review on screen; the batch continues afterwards. */
   async hold(on: boolean) {
@@ -113,12 +119,45 @@ class Runner {
     this.emit();
   }
 
+  /** One batch per browser: whoever holds the Web Lock runs it; other tabs show a note and take over when it is free. */
+  private acquire(): Promise<boolean> {
+    const locks = typeof navigator !== 'undefined' ? (navigator as any).locks : undefined;
+    if (!locks) return Promise.resolve(true);
+    if (this.release) return Promise.resolve(true);
+    return new Promise<boolean>((res) => {
+      locks.request(BATCH_LOCK, { ifAvailable: true }, (lock: unknown) => {
+        if (!lock) { res(false); return undefined; }
+        return new Promise<void>((done) => { this.release = () => { this.release = null; done(); }; res(true); });
+      }).catch(() => res(true));
+    });
+  }
+  private unlock() { this.release?.(); }
+  private async heldElsewhere(): Promise<boolean> {
+    const locks = typeof navigator !== 'undefined' ? (navigator as any).locks : undefined;
+    if (!locks?.query || this.release) return false;
+    try { const q = await locks.query(); return (q.held ?? []).some((l: { name: string }) => l.name === BATCH_LOCK); } catch { return false; }
+  }
+  /** Waits for the other tab to finish or close, then reloads the queue and carries on with anything left. */
+  private watch() {
+    const locks = typeof navigator !== 'undefined' ? (navigator as any).locks : undefined;
+    if (!locks || this.watching) return;
+    this.watching = true;
+    locks.request(BATCH_LOCK, () => { this.watching = false; }).then(async () => {
+      this.elsewhere = false;
+      if (this.pk) await this.restore(this.pk, this.book);
+      this.emit();
+    }).catch(() => { this.watching = false; });
+  }
+
   on(fn: Listener) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
   emit() { for (const f of this.listeners) { try { f(); } catch { /* ignore */ } } (window as any).__batch = this.snapshot(); }
-  snapshot() { return { meta: this.meta, running: this.running, held: this.held, jobs: this.jobs.map((j) => ({ id: j.gameId, status: j.status, stage: j.stage, posDone: j.posDone, posTotal: j.posTotal, result: j.result, error: j.error })) }; }
+  snapshot() { return { meta: this.meta, running: this.running, held: this.held, elsewhere: this.elsewhere, jobs: this.jobs.map((j) => ({ id: j.gameId, status: j.status, stage: j.stage, posDone: j.posDone, posTotal: j.posTotal, result: j.result, error: j.error })) }; }
 
   async load(pk: string) {
+    this.pk = pk;
     if (this.running && this.meta?.profileKey === pk) { this.emit(); return; }
+    this.elsewhere = await this.heldElsewhere();
+    if (this.elsewhere) this.watch();
     const m = (await store.get<BatchMeta>('meta', 'batch')) ?? null;
     this.meta = m && m.profileKey === pk ? m : null;
     this.jobs = this.meta ? (await store.byProfile<Job>('jobs', pk)).filter((j) => j.batchId === this.meta!.batchId).sort((a, b) => b.priority - a.priority) : [];
@@ -130,13 +169,14 @@ class Runner {
     this.book = book;
     if (this.running) return;
     await this.load(pk);
-    if (!this.meta || this.meta.paused || this.meta.cancelled) return;
-    for (const j of this.jobs) if (j.status === 'running') { j.status = 'queued'; j.stage = 'waiting'; await store.put('jobs', j); }
-    if (this.jobs.some((j) => j.status === 'queued')) void this.run();
+    if (!this.meta || this.meta.paused || this.meta.cancelled || this.elsewhere) return;
+    if (this.jobs.some((j) => j.status === 'queued' || j.status === 'running')) void this.run();
   }
 
   async start(o: { pk: string; user: string; games: GameSummary[]; mode: Mode; level: Level; rating: number | null; book: Book | null }) {
+    if (await this.heldElsewhere()) { this.elsewhere = true; this.watch(); this.emit(); return; }
     await this.stop();
+    this.pk = o.pk;
     this.book = o.book;
     const batchId = `b${Date.now().toString(36)}`;
     this.meta = { key: 'batch', batchId, profileKey: o.pk, mode: o.mode, level: o.level, rating: o.rating, paused: false, createdAt: Date.now() };
@@ -172,6 +212,7 @@ class Runner {
     this.pool?.destroy(); this.pool = null;
     if (requeue) for (const j of this.jobs) if (j.status === 'running') { j.status = 'queued'; j.stage = 'waiting'; await store.put('jobs', j); }
     this.running = false;
+    this.unlock();
     this.emit();
   }
 
@@ -179,6 +220,18 @@ class Runner {
     if (this.running || !this.meta || this.held) return;
     this.running = true;
     const g = ++this.gen;
+    if (!(await this.acquire())) { this.running = false; this.elsewhere = true; this.watch(); this.emit(); return; }
+    if (g !== this.gen) { this.running = false; this.unlock(); return; }
+    this.elsewhere = false;
+    // with the lock held, the stored queue is the truth: pick up progress another tab saved, and requeue its unfinished job
+    if (this.meta) {
+      const stored = (await store.byProfile<Job>('jobs', this.meta.profileKey)).filter((j) => j.batchId === this.meta!.batchId);
+      const byId = new Map(stored.map((j) => [j.id, j]));
+      this.jobs = this.jobs.map((j) => byId.get(j.id) ?? j);
+      for (const j of this.jobs) if (j.status === 'running') { j.status = 'queued'; j.stage = 'waiting'; await store.put('jobs', j); }
+      const m = await store.get<BatchMeta>('meta', 'batch');
+      if (m && m.batchId === this.meta.batchId) this.meta = m;
+    }
     this.emit();
     while (g === this.gen && this.meta && !this.meta.paused && !this.meta.cancelled && !this.held) {
       const job = this.jobs.find((j) => j.status === 'queued');
@@ -196,6 +249,7 @@ class Runner {
       this.running = false;
       this.pool?.destroy(); this.pool = null;
       if (this.meta && !this.jobs.some((j) => j.status === 'queued' || j.status === 'running') && !this.meta.finishedAt) { this.meta.finishedAt = Date.now(); await store.put('meta', this.meta); }
+      this.unlock();
       this.emit();
     }
   }
@@ -209,14 +263,11 @@ class Runner {
   async evalAt(fen: string, depth: number, mpv: number, g: number, counts: { cached: number }): Promise<PosEval | null> {
     const t = terminalEval(fen);
     if (t) return t;
-    const k = cacheKey(fen, depth, mpv);
-    const hit = await store.get<{ key: string; ev: PosEval }>('evalcache', k).catch(() => undefined);
-    if (hit) { counts.cached++; return hit.ev; }
+    const hit = await getCached(fen, depth, mpv);
+    if (hit) { counts.cached++; return hit; }
     if (g !== this.gen || !this.pool) throw new Error('stopped');
     const ev = await this.pool.analyse(fen, depth, mpv, depth >= 20 ? 15000 : 8000);
-    const slim = { ...ev, lines: ev.lines.map((l) => ({ ...l, pv: l.pv.slice(0, 14) })) };
-    await store.put('evalcache', { key: k, ev: slim, at: Date.now() }).catch(() => undefined);
-    return slim;
+    return putCached(fen, depth, mpv, ev);
   }
 
   async runJob(job: Job, g: number) {

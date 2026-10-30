@@ -7,6 +7,7 @@ import type { Level } from './moments';
 import type { Phase } from './concepts';
 import { MOTIF_INFO, SKILL_LABEL } from './concepts';
 import { safeUrl } from './safe';
+import { sanitizeCacheEntries, type CacheEntry } from './evalschema';
 
 export const DB_NAME = 'chess-review';
 const DB_VERSION = 2;
@@ -129,6 +130,19 @@ export async function byProfile<T>(store: Exclude<StoreName, 'profiles' | 'evalc
   const d = await db();
   return req(d.transaction(store).objectStore(store).index('profileKey').getAll(pk) as IDBRequest<T[]>);
 }
+/** Adds many records in one transaction, keeping any that already exist. Resolves to the number added. */
+export async function addMissing(store: StoreName, items: { key: string }[]): Promise<number> {
+  if (!items.length) return 0;
+  const d = await db();
+  return new Promise<number>((res, rej) => {
+    const t = d.transaction(store, 'readwrite');
+    const os = t.objectStore(store);
+    let n = 0;
+    for (const it of items) { const r = os.getKey(it.key); r.onsuccess = () => { if (r.result === undefined) { os.put(it); n++; } }; }
+    t.oncomplete = () => res(n);
+    t.onerror = () => rej(t.error);
+  });
+}
 export async function all<T>(store: StoreName): Promise<T[]> {
   const d = await db();
   return req(d.transaction(store).objectStore(store).getAll() as IDBRequest<T[]>);
@@ -155,12 +169,15 @@ export async function savePuzzle(p: Puzzle): Promise<Puzzle> {
 export interface Backup {
   app: 'chess-review'; version: 1 | 2; exportedAt: string; profiles: Profile[]; games: StoredGame[]; reviews: StoredReview[]; puzzles: Puzzle[];
   replays?: StoredReplay[]; workspace?: WorkspaceDoc[]; reports?: ExplanationReport[];
+  /** Saved engine results (same engine, network and settings only), so imported games need not be analysed again. */
+  evalcache?: CacheEntry[];
 }
 
 export async function exportAll(): Promise<Backup> {
   const [profiles, games, reviews, puzzles, replays, workspace, reports] = await Promise.all([all<Profile>('profiles'), all<StoredGame>('games'), all<StoredReview>('reviews'), all<Puzzle>('puzzles'),
     all<StoredReplay>('replays'), all<WorkspaceDoc>('workspace'), all<ExplanationReport>('reports')]);
-  return { app: 'chess-review', version: 2, exportedAt: new Date().toISOString(), profiles, games, reviews, puzzles, replays, workspace, reports };
+  const evalcache = sanitizeCacheEntries(await all<unknown>('evalcache'));
+  return { app: 'chess-review', version: 2, exportedAt: new Date().toISOString(), profiles, games, reviews, puzzles, replays, workspace, reports, evalcache };
 }
 
 const MAX_BACKUP_BYTES = 50 * 1024 * 1024;
@@ -228,12 +245,14 @@ export function parseBackup(text: string): Backup {
     ...r, id: String(r.id), profileKey: String(r.profileKey ?? ''), puzzleId: String(r.puzzleId ?? ''), kind: oneOf(r.kind, ['incorrect', 'unclear', 'too-advanced'] as const, 'unclear'),
     note: String(r.note ?? '').slice(0, 2000), level: String(r.level ?? ''), text: String(r.text ?? '').slice(0, 20000), createdAt: num(r.createdAt),
   })) as ExplanationReport[];
-  return { app: 'chess-review', version: x.version === 2 ? 2 : 1, exportedAt: String(x.exportedAt ?? ''), profiles, games, reviews, puzzles, replays, workspace, reports };
+  // engine results: each entry is rebuilt field by field (key format, this engine and network, legal first moves, numeric scores)
+  const evalcache = sanitizeCacheEntries(x.evalcache);
+  return { app: 'chess-review', version: x.version === 2 ? 2 : 1, exportedAt: String(x.exportedAt ?? ''), profiles, games, reviews, puzzles, replays, workspace, reports, evalcache };
 }
 
-export async function importAll(b: unknown): Promise<{ profiles: number; reviews: number; puzzles: number; games: number }> {
+export async function importAll(b: unknown): Promise<{ profiles: number; reviews: number; puzzles: number; games: number; positions: number }> {
   const x = parseBackup(typeof b === 'string' ? b : JSON.stringify(b ?? null));
-  const n = { profiles: 0, reviews: 0, puzzles: 0, games: 0 };
+  const n = { profiles: 0, reviews: 0, puzzles: 0, games: 0, positions: 0 };
   for (const p of x.profiles) { await put('profiles', p); n.profiles++; }
   for (const g of x.games) { await put('games', g); n.games++; }
   for (const r of x.reviews) { await put('reviews', r); n.reviews++; }
@@ -245,6 +264,7 @@ export async function importAll(b: unknown): Promise<{ profiles: number; reviews
   for (const r of x.replays ?? []) await put('replays', r);
   for (const w of x.workspace ?? []) await put('workspace', w);
   for (const r of x.reports ?? []) await put('reports', r);
+  n.positions = await addMissing('evalcache', x.evalcache ?? []).catch(() => 0);
   return n;
 }
 

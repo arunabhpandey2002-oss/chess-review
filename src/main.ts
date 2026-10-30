@@ -7,7 +7,7 @@ import './style.css';
 import { Chessground } from 'chessground';
 import type { Api as CgApi } from 'chessground/api';
 import type { Key } from 'chessground/types';
-import type { Color } from 'chess.js';
+import { Chess, type Color } from 'chess.js';
 import { fetchArchives, fetchMonth, fetchProfile, resultFor, fmtTimeControl, REASONS, type GameSummary } from './api';
 import { fetchLichessGames, fetchLichessGame, fetchLichessProfile } from './sources';
 import { EnginePool, type PosEval } from './engine';
@@ -26,6 +26,7 @@ import { coachFor, saveReview } from './persist';
 import { batch } from './batch';
 import { renderWorkspace, destroyWorkspace, createWorkspace, lessonDoc } from './workspace';
 import { renderBatchPanel } from './batch-ui';
+import { cachedAtLeast, putCached } from './evalcache';
 import { renderHomePanel, renderPuzzles, renderTrain, renderHistory, renderImport, renderData, destroyTrainer, recordAttempt, recordDiagnosis, newPuzzle, rememberGame, storedGame, SITE_LABEL, type Ctx, type Site } from './pages';
 import { $, esc, cap, srcChip, applyMotionClass, reducedMotion, boardDescription } from './ui';
 import { isDue } from './srs';
@@ -304,6 +305,8 @@ function saveCache(id: string, depth: number, evals: (PosEval | null)[]) {
   }
 }
 
+const legalCount = (fen: string) => { try { return new Chess(fen).moves().length; } catch { return 1; } };
+
 // ---------------- review view ----------------
 const DEPTHS: Record<string, { depth: number; label: string }> = {
   fast: { depth: 14, label: 'Fast · depth 14' },
@@ -435,27 +438,52 @@ class ReviewView {
     this.update();
   }
 
+  anaGen = 0;
+  reused = 0;
   startAnalysis() {
     pool?.destroy();
     pool = null;
+    const gen = ++this.anaGen;
     const depth = DEPTHS[this.depthKey]?.depth ?? 18;
     const fens = this.fens;
     const cached = loadCache(this.game.id, depth);
     this.evals = cached && cached.length === fens.length ? cached : fens.map((f) => terminalEval(f));
     this.done = this.evals.filter(Boolean).length;
+    this.reused = 0;
     this.recompute();
     if (this.done === fens.length) { this.drawProgress(); return; }
+    void this.fillFromBatch(gen, depth).then(() => { if (gen === this.anaGen && !this.destroyed) this.runEngine(gen, depth); });
+  }
+
+  /** Positions the background batch (or an earlier review) already analysed at least this deep are reused as they are;
+   *  only the rest go to the engine. The coach and the "complete" state still wait for every position. */
+  async fillFromBatch(gen: number, depth: number) {
+    const fens = this.fens;
+    const found = await Promise.all(fens.map((f, i) => (this.evals[i] ? null : cachedAtLeast(f, depth, 3, legalCount(f)).catch(() => null))));
+    if (gen !== this.anaGen || this.destroyed) return;
+    found.forEach((ev, i) => { if (ev && !this.evals[i]) { this.evals[i] = ev; this.done++; this.reused++; } });
+    if (this.reused) this.scheduleRecompute();
+  }
+
+  runEngine(gen: number, depth: number) {
+    const fens = this.fens;
+    const finish = () => {
+      saveCache(this.game.id, depth, this.evals);
+      this.drawProgress();
+    };
+    if (this.done === fens.length) { finish(); return; }
     void batch.hold(true);
     const myPool = (pool = new EnginePool(EnginePool.defaultSize()));
     const t0 = performance.now();
     fens.forEach((fen, i) => {
       if (this.evals[i]) return;
       myPool.analyse(fen, depth, 3, depth >= 22 ? 15000 : 8000).then((ev) => {
-        if (this.destroyed || pool !== myPool) return;
+        if (this.destroyed || pool !== myPool || gen !== this.anaGen) return;
         this.evals[i] = ev;
         this.done++;
+        void putCached(fen, depth, 3, ev);
         if (this.done === fens.length) {
-          saveCache(this.game.id, depth, this.evals);
+          finish();
           console.info(`analysis done in ${((performance.now() - t0) / 1000).toFixed(1)}s`);
           myPool.destroy();
           if (pool === myPool) pool = null;
@@ -474,7 +502,7 @@ class ReviewView {
 
   recompute() {
     this.reviews = reviewGame({ plies: this.plies, evals: this.evals, book });
-    (window as any).__review = { plies: this.plies.map((p) => p.san), reviews: this.reviews, evals: this.evals, done: this.done, total: this.fens.length, go: (n: number) => this.go(n) };
+    (window as any).__review = { plies: this.plies.map((p) => p.san), reviews: this.reviews, evals: this.evals, done: this.done, total: this.fens.length, reused: this.reused, go: (n: number) => this.go(n) };
     this.drawProgress();
     this.drawMoveList();
     this.drawGraph();
@@ -492,7 +520,7 @@ class ReviewView {
     $('.fill', el).style.width = pct + '%';
     const depth = DEPTHS[this.depthKey]?.depth ?? 18;
     $('.ptext', el).textContent = this.done >= n
-      ? `Analysis complete · depth ${depth}`
+      ? `Analysis complete · depth ${depth}${this.reused ? ` · ${this.reused} positions reused from earlier analysis` : ''}`
       : `Analysing… ${this.done}/${n} positions (${pct}%) · depth ${depth} · ${pool?.size ?? 1} thread${(pool?.size ?? 1) > 1 ? 's' : ''}`;
   }
 

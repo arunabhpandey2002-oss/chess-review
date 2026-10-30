@@ -132,7 +132,7 @@ export async function renderPuzzles(ctx: Ctx, filter: string | null) {
             <div class="muted small">${esc(puzzleTitle(p))} · ${esc(puzzleSub(p))}${safeUrl(p.gameUrl) ? ` · <a href="${esc(safeUrl(p.gameUrl))}" target="_blank" rel="noopener">source game ↗</a>` : ''}</div>
             <div class="muted small">${p.srs.history.length ? `${p.srs.history.length} attempt${p.srs.history.length === 1 ? '' : 's'} · last: ${last.solved ? `solved${last.hints ? ` with ${Number(last.hints) || 0} hint${last.hints > 1 ? 's' : ''}` : ''}${last.attempts > 1 ? ` in ${Number(last.attempts) || 0} tries` : ''}` : 'not solved'}${last.failure ? ` (${last.failure === 'calculation' ? 'calculation slip' : 'pattern not yet recognised'})` : ''}` : 'Not tried yet'}</div>
           </div>
-          <div class="pz-act"><button class="btn" data-train="${esc(p.id)}">Train</button><button class="btn ghost" data-game="${esc(p.gameId)}" data-ply="${(Number(p.core.ply) || 0) + 1}">Open game</button></div>
+          <div class="pz-act"><button class="btn" data-train="${esc(p.id)}">Train</button><button class="btn ghost" data-analyse="${esc(p.id)}" aria-label="Analyse this position on the analysis board">Analyse</button>${p.gameId ? `<button class="btn ghost" data-game="${esc(p.gameId)}" data-ply="${(Number(p.core.ply) || 0) + 1}">Open game</button>` : ''}</div>
         </div>`;
       }).join('') : `<div class="empty">No saved positions yet. Review a game and its critical moments are saved here automatically.</div>`}</div>
     </section>`;
@@ -140,6 +140,12 @@ export async function renderPuzzles(ctx: Ctx, filter: string | null) {
   ctx.app.querySelectorAll<HTMLButtonElement>('.chip[data-f]').forEach((b) => (b.onclick = () => ctx.navigate({ view: 'puzzles', tag: b.dataset.f || null })));
   ctx.app.querySelectorAll<HTMLButtonElement>('[data-train]').forEach((b) => (b.onclick = () => ctx.navigate({ view: 'train', p: b.dataset.train! })));
   ctx.app.querySelectorAll<HTMLButtonElement>('[data-game]').forEach((b) => (b.onclick = () => ctx.navigate({ view: null, game: b.dataset.game!, ply: b.dataset.ply! })));
+  ctx.app.querySelectorAll<HTMLButtonElement>('[data-analyse]').forEach((b) => (b.onclick = async () => {
+    const p = all.find((x) => x.id === b.dataset.analyse);
+    if (!p) return;
+    b.disabled = true;
+    try { const id = await createWorkspace(ctx.pk, lessonDoc(p.core, p.core.color, puzzleTitle(p))); ctx.navigate({ view: 'analysis', ws: id, tag: null }); } catch { b.disabled = false; }
+  }));
   const tr = $<HTMLButtonElement>('#train');
   if (tr) tr.onclick = () => ctx.navigate({ view: 'train', p: null });
 }
@@ -304,7 +310,7 @@ export async function renderData(ctx: Ctx) {
   $<HTMLInputElement>('#imp').onchange = async (e) => {
     const f = (e.target as HTMLInputElement).files?.[0];
     if (!f) return;
-    try { const n = await store.importAll(await f.text()); msg.textContent = `Imported ${n.reviews} reviews and ${n.puzzles} positions.`; setTimeout(() => renderData(ctx), 800); }
+    try { const n = await store.importAll(await f.text()); msg.textContent = `Imported ${n.reviews} reviews and ${n.puzzles} positions${n.positions ? `, plus ${n.positions} saved engine results` : ''}.`; setTimeout(() => renderData(ctx), 800); }
     catch (err) { msg.textContent = (err as Error).message || 'Could not read that file.'; }
   };
   $('#del').onclick = async () => {

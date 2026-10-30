@@ -13,7 +13,8 @@ import type { MomentCore } from './explain';
 import type { Line } from './engine';
 
 export const ENGINE_NAME = 'Stockfish 19 lite (WASM)';
-export const ENGINE_NET = 'nn-61e7af4bb97d';
+import { ENGINE_NET } from './evalschema';
+export { ENGINE_NET };
 
 export type Band = 'best' | 'acceptable' | 'playable' | 'fails' | 'illegal';
 export type MechanismId =
