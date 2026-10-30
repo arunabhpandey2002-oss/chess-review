@@ -61,11 +61,11 @@ async function run(tag, ctxOpts) {
   ok(`${tag}: step back`, /1\/\d/.test(await page.locator('#ex-pos').innerText()));
   // questions
   for (const q of ['threat', 'mine', 'reply', 'other']) {
-    await page.click(`[data-q="${q}"]`);
+    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true))); await page.click(`[data-q="${q}"]`);
     const a = await page.locator('#ex-answer').innerText();
     ok(`${tag}: question ${q}`, a.length > 30 && !/undefined|NaN/.test(a), a.replace(/\n/g, ' | ').slice(0, 160));
   }
-  await page.click('[data-q="threat"]');
+  await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true))); await page.click('[data-q="threat"]');
   const th = await page.locator('#ex-answer').innerText();
   ok(`${tag}: threat answer names f2 and the g2 queen`, /your pawn on f2 was attacked by their queen on g2 and had no defender/.test(th), '');
   // try an arbitrary move from the board

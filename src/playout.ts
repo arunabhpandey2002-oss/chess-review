@@ -20,11 +20,11 @@ export function strengthFor(rating?: number | null): Strength {
   const r = Math.round(rating && rating > 0 ? rating : 1200);
   if (r >= ELO_MIN) {
     const elo = clamp(r, ELO_MIN, ELO_MAX);
-    return { rating: r, options: ['UCI_LimitStrength value true', `UCI_Elo value ${elo}`], depth: 12, movetime: 600, label: `Stockfish limited to ${elo} Elo` };
+    return { rating: r, options: ['UCI_LimitStrength value true', `UCI_Elo value ${elo}`], depth: 12, movetime: 600, label: `Engine limited to ${elo} Elo` };
   }
   const t = clamp((r - 400) / (ELO_MIN - 400), 0, 1);
   const depth = 1 + Math.round(t * 4);
-  return { rating: r, options: ['Skill Level value 0'], depth, movetime: 100 + Math.round(t * 300), label: `Stockfish at skill 0, depth ${depth} (its weakest settings; may still be stronger than ${r})` };
+  return { rating: r, options: ['Skill Level value 0'], depth, movetime: 100 + Math.round(t * 300), label: `Engine at skill 0, depth ${depth} (its weakest settings; may still be stronger than ${r})` };
 }
 
 export type Outcome = 'mate-win' | 'mate-loss' | 'stalemate' | 'repetition' | 'insufficient' | 'fifty' | 'draw' | 'resigned' | 'stopped';

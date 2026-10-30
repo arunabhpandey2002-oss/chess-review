@@ -21,7 +21,7 @@ const BASE = 'https://api.chess.com/pub/player/';
 async function getJson(url: string) {
   const r = await fetch(url);
   if (r.status === 404) throw new Error('not-found');
-  if (!r.ok) throw new Error(`Chess.com API error ${r.status}`);
+  if (!r.ok) throw new Error(`Couldn't load games (error ${r.status})`);
   return r.json();
 }
 

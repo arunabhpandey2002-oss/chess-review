@@ -26,9 +26,9 @@ async function review(url, label) {
 
 // 1. summary on the reference game
 await review('?user=Arunabh-pandey&game=186131916376', '186131916376');
-const story = (await page.locator('.story').innerText()).trim();
+await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true))); const story = (await page.locator('.story').innerText()).trim();
 ok('summary story shown', story.length > 40, story.slice(0, 160));
-const facts = (await page.locator('.coach-facts').innerText()).replace(/\s+/g, ' ');
+await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true))); const facts = (await page.locator('.coach-card').innerText()).replace(/\s+/g, ' ');
 ok('summary has turning point, strongest decision, phases and time', /Turning point/.test(facts) && /Strongest decision/.test(facts) && /By phase/.test(facts) && /Time/.test(facts), facts.slice(0, 220));
 ok('recommended action shown', (await page.locator('.action').count()) === 1);
 ok('source labels shown', (await page.locator('.src').count()) >= 2);

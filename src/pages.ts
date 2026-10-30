@@ -1,4 +1,5 @@
 // Home training panel, Mistakes to Master, training session, history, import and data pages.
+import { safeUrl } from './safe';
 import { Chessground } from 'chessground';
 import type { Key } from 'chessground/types';
 import * as store from './store';
@@ -56,7 +57,7 @@ export function puzzleTitle(p: Puzzle): string {
   return `Move ${p.core.moveNumber} · ${p.core.color === 'w' ? 'White' : 'Black'} to play`;
 }
 export function puzzleSub(p: Puzzle): string {
-  return `${p.white} vs ${p.black} · ${SITE_LABEL[p.platform] ?? p.platform} · ${fmtDate(p.endTime)}`;
+  return `${p.white} vs ${p.black} · ${fmtDate(p.endTime)}`;
 }
 
 export function miniBoard(el: HTMLElement, fen: string, color: 'w' | 'b', lastUci?: string) {
@@ -91,7 +92,7 @@ export async function renderHomePanel(el: HTMLElement, ctx: Ctx) {
         <div><h2>Your training</h2><p class="muted">${puzzles.length} saved position${puzzles.length === 1 ? '' : 's'} · ${mastered} mastered · ${reviews.length} game${reviews.length === 1 ? '' : 's'} reviewed</p></div>
         <div class="due-big" aria-label="${due.length} positions due"><span class="n">${due.length}</span><span>due now</span></div>
       </div>
-      ${due.length ? `<div class="due-row">${due.slice(0, 2).map((p) => `<button class="due-pos" data-id="${esc(p.id)}" aria-label="Train ${esc(puzzleTitle(p))}"><div class="mini" data-fen="${esc(p.core.fenBefore)}" data-color="${p.core.color}"></div><span><b>${esc(MOTIF_INFO[p.core.tags.primary.motif].name)}</b><br><span class="muted small">${esc(puzzleTitle(p))}</span></span></button>`).join('')}</div>
+      ${due.length ? `<div class="due-row">${due.slice(0, 2).map((p) => `<button class="due-pos" data-id="${esc(p.id)}" aria-label="Train ${esc(puzzleTitle(p))}"><div class="mini" data-fen="${esc(p.core.fenBefore)}" data-color="${p.core.color === 'b' ? 'b' : 'w'}"></div><span><b>${esc(MOTIF_INFO[p.core.tags.primary.motif].name)}</b><br><span class="muted small">${esc(puzzleTitle(p))}</span></span></button>`).join('')}</div>
         <button class="btn primary" id="start-due">Train ${due.length} due position${due.length === 1 ? '' : 's'}</button>`
         : `<p>Nothing is due. ${puzzles.length ? `Next review ${fmtWhen(Math.min(...puzzles.filter((p) => !p.srs.retired).map((p) => p.srs.due).concat([Infinity])), now)}.` : ''}</p>`}
       ${insight ? `<div class="insight"><b>Pattern:</b> ${esc(insight.text)} <span class="muted small">${esc(insight.note)}</span> <span class="src src-estimate" title="Counted from your reviewed games">Estimate</span></div>`
@@ -117,18 +118,18 @@ export async function renderPuzzles(ctx: Ctx, filter: string | null) {
       <div class="page-head"><h1>Mistakes to Master</h1>
         <button class="btn primary" id="train" ${due ? '' : 'disabled'}>${due ? `Train ${due} due` : 'Nothing due'}</button></div>
       <p class="muted">Positions from your own games where a better move existed. Solve them on first try and they come back less often; after four clean solves at a 3-week interval they count as mastered. Miss one and it comes back in 10 minutes.</p>
-      ${tags.size ? `<div class="filters" role="group" aria-label="Filter by pattern"><button class="chip ${filter ? '' : 'on'}" data-f="">All (${all.length})</button>${[...tags.entries()].sort((a, b) => b[1] - a[1]).map(([t, n]) => `<button class="chip ${filter === t ? 'on' : ''}" data-f="${t}">${esc(MOTIF_INFO[t as keyof typeof MOTIF_INFO]?.name ?? t)} (${n})</button>`).join('')}</div>` : ''}
+      ${tags.size ? `<div class="filters" role="group" aria-label="Filter by pattern"><button class="chip ${filter ? '' : 'on'}" data-f="">All (${all.length})</button>${[...tags.entries()].sort((a, b) => b[1] - a[1]).map(([t, n]) => `<button class="chip ${filter === t ? 'on' : ''}" data-f="${esc(t)}">${esc(MOTIF_INFO[t as keyof typeof MOTIF_INFO]?.name ?? t)} (${n})</button>`).join('')}</div>` : ''}
       <div class="pz-list">${list.length ? list.map((p) => {
         const st = srsStatus(p.srs, now);
         const last = p.srs.history[p.srs.history.length - 1];
         return `<div class="pz-row" data-id="${esc(p.id)}">
-          <div class="mini" data-fen="${esc(p.core.fenBefore)}" data-color="${p.core.color}"></div>
+          <div class="mini" data-fen="${esc(p.core.fenBefore)}" data-color="${p.core.color === 'b' ? 'b' : 'w'}"></div>
           <div class="pz-main">
             <div><b>${esc(MOTIF_INFO[p.core.tags.primary.motif].name)}</b> <span class="tag">${esc(SKILL_LABEL[p.core.tags.primary.skill])}</span> <span class="st st-${st}">${st === 'due' ? 'Due' : st === 'new' ? 'New' : st === 'mastered' ? 'Mastered' : st === 'learning' ? `Retry ${fmtWhen(p.srs.due, now)}` : `Next ${fmtWhen(p.srs.due, now)}`}</span></div>
-            <div class="muted small">${esc(puzzleTitle(p))} · ${esc(puzzleSub(p))}${p.gameUrl ? ` · <a href="${esc(p.gameUrl)}" target="_blank" rel="noopener">source game ↗</a>` : ''}</div>
-            <div class="muted small">${p.srs.history.length ? `${p.srs.history.length} attempt${p.srs.history.length === 1 ? '' : 's'} · last: ${last.solved ? `solved${last.hints ? ` with ${last.hints} hint${last.hints > 1 ? 's' : ''}` : ''}${last.attempts > 1 ? ` in ${last.attempts} tries` : ''}` : 'not solved'}${last.failure ? ` (${last.failure === 'calculation' ? 'calculation slip' : 'pattern not yet recognised'})` : ''}` : 'Not tried yet'}</div>
+            <div class="muted small">${esc(puzzleTitle(p))} · ${esc(puzzleSub(p))}${safeUrl(p.gameUrl) ? ` · <a href="${esc(safeUrl(p.gameUrl))}" target="_blank" rel="noopener">source game ↗</a>` : ''}</div>
+            <div class="muted small">${p.srs.history.length ? `${p.srs.history.length} attempt${p.srs.history.length === 1 ? '' : 's'} · last: ${last.solved ? `solved${last.hints ? ` with ${Number(last.hints) || 0} hint${last.hints > 1 ? 's' : ''}` : ''}${last.attempts > 1 ? ` in ${Number(last.attempts) || 0} tries` : ''}` : 'not solved'}${last.failure ? ` (${last.failure === 'calculation' ? 'calculation slip' : 'pattern not yet recognised'})` : ''}` : 'Not tried yet'}</div>
           </div>
-          <div class="pz-act"><button class="btn" data-train="${esc(p.id)}">Train</button><button class="btn ghost" data-game="${esc(p.gameId)}" data-ply="${p.core.ply + 1}">Open game</button></div>
+          <div class="pz-act"><button class="btn" data-train="${esc(p.id)}">Train</button><button class="btn ghost" data-game="${esc(p.gameId)}" data-ply="${(Number(p.core.ply) || 0) + 1}">Open game</button></div>
         </div>`;
       }).join('') : `<div class="empty">No saved positions yet. Review a game and its critical moments are saved here automatically.</div>`}</div>
     </section>`;
@@ -207,21 +208,22 @@ export async function renderImport(ctx: Ctx) {
     <section class="page import">
       <div class="page-head"><h1>Import games</h1></div>
       <div class="import-grid">
-        <form class="card" id="f-cc"><h2>Chess.com</h2><label for="cc-user">Username</label><input id="cc-user" required spellcheck="false" autocomplete="off" value="${ctx.site === 'chesscom' ? esc(ctx.user) : ''}"><button class="btn primary">Load games</button><p class="muted small">Public archive API; finished games only.</p></form>
-        <form class="card" id="f-li"><h2>Lichess</h2><label for="li-user">Username</label><input id="li-user" required spellcheck="false" autocomplete="off" value="${ctx.site === 'lichess' ? esc(ctx.user) : ''}"><button class="btn primary">Load games</button><p class="muted small">Public game export; finished standard games only. Lichess's own engine evaluations are not used.</p></form>
+        <form class="card" id="f-user"><h2>Load a player's games</h2>
+          <label for="src-user">Username</label>
+          <div class="row"><select id="src-site" aria-label="Where the games are"><option value="chesscom" ${ctx.site === 'chesscom' ? 'selected' : ''}>Chess.com</option><option value="lichess" ${ctx.site === 'lichess' ? 'selected' : ''}>Lichess</option></select><input id="src-user" required spellcheck="false" autocomplete="off" value="${esc(ctx.user)}"><button class="btn primary">Load games</button></div>
+          <p class="muted small">Public, finished standard games only.</p></form>
         <form class="card wide" id="f-pgn"><h2>Paste or upload PGN</h2>
           <label for="pgn-text">PGN (one or more games)</label><textarea id="pgn-text" rows="7" spellcheck="false" placeholder='[Event "..."]&#10;1. e4 e5 2. Nf3 ...  1-0'></textarea>
           <div class="row"><label class="filebtn btn ghost">Upload .pgn<input type="file" id="pgn-file" accept=".pgn,.txt,application/x-chess-pgn" hidden></label>
           <label for="pgn-side">I played</label><select id="pgn-side"><option value="auto">Detect from my username (${esc(ctx.user)})</option><option value="w">White</option><option value="b">Black</option></select>
-          <button class="btn primary">Import</button></div>
+          <button class="btn">Import</button></div>
           <div id="pgn-msg" role="status" aria-live="polite"></div>
           <p class="muted small">Games without a result (still in progress) are not analysed.</p>
         </form>
       </div>
       ${games.length ? `<h2>Imported PGN games</h2><div class="hist-list">${games.map((g) => `<a class="game-row" href="#" data-game="${esc(g.game.id)}"><span class="res">PGN</span><span class="g-main"><span class="g-players"><b>${esc(g.game.white.username)}</b> <span class="vs">vs</span> <b>${esc(g.game.black.username)}</b></span><span class="g-meta">${fmtDate(g.game.endTime)} · you played ${g.myColor === 'b' ? 'Black' : 'White'}</span></span><span class="g-go">Review ›</span></a>`).join('')}</div>` : ''}
     </section>`;
-  $('#f-cc').onsubmit = (e) => { e.preventDefault(); const v = $<HTMLInputElement>('#cc-user').value.trim(); if (v) ctx.navigate({ site: 'chesscom', user: v, view: null, game: null }); };
-  $('#f-li').onsubmit = (e) => { e.preventDefault(); const v = $<HTMLInputElement>('#li-user').value.trim(); if (v) ctx.navigate({ site: 'lichess', user: v, view: null, game: null }); };
+  $('#f-user').onsubmit = (e) => { e.preventDefault(); const v = $<HTMLInputElement>('#src-user').value.trim(); if (v) ctx.navigate({ site: $<HTMLSelectElement>('#src-site').value, user: v, view: null, game: null }); };
   $<HTMLInputElement>('#pgn-file').onchange = async (e) => {
     const f = (e.target as HTMLInputElement).files?.[0];
     if (f) $<HTMLTextAreaElement>('#pgn-text').value = await f.text();
@@ -259,7 +261,7 @@ export async function renderData(ctx: Ctx) {
     <section class="page data">
       <div class="page-head"><h1>Your data & settings</h1></div>
       <div class="card"><h2>What leaves your device</h2>
-        <p>Only requests to the public Chess.com and Lichess APIs to download your games. Engine analysis runs in your browser. Reviews, puzzles and progress are stored only in this browser (IndexedDB). There are no accounts, no tracking and no server-side copy.</p>
+        <p>Only requests to public game archives to download your games. Engine analysis runs in your browser. Reviews, puzzles and progress are stored only in this browser (IndexedDB). There are no accounts, no tracking and no server-side copy.</p>
         <p class="muted small">Stored here: ${b.profiles.length} profile${b.profiles.length === 1 ? '' : 's'}, ${b.reviews.length} reviewed game${b.reviews.length === 1 ? '' : 's'}, ${b.puzzles.length} saved position${b.puzzles.length === 1 ? '' : 's'}.</p>
         <div class="row"><button class="btn" id="exp">Export JSON</button><label class="btn ghost filebtn">Import JSON<input type="file" id="imp" accept=".json,application/json" hidden></label><button class="btn danger" id="del">Delete all data</button></div>
         <div id="data-msg" role="status" aria-live="polite"></div>
@@ -270,6 +272,7 @@ export async function renderData(ctx: Ctx) {
         <label for="set-motion">Animations</label>
         <select id="set-motion"><option value="system" ${motion === 'system' ? 'selected' : ''}>Follow system setting${reducedMotion() && motion === 'system' ? ' (reduced)' : ''}</option><option value="reduce" ${motion === 'reduce' ? 'selected' : ''}>Reduce motion</option><option value="full" ${motion === 'full' ? 'selected' : ''}>Full animations</option></select>
       </div>
+      <p class="muted licence">Analysis uses the Stockfish engine and the chessground board, both under the GNU GPL v3, running in your browser. <a href="${import.meta.env.BASE_URL}engine/COPYING-stockfish.txt" target="_blank" rel="noopener">Licence</a></p>
     </section>`;
   const msg = $('#data-msg');
   $('#exp').onclick = async () => {
@@ -283,7 +286,7 @@ export async function renderData(ctx: Ctx) {
   $<HTMLInputElement>('#imp').onchange = async (e) => {
     const f = (e.target as HTMLInputElement).files?.[0];
     if (!f) return;
-    try { const n = await store.importAll(JSON.parse(await f.text())); msg.textContent = `Imported ${n.reviews} reviews and ${n.puzzles} positions.`; setTimeout(() => renderData(ctx), 800); }
+    try { const n = await store.importAll(await f.text()); msg.textContent = `Imported ${n.reviews} reviews and ${n.puzzles} positions.`; setTimeout(() => renderData(ctx), 800); }
     catch (err) { msg.textContent = (err as Error).message || 'Could not read that file.'; }
   };
   $('#del').onclick = async () => {

@@ -1,4 +1,5 @@
 // Lichess (public NDJSON export) and pasted/uploaded PGN imports. Everything runs in the browser.
+import { safeUrl } from './safe';
 import { Chess } from 'chess.js';
 import type { GameSummary, PlayerSide } from './api';
 
@@ -22,7 +23,7 @@ export function lichessGameToSummary(g: any): GameSummary | null {
   if (!g || g.variant !== 'standard' || UNFINISHED.has(g.status) || !g.pgn) return null;
   const side = (c: 'white' | 'black'): PlayerSide => {
     const p = g.players?.[c] ?? {};
-    const name = p.user?.name ?? (p.aiLevel ? `Stockfish level ${p.aiLevel}` : 'Anonymous');
+    const name = p.user?.name ?? (p.aiLevel ? `Computer level ${p.aiLevel}` : 'Anonymous');
     let result: string;
     if (g.winner === c) result = 'win';
     else if (!g.winner) result = LI_STATUS[g.status] === 'stalemate' ? 'stalemate' : g.status === 'insufficientMaterialClaim' ? 'insufficient' : 'agreed';
@@ -50,8 +51,8 @@ export async function fetchLichessGames(user: string, max = 30, until?: number):
   if (until) q.set('until', String(until));
   const r = await fetch(`${LI}/api/games/user/${encodeURIComponent(user)}?${q}`, { headers: { Accept: 'application/x-ndjson' } });
   if (r.status === 404) throw new Error('not-found');
-  if (r.status === 429) throw new Error('Lichess is rate-limiting requests; wait a minute and try again');
-  if (!r.ok) throw new Error(`Lichess API error ${r.status}`);
+  if (r.status === 429) throw new Error('Too many requests right now; wait a minute and try again');
+  if (!r.ok) throw new Error(`Couldn't load games (error ${r.status})`);
   const text = await r.text();
   const out: GameSummary[] = [];
   for (const line of text.split('\n')) {
@@ -64,7 +65,7 @@ export async function fetchLichessGames(user: string, max = 30, until?: number):
 export async function fetchLichessProfile(user: string): Promise<{ username: string; url: string }> {
   const r = await fetch(`${LI}/api/user/${encodeURIComponent(user)}`);
   if (r.status === 404) throw new Error('not-found');
-  if (!r.ok) throw new Error(`Lichess API error ${r.status}`);
+  if (!r.ok) throw new Error(`Couldn't load games (error ${r.status})`);
   const j = await r.json();
   return { username: j.username, url: j.url };
 }
@@ -108,7 +109,7 @@ export function importPgn(text: string): PgnImport {
     const t = Date.parse(date.replace(/\./g, '-') + (h.UTCTime ? `T${h.UTCTime}Z` : ''));
     ok.push({
       id: `pgn-${hash(pgn)}`,
-      url: h.Link ?? (h.Site?.startsWith('http') ? h.Site : ''),
+      url: safeUrl(h.Link) || safeUrl(h.Site),
       pgn,
       white: { username: h.White || 'White', rating: +(h.WhiteElo ?? 0) || 0, result: sideRes('w') },
       black: { username: h.Black || 'Black', rating: +(h.BlackElo ?? 0) || 0, result: sideRes('b') },

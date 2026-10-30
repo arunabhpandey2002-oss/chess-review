@@ -90,7 +90,7 @@ for (const [side, g] of Object.entries(GAMES)) {
     await page.click('#mc-explore');
     await page.waitForSelector('.ex-overlay cg-board');
     await check(page, `${t}-explore`, '.ex-overlay');
-    await page.click('[data-q="mine"], [data-q="threat"]');
+    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true))); await page.click('[data-q="mine"], [data-q="threat"]');
     await page.click('[data-line="best"]');
     await page.click('#ex-next');
     await check(page, `${t}-explore-step`, '.ex-overlay');

@@ -5,6 +5,8 @@ import type { MomentCore } from './explain';
 import type { SrsState } from './srs';
 import type { Level } from './moments';
 import type { Phase } from './concepts';
+import { MOTIF_INFO, SKILL_LABEL } from './concepts';
+import { safeUrl } from './safe';
 
 export const DB_NAME = 'chess-review';
 const DB_VERSION = 1;
@@ -121,15 +123,66 @@ export async function exportAll(): Promise<Backup> {
   return { app: 'chess-review', version: 1, exportedAt: new Date().toISOString(), profiles, games, reviews, puzzles };
 }
 
+const MAX_BACKUP_BYTES = 50 * 1024 * 1024;
+const BAD_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+const ID_RE = /^[\w.:|@+-]{1,200}$/;
+const int = (v: unknown, d = 0) => (Number.isFinite(Number(v)) ? Math.trunc(Number(v)) : d);
+const num = (v: unknown, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
+const obj = (v: unknown): v is Record<string, any> => !!v && typeof v === 'object' && !Array.isArray(v);
+const oneOf = <T extends string>(v: unknown, opts: readonly T[], d: T): T => (opts.includes(v as T) ? (v as T) : d);
+/** Removes HTML brackets from every string and drops keys that could reach an object prototype. */
+function clean(v: unknown, depth = 0): unknown {
+  if (depth > 40) return null;
+  if (typeof v === 'string') return v.replace(/[<>]/g, '');
+  if (Array.isArray(v)) return v.map((x) => clean(x, depth + 1));
+  if (obj(v)) {
+    const o: Record<string, unknown> = {};
+    for (const [k, x] of Object.entries(v)) if (!BAD_KEYS.has(k)) o[k] = clean(x, depth + 1);
+    return o;
+  }
+  return typeof v === 'number' || typeof v === 'boolean' || v === null ? v : null;
+}
+
+/** Parses and checks a backup file. Anything that does not look like data this app wrote is dropped or reset. */
+export function parseBackup(text: string): Backup {
+  if (text.length > MAX_BACKUP_BYTES) throw new Error('That file is too large to be a rook-i.e. mistakes backup.');
+  let raw: unknown;
+  try { raw = JSON.parse(text, (k, v) => (BAD_KEYS.has(k) ? undefined : v)); } catch { throw new Error('That file is not valid JSON.'); }
+  const x = clean(raw) as any;
+  if (!obj(x) || x.app !== 'chess-review' || !Array.isArray(x.puzzles)) throw new Error('That file is not a rook-i.e. mistakes backup.');
+  const arr = (v: unknown) => (Array.isArray(v) ? v.filter(obj) : []);
+  const side = (v: any) => ({ ...v, username: String(v?.username ?? ''), rating: int(v?.rating), result: String(v?.result ?? '') });
+  const games = arr(x.games).filter((g) => typeof g.key === 'string' && obj(g.game) && ID_RE.test(String(g.game.id))).map((g) => ({
+    ...g, profileKey: String(g.profileKey ?? ''), myColor: g.myColor === 'b' ? 'b' : g.myColor === 'w' ? 'w' : undefined, savedAt: num(g.savedAt),
+    game: { ...g.game, id: String(g.game.id), url: safeUrl(g.game.url), pgn: String(g.game.pgn ?? ''), white: side(g.game.white), black: side(g.game.black), endTime: num(g.game.endTime), timeClass: String(g.game.timeClass ?? 'game'), timeControl: String(g.game.timeControl ?? '-'), opening: String(g.game.opening ?? ''), rated: !!g.game.rated },
+  })) as StoredGame[];
+  const reviews = arr(x.reviews).filter((r) => typeof r.key === 'string' && ID_RE.test(String(r.gameId))).map((r) => ({
+    ...r, url: safeUrl(r.url), myColor: r.myColor === 'b' ? 'b' : 'w', result: oneOf(r.result, ['win', 'loss', 'draw'] as const, 'draw'), endTime: num(r.endTime),
+    accuracy: r.accuracy == null ? null : num(r.accuracy), errorTags: Array.isArray(r.errorTags) ? r.errorTags.map(String) : [],
+    moments: arr(r.moments).map((m) => ({ ...m, ply: int(m.ply), moveNumber: int(m.moveNumber), tag: String(m.tag ?? '') })),
+  })) as StoredReview[];
+  const motifs = Object.keys(MOTIF_INFO); const skills = Object.keys(SKILL_LABEL);
+  const puzzles = arr(x.puzzles).filter((p) => ID_RE.test(String(p.id)) && obj(p.core) && typeof p.core.fenBefore === 'string' && obj(p.srs) && obj(p.core.tags) && obj(p.core.tags.primary)
+    && motifs.includes(p.core.tags.primary.motif) && skills.includes(p.core.tags.primary.skill)).map((p) => ({
+    ...p, id: String(p.id), gameId: ID_RE.test(String(p.gameId)) ? String(p.gameId) : '', gameUrl: safeUrl(p.gameUrl), endTime: num(p.endTime), createdAt: num(p.createdAt),
+    rating: p.rating == null ? null : int(p.rating),
+    core: { ...p.core, ply: int(p.core.ply), moveNumber: int(p.core.moveNumber), color: p.core.color === 'b' ? 'b' : 'w', wpBest: num(p.core.wpBest) },
+    srs: { ...p.srs, ease: num(p.srs.ease, 2.5), interval: num(p.srs.interval), reps: int(p.srs.reps), lapses: int(p.srs.lapses), due: num(p.srs.due), retired: !!p.srs.retired,
+      history: arr(p.srs.history).map((h) => ({ ...h, t: num(h.t), solved: !!h.solved, attempts: int(h.attempts), hints: int(h.hints), revealed: !!h.revealed, close: int(h.close), quality: int(h.quality),
+        failure: h.failure === 'calculation' || h.failure === 'concept' ? h.failure : undefined })) },
+  })) as Puzzle[];
+  const levels = ['beginner', 'intermediate', 'advanced'] as const;
+  const profiles = arr(x.profiles).filter((p) => typeof p.key === 'string').map((p) => ({ ...p, username: String(p.username ?? ''), level: p.level == null ? undefined : oneOf(p.level, levels, 'beginner'), createdAt: num(p.createdAt), updatedAt: num(p.updatedAt) })) as Profile[];
+  return { app: 'chess-review', version: 1, exportedAt: String(x.exportedAt ?? ''), profiles, games, reviews, puzzles };
+}
+
 export async function importAll(b: unknown): Promise<{ profiles: number; reviews: number; puzzles: number; games: number }> {
-  const x = b as Backup;
-  if (!x || x.app !== 'chess-review' || !Array.isArray(x.puzzles)) throw new Error('That file is not a rook-i.e. mistakes backup.');
+  const x = parseBackup(typeof b === 'string' ? b : JSON.stringify(b ?? null));
   const n = { profiles: 0, reviews: 0, puzzles: 0, games: 0 };
-  for (const p of x.profiles ?? []) { await put('profiles', p); n.profiles++; }
-  for (const g of x.games ?? []) { await put('games', g); n.games++; }
-  for (const r of x.reviews ?? []) { await put('reviews', r); n.reviews++; }
+  for (const p of x.profiles) { await put('profiles', p); n.profiles++; }
+  for (const g of x.games) { await put('games', g); n.games++; }
+  for (const r of x.reviews) { await put('reviews', r); n.reviews++; }
   for (const p of x.puzzles) {
-    if (!p?.id || !p.core?.fenBefore || !p.srs) continue;
     const old = await get<Puzzle>('puzzles', p.id);
     // keep whichever copy has more review history
     if (!old || (p.srs.history?.length ?? 0) >= (old.srs.history?.length ?? 0)) { await put('puzzles', p); n.puzzles++; }

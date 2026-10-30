@@ -57,7 +57,7 @@ export class Explorer {
   san(t: string) { return esc(renderText(t, 'san')); }
   sc(s: Side) { return povScore(s.score, this.mover); }
   /** A bullet list of facts with one quiet source line underneath. */
-  facts(fs: Fact[], seen = new Set<string>()) { return `<ul>${fs.map((f) => `<li>${this.txt(f.text, seen)}</li>`).join('')}</ul>${srcTags(fs.map((f) => f.src))}`; }
+  facts(fs: Fact[], seen = new Set<string>(), tags = true) { return `<ul>${fs.map((f) => `<li>${this.txt(f.text, seen)}</li>`).join('')}</ul>${tags ? srcTags(fs.map((f) => f.src)) : ''}`; }
   get mover() { return this.x.mover; }
   get you() { return this.mover === this.o.me; }
   get sideWord() { return this.mover === 'w' ? 'White' : 'Black'; }
@@ -74,7 +74,7 @@ export class Explorer {
       <ul>${facts.map((f) => `<li>${up(f)}.</li>`).join('')}</ul>
       ${left.length ? `<p class="ex-k">Left under attack</p><ul>${left.slice(0, 2).map((f) => `<li>${up(f)}.</li>`).join('')}</ul>` : ''}
       ${s.reply ? `<p class="ex-k">Their best reply</p><p><b>${this.san(s.reply.tok)}</b>${s.reply.facts.length ? `: ${this.txt(s.reply.facts.slice(0, 2).join('; '))}` : ' (a quiet move)'}.</p>` : ''}
-      <div class="ex-col-foot"><button class="btn small" data-line="${kind}">Step through this line</button>${srcTags(['engine', 'rules'])}</div>
+      <div class="ex-col-foot"><button class="btn small" data-line="${kind}">Step through this line</button></div>
     </div>`;
   }
 
@@ -85,7 +85,7 @@ export class Explorer {
     const sub = `${esc(this.o.label)} · ${this.you ? 'your move' : 'their move'} as ${this.sideWord} · scores from ${this.sideWord}'s side (+ is good for ${this.sideWord})`;
     const verdict = this.txt(x.verdict.text);
     const cols = x.same ? this.col(x.best, 'best') : this.col(x.best, 'best') + this.col(x.played, 'played');
-    const cmp = !x.same && x.compare.length ? `<h3 class="ex-h">Why ${this.san(x.best.tok)} is better</h3><div id="ex-compare">${this.facts(x.compare, this.seen)}</div>` : '';
+    const cmp = !x.same && x.compare.length ? `<h3 class="ex-h">Why ${this.san(x.best.tok)} is better</h3><div id="ex-compare">${this.facts(x.compare, this.seen, false)}</div>` : '';
     this.host.innerHTML = `
       ${dlgHead(title, sub, 'ex-close')}
       <div class="trainer explorer">
@@ -105,19 +105,20 @@ export class Explorer {
           </form>
         </div>
         <div class="tr-side ex-side">
-          <div class="ex-verdict" id="ex-verdict"><p>${verdict}</p>${srcTags([x.verdict.src])}</div>
+          <div class="ex-verdict" id="ex-verdict"><p>${verdict}</p></div>
           <div class="ex-cols${x.same ? ' one' : ''}">${cols}</div>
           ${cmp}
+          <div class="src-note">Sources:${srcTags([x.verdict.src, 'engine', 'rules', ...x.compare.map((f) => f.src)])}</div>
         </div>
         <div class="ex-ask">
-          <h3 class="ex-h">Ask</h3>
+          <details class="disclose" id="ex-ask-d"><summary>Ask a question</summary>
           <div class="ex-qs" id="ex-qs">
             <button class="chip" data-q="threat">What was the threat?</button>
             ${x.same ? '' : `<button class="chip" data-q="mine">Why not ${this.san(x.played.tok)}?</button>`}
             <button class="chip" data-q="reply">What does their reply do?</button>
             <button class="chip" data-q="other">Why not another move?</button>
-          </div>
-          <div class="ex-answer" id="ex-answer" role="status" aria-live="polite"><p class="muted">Tap a question, step through a line, or play any move on the board to see the engine's answer.</p></div>
+          </div></details>
+          <div class="ex-answer" id="ex-answer" role="status" aria-live="polite"></div>
         </div>
       </div>`;
     this.cg = Chessground($('#ex-board', this.host), {

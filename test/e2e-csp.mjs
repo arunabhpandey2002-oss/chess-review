@@ -1,0 +1,16 @@
+import { chromium } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+const H = Object.fromEntries(JSON.parse(readFileSync('vercel.json')).headers[0].headers.map((h) => [h.key.toLowerCase(), h.value]));
+const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+const ctx = await b.newContext({ userAgent: 'Mozilla/5.0 (X11; Linux x86_64) Chrome/130 Safari/537.36' });
+await ctx.route('http://localhost:4173/**', async (route) => { const r = await route.fetch(); await route.fulfill({ response: r, headers: { ...r.headers(), ...H } }); });
+const p = await ctx.newPage(); const v = [];
+p.on('console', (m) => { if (/Content Security Policy|Refused/i.test(m.text())) v.push(m.text().slice(0, 220)); });
+p.on('pageerror', (e) => v.push('err ' + e.message));
+await p.goto('http://localhost:4173/?user=Arunabh-pandey&game=186132691608');
+await p.waitForSelector('.progress.complete', { timeout: 300000 });
+await p.evaluate(() => window.__review.go(31)); await p.click('#mc-explore'); await p.waitForTimeout(3000);
+await p.goto('http://localhost:4173/?user=DrNykterstein&site=lichess'); await p.waitForTimeout(5000);
+console.log('rows', await p.locator('.game-row').count(), 'avatar imgs', await p.locator('#user-chip img').count());
+console.log(v.length ? [...new Set(v)].join('\n') : 'no CSP violations');
+await b.close();

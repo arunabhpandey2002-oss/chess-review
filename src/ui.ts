@@ -7,13 +7,13 @@ export const esc = (s: string) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '
 export const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export const SRC_LABEL: Record<Source, string> = {
-  engine: 'Engine (Stockfish)',
+  engine: 'Engine',
   formula: 'Classification (formula)',
   rules: 'Explanation (generated from rules)',
   estimate: 'Estimate',
 };
 const SRC_TIP: Record<Source, string> = {
-  engine: 'Comes straight from Stockfish analysis running in your browser.',
+  engine: 'Comes straight from the chess engine running in your browser.',
   formula: 'Computed from the engine evaluation with a fixed formula (win chance and move labels).',
   rules: 'Written by rules from facts checked on the board and in the engine line. No AI text generator is used.',
   estimate: 'A rough estimate; treat it as a guide, not a measurement.',
