@@ -705,3 +705,6 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
   .ws-grid { grid-template-columns: minmax(0, 1fr); }
   .ws-boardrow .evalbar { width: 12px; }
 }
+#ws-type { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; margin-top: 10px; }
+#ws-type label { white-space: nowrap; }
+#ws-type input { flex: 1 1 auto; min-width: 0; }

@@ -57,7 +57,7 @@ async function playOut(page, tag) {
   await page.waitForSelector('.overlay .trainer');
   await page.click('#tr-reveal');
   await page.waitForSelector('.why-card');
-  const pre = await page.evaluate(() => ({ chips: document.querySelectorAll('[data-why]').length, status: document.querySelector('#tr-status').textContent, lessons: document.querySelectorAll('.tr-lesson .lsec').length, best: window.__trainer.o.core.bestSan, arrows: window.__trainer.cg.state.drawable.autoShapes.length }));
+  const pre = await page.evaluate(() => ({ chips: document.querySelectorAll('[data-why]:not([hidden])').length, status: document.querySelector('#tr-status').textContent, lessons: document.querySelectorAll('.tr-lesson .lsec').length, best: window.__trainer.o.core.bestSan, arrows: window.__trainer.cg.state.drawable.autoShapes.length }));
   ok('question shown before the answer', pre.chips === 6 && pre.lessons === 0 && pre.arrows === 0 && !pre.status.includes(pre.best), JSON.stringify(pre));
   await page.screenshot({ path: `${OUT}/01-why-question.png` });
   await page.click('[data-why="thought-safe"]');

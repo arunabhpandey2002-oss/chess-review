@@ -20,6 +20,7 @@ const { page } = await run({ width: 1400, height: 950 }, false);
 const card = () => page.locator('#movecard').innerText();
 console.log('--- 13...Nc2+ (words) ---\n' + (await card()));
 console.log('graph caption:', await page.locator('.graph-cap').innerText());
+await page.locator('#mc-more summary').click();
 await page.locator('.info').hover();
 await page.waitForTimeout(200);
 console.log('tip:', await page.locator('.info').getAttribute('data-tip'));
