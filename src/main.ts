@@ -199,6 +199,7 @@ async function findGame(id: string): Promise<{ game: GameSummary; myColor: Color
 }
 
 // ---------------- game list ----------------
+let homeOff: (() => void) | null = null;
 async function renderGameList() {
   app.innerHTML = `
     <section class="games">
@@ -209,6 +210,15 @@ async function renderGameList() {
       <div class="more"><button class="btn" id="more" hidden>Load older games</button></div>
     </section>`;
   renderHomePanel($('#home-panel'), ctx).catch(() => { $('#home-panel').innerHTML = ''; });
+  // Keep "Your training" in step with the batch: redraw it each time a game finishes.
+  homeOff?.();
+  let doneSeen = batch.snapshot().jobs.filter((j) => j.status === 'done').length;
+  homeOff = batch.on(() => {
+    const hp = document.getElementById('home-panel');
+    if (!hp) { homeOff?.(); homeOff = null; return; }
+    const d = batch.snapshot().jobs.filter((j) => j.status === 'done').length;
+    if (d !== doneSeen) { doneSeen = d; renderHomePanel(hp, ctx).catch(() => {}); }
+  });
   renderBatchPanel($('#batch-panel'), {
     pk: pk(), user: state.user, level: ctx.level(), rating: state.rating || null, games: () => state.games,
     loadMore: async () => { try { const more = await loadNextMonth(); drawGameList(); return more; } catch { return false; } },

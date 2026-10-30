@@ -82,6 +82,10 @@ async function run(tag, viewport, mobile) {
     ok(`${tag}: time per game (Light, ${await page.evaluate(() => navigator.hardwareConcurrency)} cores)`, per.length >= 4, `${per.join(', ')} s; total ${Math.round((Date.now() - t0) / 1000)} s incl. refresh`);
     const pz = await page.evaluate(() => new Promise((res) => { const r = indexedDB.open('chess-review'); r.onsuccess = () => { const q = r.result.transaction('puzzles').objectStore('puzzles').getAll(); q.onsuccess = () => res(q.result.map((p) => ({ v: p.verify }))); }; }));
     ok(`${tag}: lessons saved with verification`, pz.length === all.jobs.reduce((s, j) => s + (j.result?.moments ?? 0), 0) && pz.every((p) => p.v && p.v.depth === 16), `${pz.length} puzzles, ${pz.filter((p) => p.v?.sameBest).length} with the same best move at both depths`);
+    await page.waitForTimeout(800);
+    const home = await page.locator('#home-panel').innerText();
+    const saved = +((home.match(/(\d+) saved positions?/) ?? [])[1] ?? -1);
+    ok(`${tag}: home panel counts the new positions`, saved === pz.length, `${saved} saved shown, ${pz.length} stored`);
     await page.screenshot({ path: `${OUT}/${tag}-3-done.png` });
     const p2 = await perf(page);
     ok(`${tag}: responsiveness over the whole batch`, p2.p99 < 200, JSON.stringify(p2));
