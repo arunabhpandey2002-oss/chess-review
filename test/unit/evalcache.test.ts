@@ -96,3 +96,21 @@ describe('full review reuses batch results', () => {
     expect(await cachedAtLeast(START, 18, 3, 20)).toBeNull();
   });
 });
+
+describe('engine-cache size cap', () => {
+  it('keeps the newest entries once the cache grows past its trigger, and leaves a small cache alone', async () => {
+    await store.deleteAll();
+    const fen = (i: number) => START.replace(/ 1$/, ` ${i + 1}`);
+    for (let i = 0; i < 30; i++) await store.put('evalcache', { key: cacheKey(fen(i), 18, 3), ev: ev(18), at: 1000 + i });
+    expect(await store.pruneOldest('evalcache', 20, 40)).toBe(0);
+    expect(await store.pruneOldest('evalcache', 20, 25)).toBe(10);
+    const left = await store.all<{ at: number }>('evalcache');
+    expect(left.length).toBe(20);
+    expect(Math.min(...left.map((e) => e.at))).toBe(1010);
+    const { pruneCache } = await import('../../src/evalcache');
+    expect(await pruneCache(15)).toBe(5);
+    expect(await getCached(fen(29), 18, 3)).not.toBeNull();
+    expect(await getCached(fen(0), 18, 3)).toBeNull();
+    await store.deleteAll();
+  });
+});

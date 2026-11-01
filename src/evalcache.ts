@@ -1,7 +1,7 @@
 // Engine-result cache shared by the batch, the full review and backups (IndexedDB 'evalcache').
 import type { PosEval } from './engine';
 import * as store from './store';
-import { cacheKey, sanitizeCacheEntry, type CacheEntry } from './evalschema';
+import { cacheKey, sanitizeCacheEntry, MAX_CACHE_ENTRIES, type CacheEntry } from './evalschema';
 
 /** Depths anything in the app analyses at (batch screen/verify, review Fast/Standard/Deep). */
 export const KNOWN_DEPTHS = [10, 12, 14, 16, 18, 20, 22] as const;
@@ -32,4 +32,10 @@ export async function cachedAtLeast(fen: string, minDepth: number, minLines: num
     }
   }
   return null;
+}
+
+/** Keeps the engine cache to the newest MAX_CACHE_ENTRIES (the same cap backups use) once it grows 10% past it,
+ *  so it cannot grow without limit as more games are analysed. Never throws. */
+export async function pruneCache(keep = MAX_CACHE_ENTRIES): Promise<number> {
+  return store.pruneOldest('evalcache', keep, Math.round(keep * 1.1)).catch(() => 0);
 }

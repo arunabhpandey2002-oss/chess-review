@@ -109,6 +109,7 @@ export async function renderHomePanel(el: HTMLElement, ctx: Ctx) {
 }
 
 // ---------------- Mistakes to Master ----------------
+const PZ_PAGE = 40;
 export async function renderPuzzles(ctx: Ctx, filter: string | null) {
   const now = Date.now();
   const all = await store.byProfile<Puzzle>('puzzles', ctx.pk);
@@ -122,7 +123,11 @@ export async function renderPuzzles(ctx: Ctx, filter: string | null) {
         <button class="btn primary" id="train" ${due ? '' : 'disabled'}>${due ? `Train ${due} due` : 'Nothing due'}</button></div>
       <p class="muted">Positions from your own games where a better move existed. Solve them on first try and they come back less often; after four clean solves at a 3-week interval they count as mastered. Miss one and it comes back in 10 minutes.</p>
       ${tags.size ? `<div class="filters" role="group" aria-label="Filter by pattern"><button class="chip ${filter ? '' : 'on'}" data-f="">All (${all.length})</button>${[...tags.entries()].sort((a, b) => b[1] - a[1]).map(([t, n]) => `<button class="chip ${filter === t ? 'on' : ''}" data-f="${esc(t)}">${esc(MOTIF_INFO[t as keyof typeof MOTIF_INFO]?.name ?? t)} (${n})</button>`).join('')}</div>` : ''}
-      <div class="pz-list">${list.length ? list.map((p) => {
+      <div class="pz-list">${list.length ? '' : `<div class="empty">No saved positions yet. Review a game and its critical moments are saved here automatically.</div>`}</div>
+      <div class="pz-more"></div>
+    </section>`;
+  // rows are drawn a page at a time (each has a small board), so a library of thousands of positions still opens quickly
+  const rowHtml = (p: Puzzle) => {
         const st = srsStatus(p.srs, now);
         const last = p.srs.history[p.srs.history.length - 1];
         return `<div class="pz-row" data-id="${esc(p.id)}">
@@ -134,18 +139,31 @@ export async function renderPuzzles(ctx: Ctx, filter: string | null) {
           </div>
           <div class="pz-act"><button class="btn" data-train="${esc(p.id)}">Train</button><button class="btn ghost" data-analyse="${esc(p.id)}" aria-label="Analyse this position on the analysis board">Analyse</button>${p.gameId ? `<button class="btn ghost" data-game="${esc(p.gameId)}" data-ply="${(Number(p.core.ply) || 0) + 1}">Open game</button>` : ''}</div>
         </div>`;
-      }).join('') : `<div class="empty">No saved positions yet. Review a game and its critical moments are saved here automatically.</div>`}</div>
-    </section>`;
-  ctx.app.querySelectorAll<HTMLElement>('.mini').forEach((m) => miniBoard(m, m.dataset.fen!, m.dataset.color as 'w' | 'b'));
+  };
+  const listEl = $('.pz-list', ctx.app), moreEl = $('.pz-more', ctx.app);
+  let shown = 0;
+  const showMore = () => {
+    const page = list.slice(shown, shown + PZ_PAGE);
+    const tmp = document.createElement('div');
+    tmp.innerHTML = page.map(rowHtml).join('');
+    tmp.querySelectorAll<HTMLElement>('.mini').forEach((m) => miniBoard(m, m.dataset.fen!, m.dataset.color as 'w' | 'b'));
+    tmp.querySelectorAll<HTMLButtonElement>('[data-train]').forEach((b) => (b.onclick = () => ctx.navigate({ view: 'train', p: b.dataset.train! })));
+    tmp.querySelectorAll<HTMLButtonElement>('[data-game]').forEach((b) => (b.onclick = () => ctx.navigate({ view: null, game: b.dataset.game!, ply: b.dataset.ply! })));
+    tmp.querySelectorAll<HTMLButtonElement>('[data-analyse]').forEach((b) => (b.onclick = async () => {
+      const p = all.find((x) => x.id === b.dataset.analyse);
+      if (!p) return;
+      b.disabled = true;
+      try { const id = await createWorkspace(ctx.pk, lessonDoc(p.core, p.core.color, puzzleTitle(p))); ctx.navigate({ view: 'analysis', ws: id, tag: null }); } catch { b.disabled = false; }
+    }));
+    listEl.append(...tmp.childNodes);
+    shown += page.length;
+    const left = list.length - shown;
+    moreEl.innerHTML = left > 0 ? `<button class="btn" id="pz-more">Show ${Math.min(left, PZ_PAGE)} more <span class="muted">(${left} left)</span></button>` : '';
+    const b = $<HTMLButtonElement>('#pz-more', moreEl);
+    if (b) b.onclick = showMore;
+  };
+  showMore();
   ctx.app.querySelectorAll<HTMLButtonElement>('.chip[data-f]').forEach((b) => (b.onclick = () => ctx.navigate({ view: 'puzzles', tag: b.dataset.f || null })));
-  ctx.app.querySelectorAll<HTMLButtonElement>('[data-train]').forEach((b) => (b.onclick = () => ctx.navigate({ view: 'train', p: b.dataset.train! })));
-  ctx.app.querySelectorAll<HTMLButtonElement>('[data-game]').forEach((b) => (b.onclick = () => ctx.navigate({ view: null, game: b.dataset.game!, ply: b.dataset.ply! })));
-  ctx.app.querySelectorAll<HTMLButtonElement>('[data-analyse]').forEach((b) => (b.onclick = async () => {
-    const p = all.find((x) => x.id === b.dataset.analyse);
-    if (!p) return;
-    b.disabled = true;
-    try { const id = await createWorkspace(ctx.pk, lessonDoc(p.core, p.core.color, puzzleTitle(p))); ctx.navigate({ view: 'analysis', ws: id, tag: null }); } catch { b.disabled = false; }
-  }));
   const tr = $<HTMLButtonElement>('#train');
   if (tr) tr.onclick = () => ctx.navigate({ view: 'train', p: null });
 }

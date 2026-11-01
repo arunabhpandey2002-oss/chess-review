@@ -19,7 +19,7 @@ async function review(url, label) {
   await page.goto(BASE + url);
   await page.waitForSelector('cg-board piece', { timeout: 60000 });
   const t0 = Date.now();
-  await page.waitForSelector('.progress.complete', { timeout: 900000 });
+  await page.waitForSelector('.progress.complete', { timeout: 420000 });
   await page.waitForSelector('.coach-card', { timeout: 30000 });
   console.log(`${label}: analysed in ${((Date.now() - t0) / 1000).toFixed(0)}s`);
 }
@@ -105,7 +105,11 @@ await page.waitForSelector('.game-row', { timeout: 60000 });
 const nL = await page.locator('.game-row').count();
 ok('Lichess games listed', nL > 0, `${nL} games`);
 const firstId = await page.locator('.game-row').first().getAttribute('data-id');
+// the newest game on a live public account varies in length (one took 335 s at depth 18), so review it at Fast depth
+// to keep this step bounded; it checks the Lichess path, not engine depth
+await page.evaluate(() => localStorage.setItem('cr-depth', 'fast'));
 await review(`?user=EricRosen&site=lichess&game=${firstId}`, firstId);
+await page.evaluate(() => localStorage.removeItem('cr-depth'));
 ok('Lichess game reviewed with summary', (await page.locator('.story').count()) === 1, (await page.locator('.story').innerText()).slice(0, 120));
 await page.screenshot({ path: `${OUT}/06-lichess-review.png` });
 

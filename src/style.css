@@ -723,3 +723,4 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
 .ob-bar .d { background: #9a9a9a; color: #111; }
 .ob-bar .b { background: #333; color: #eee; }
 .ob-src { margin: 6px 0 0; }
+.pz-more { display: flex; justify-content: center; margin: 12px 0 4px; }

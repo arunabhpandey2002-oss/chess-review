@@ -143,6 +143,23 @@ export async function addMissing(store: StoreName, items: { key: string }[]): Pr
     t.onerror = () => rej(t.error);
   });
 }
+/** Bounds a store of `at`-stamped records (the engine cache): once it holds more than `trigger`, deletes the oldest
+ *  until `keep` remain. Reads keys and times with a cursor, deletes in one transaction. Resolves to the number deleted. */
+export async function pruneOldest(store: 'evalcache', keep: number, trigger = keep): Promise<number> {
+  const d = await db();
+  const count = await req(d.transaction(store).objectStore(store).count());
+  if (count <= trigger) return 0;
+  const stamps: [IDBValidKey, number][] = await new Promise((res, rej) => {
+    const out: [IDBValidKey, number][] = [];
+    const c = d.transaction(store).objectStore(store).openCursor();
+    c.onsuccess = () => { const cur = c.result; if (!cur) return res(out); const at = (cur.value as { at?: unknown })?.at; out.push([cur.primaryKey, typeof at === 'number' && Number.isFinite(at) ? at : 0]); cur.continue(); };
+    c.onerror = () => rej(c.error);
+  });
+  const drop = stamps.sort((a, b) => a[1] - b[1]).slice(0, Math.max(0, stamps.length - keep));
+  if (!drop.length) return 0;
+  await tx(store, 'readwrite', (s) => { for (const [k] of drop) s.delete(k); });
+  return drop.length;
+}
 export async function all<T>(store: StoreName): Promise<T[]> {
   const d = await db();
   return req(d.transaction(store).objectStore(store).getAll() as IDBRequest<T[]>);

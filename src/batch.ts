@@ -8,7 +8,7 @@ import { parseGame, reviewGame, terminalEval, type Ply, type Book } from './revi
 import { winPct } from './classify';
 import type { Level } from './moments';
 import { cacheKey } from './evalschema';
-import { getCached, putCached } from './evalcache';
+import { getCached, putCached, pruneCache } from './evalcache';
 import { coachFor, saveReview } from './persist';
 import * as store from './store';
 import type { Puzzle, StoredReview } from './store';
@@ -180,37 +180,39 @@ class Runner {
     this.book = o.book;
     const batchId = `b${Date.now().toString(36)}`;
     this.meta = { key: 'batch', batchId, profileKey: o.pk, mode: o.mode, level: o.level, rating: o.rating, paused: false, createdAt: Date.now() };
-    await store.put('meta', this.meta);
+    await store.put('meta', this.meta).catch(() => undefined); // storage full: the first job reports it and pauses
+    // earlier batches' jobs are only history: drop them so the queue store does not grow with every batch
+    for (const j of await store.byProfile<Job>('jobs', o.pk)) if (j.batchId !== batchId) await store.del('jobs', j.id).catch(() => undefined);
     const now = Date.now();
     this.jobs = o.games.map((g) => ({ id: `${o.pk}|${batchId}|${g.id}`, batchId, profileKey: o.pk, gameId: g.id, game: g, myColor: g.black.username.toLowerCase() === o.user.toLowerCase() ? 'b' : 'w',
       priority: priorityOf(g, o.user), status: 'queued', stage: 'waiting', posDone: 0, posTotal: 0, createdAt: now, updatedAt: now }));
-    for (const j of this.jobs) await store.put('jobs', j);
+    for (const j of this.jobs) await store.put('jobs', j).catch(() => undefined);
     this.emit();
     void this.run();
   }
 
   async pause() {
     if (!this.meta) return;
-    this.meta.paused = true; await store.put('meta', this.meta);
+    this.meta.paused = true; await store.put('meta', this.meta).catch(() => undefined);
     await this.stop(true);
   }
   async resume() {
     if (!this.meta) return;
-    this.meta.paused = false; await store.put('meta', this.meta);
+    this.meta.paused = false; await store.put('meta', this.meta).catch(() => undefined);
     void this.run();
   }
   async cancel() {
     if (!this.meta) return;
-    this.meta.cancelled = true; this.meta.finishedAt = Date.now(); await store.put('meta', this.meta);
+    this.meta.cancelled = true; this.meta.finishedAt = Date.now(); await store.put('meta', this.meta).catch(() => undefined);
     await this.stop(true);
-    for (const j of this.jobs) if (j.status === 'queued') { j.status = 'cancelled'; await store.put('jobs', j); }
+    for (const j of this.jobs) if (j.status === 'queued') { j.status = 'cancelled'; await store.put('jobs', j).catch(() => undefined); }
     this.emit();
   }
   /** Stops the engine; a job in progress goes back to waiting (its cached positions are kept). */
   async stop(requeue = false) {
     this.gen++;
     this.pool?.destroy(); this.pool = null;
-    if (requeue) for (const j of this.jobs) if (j.status === 'running') { j.status = 'queued'; j.stage = 'waiting'; await store.put('jobs', j); }
+    if (requeue) for (const j of this.jobs) if (j.status === 'running') { j.status = 'queued'; j.stage = 'waiting'; await store.put('jobs', j).catch(() => undefined); }
     this.running = false;
     this.unlock();
     this.emit();
@@ -228,7 +230,7 @@ class Runner {
       const stored = (await store.byProfile<Job>('jobs', this.meta.profileKey)).filter((j) => j.batchId === this.meta!.batchId);
       const byId = new Map(stored.map((j) => [j.id, j]));
       this.jobs = this.jobs.map((j) => byId.get(j.id) ?? j);
-      for (const j of this.jobs) if (j.status === 'running') { j.status = 'queued'; j.stage = 'waiting'; await store.put('jobs', j); }
+      for (const j of this.jobs) if (j.status === 'running') { j.status = 'queued'; j.stage = 'waiting'; await store.put('jobs', j).catch(() => undefined); }
       const m = await store.get<BatchMeta>('meta', 'batch');
       if (m && m.batchId === this.meta.batchId) this.meta = m;
     }
@@ -238,17 +240,25 @@ class Runner {
       if (!job) break;
       try { await this.runJob(job, g); } catch (e) {
         if (g !== this.gen) break;
+        if ((e as DOMException)?.name === 'QuotaExceededError') {
+          // browser storage is full: stop here (rather than failing every remaining game) and say why
+          job.status = 'failed'; job.error = STORAGE_FULL;
+          if (this.meta) { this.meta.paused = true; await store.put('meta', this.meta).catch(() => undefined); }
+          this.emit();
+          break;
+        }
         job.tries = (job.tries ?? 0) + 1;
         job.status = job.tries >= 2 ? 'failed' : 'queued';
         job.error = String((e as Error)?.message ?? e).slice(0, 200);
-        await store.put('jobs', job);
+        await store.put('jobs', job).catch(() => undefined); // e.g. storage full: keep going so the pool is still cleaned up
       }
       this.emit();
     }
     if (g === this.gen) {
       this.running = false;
       this.pool?.destroy(); this.pool = null;
-      if (this.meta && !this.jobs.some((j) => j.status === 'queued' || j.status === 'running') && !this.meta.finishedAt) { this.meta.finishedAt = Date.now(); await store.put('meta', this.meta); }
+      void pruneCache();
+      if (this.meta && !this.jobs.some((j) => j.status === 'queued' || j.status === 'running') && !this.meta.finishedAt) { this.meta.finishedAt = Date.now(); await store.put('meta', this.meta).catch(() => undefined); }
       this.unlock();
       this.emit();
     }
@@ -256,7 +266,11 @@ class Runner {
 
   async touch(job: Job, force = false) {
     job.updatedAt = Date.now();
-    if (force || job.updatedAt - this.lastSave > 1500) { this.lastSave = job.updatedAt; await store.put('jobs', job); }
+    if (force || job.updatedAt - this.lastSave > 1500) {
+      this.lastSave = job.updatedAt;
+      const w = store.put('jobs', job);
+      if (force) await w; else w.catch(() => undefined); // progress ticks never throw; a forced save reports a full disk
+    }
     this.emit();
   }
 
@@ -329,5 +343,6 @@ class Runner {
   }
 }
 
+export const STORAGE_FULL = 'Browser storage is full. Export a backup and delete old data in Your data, then resume.';
 export const batch = new Runner();
 if (typeof window !== "undefined") (window as any).__batchRunner = batch;

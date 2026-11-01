@@ -26,7 +26,7 @@ import { coachFor, saveReview } from './persist';
 import { batch } from './batch';
 import { renderWorkspace, destroyWorkspace, createWorkspace, lessonDoc } from './workspace';
 import { renderBatchPanel } from './batch-ui';
-import { cachedAtLeast, putCached } from './evalcache';
+import { cachedAtLeast, putCached, pruneCache } from './evalcache';
 import { renderHomePanel, renderPuzzles, renderTrain, renderHistory, renderImport, renderData, destroyTrainer, recordAttempt, recordDiagnosis, newPuzzle, rememberGame, storedGame, SITE_LABEL, type Ctx, type Site } from './pages';
 import { $, esc, cap, srcChip, applyMotionClass, reducedMotion, boardDescription } from './ui';
 import { isDue } from './srs';
@@ -749,7 +749,11 @@ class ReviewView {
       const c = coachFor(this.game, this.me, this.plies, this.evals, this.reviews, this.level);
       this.moments = c.moments;
       this.coachSummary = c.summary;
-      this.persist().then(() => this.renderCoach()).catch((e) => { console.warn('could not save review', e); this.renderCoach(); });
+      this.persist().then(() => this.renderCoach()).catch((e) => {
+        console.warn('could not save review', e); this.renderCoach();
+        const pt = $('#progress .ptext');
+        if (pt && (e as DOMException)?.name === 'QuotaExceededError') pt.textContent += ' · not saved: browser storage is full (free space in Your data)';
+      });
     }
     this.renderCoach();
   }
@@ -914,3 +918,5 @@ const { user } = params();
 void releaseTrainerEngine;
 if (!new URLSearchParams(location.search).get('user')) history.replaceState(null, '', `${location.pathname}?user=${encodeURIComponent(user)}${location.search.includes('game=') ? '&' + location.search.slice(1) : ''}`);
 route();
+// once per visit, when idle: keep the engine cache bounded (no-op unless it is over its cap)
+setTimeout(() => { void pruneCache(); }, 4000);
