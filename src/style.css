@@ -724,3 +724,6 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
 .ob-bar .b { background: #333; color: #eee; }
 .ob-src { margin: 6px 0 0; }
 .pz-more { display: flex; justify-content: center; margin: 12px 0 4px; }
+.ex-col-foot, .ex-cap-foot { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-start; }
+.ex-cap-foot { margin-top: 6px; }
+.ex-capture ul { margin-top: 2px; }

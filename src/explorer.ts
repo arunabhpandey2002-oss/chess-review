@@ -6,7 +6,8 @@ import type { Api as CgApi } from 'chessground/api';
 import type { Key } from 'chessground/types';
 import type { DrawShape } from 'chessground/draw';
 import { EnginePool, type PosEval } from './engine';
-import { buildExplore, stepLine, whatIf, povScore, type Explore, type Fact, type Side, type Step } from './explore';
+import { buildExplore, stepLine, whatIf, povScore, captureToTest, captureNote, type CaptureTry, type Explore, type Fact, type Side, type Step } from './explore';
+import { cachedAtLeast, putCached } from './evalcache';
 import { renderText, tokMove } from './words';
 import { pvToSan } from './tactics';
 import { $, esc, srcTags, dlgHead, reducedMotion, boardDescription, legalDests, parseTyped } from './ui';
@@ -15,12 +16,15 @@ export interface ExplorerOpts {
   fen: string; playedUci: string; label: string; // e.g. "16.c3"
   me: Color; before: PosEval; after: PosEval | null; orientation: Color;
 }
+type Line = 'best' | 'played' | 'capture';
+const LINE_LABEL: Record<Line, string> = { best: 'Step through this line', played: 'Step through this line', capture: 'Step through' };
 const colorName = (c: Color) => (c === 'w' ? 'white' : 'black');
 const pct = (x: number) => `${Math.round(x)}%`;
 
 export class Explorer {
   o: ExplorerOpts; x: Explore; ov: HTMLElement; host: HTMLElement; cg!: CgApi;
-  steps: Step[] = []; which: 'best' | 'played' | null = null; i = 0;
+  steps: Step[] = []; which: Line | null = null; i = 0;
+  cap: CaptureTry | null = null; capLine: string[] | null = null;
   tryFen: string | null = null; tryGen = 0; pool: EnginePool | null = null;
   cache = new Map<string, Promise<PosEval>>();
   prevFocus: Element | null;
@@ -34,6 +38,7 @@ export class Explorer {
 
   constructor(o: ExplorerOpts, x: Explore) {
     this.o = o; this.x = x;
+    this.cap = captureToTest(x.fen, x.best);
     this.prevFocus = document.activeElement;
     this.ov = document.createElement('div');
     this.ov.className = 'overlay sp-overlay ex-overlay';
@@ -73,9 +78,21 @@ export class Explorer {
       <p class="ex-k">What it does</p>
       <ul>${facts.map((f) => `<li>${up(f)}.</li>`).join('')}</ul>
       ${left.length ? `<p class="ex-k">Left under attack</p><ul>${left.slice(0, 2).map((f) => `<li>${up(f)}.</li>`).join('')}</ul>` : ''}
+      ${kind === 'best' && this.cap ? '<div class="ex-capture" id="ex-capture" role="status" aria-live="polite"><p class="muted small">Checking what happens if they take…</p></div>' : ''}
       ${s.reply ? `<p class="ex-k">Their best reply</p><p><b>${this.san(s.reply.tok)}</b>${s.reply.facts.length ? `: ${this.txt(s.reply.facts.slice(0, 2).join('; '))}` : ' (a quiet move)'}.</p>` : ''}
-      <div class="ex-col-foot"><button class="btn small" data-line="${kind}">Step through this line</button></div>
+      <div class="ex-col-foot">${this.stepBtns(kind)}</div>
     </div>`;
+  }
+
+  /** The card's stepper: first press starts the line, each further press plays the next move; Back steps one move back. */
+  stepBtns(kind: Line) { return `<button class="btn small" data-line="${kind}">${LINE_LABEL[kind]}</button><button class="btn small ghost" data-back="${kind}" hidden aria-label="Back one move">◀ Back</button>`; }
+  wireSteps(root: ParentNode) {
+    root.querySelectorAll<HTMLButtonElement>('[data-line]').forEach((b) => (b.onclick = () => this.press(b.dataset.line as Line)));
+    root.querySelectorAll<HTMLButtonElement>('[data-back]').forEach((b) => (b.onclick = () => this.go(this.i - 1)));
+  }
+  press(kind: Line) {
+    if (this.which === kind && this.i < this.steps.length) this.go(this.i + 1);
+    else this.line(kind);
   }
 
   render() {
@@ -128,7 +145,7 @@ export class Explorer {
       movable: { free: false, showDests: true, events: { after: (a, b) => this.onBoardMove(a, b) } },
       draggable: { enabled: true }, drawable: { enabled: false, visible: true }, premovable: { enabled: false },
     });
-    this.host.querySelectorAll<HTMLButtonElement>('[data-line]').forEach((b) => (b.onclick = () => this.line(b.dataset.line as 'best' | 'played')));
+    this.wireSteps(this.host);
     this.host.querySelectorAll<HTMLButtonElement>('[data-q]').forEach((b) => (b.onclick = () => this.ask(b.dataset.q!)));
     $('#ex-prev', this.host).onclick = () => this.go(this.i - 1);
     $('#ex-next', this.host).onclick = () => this.go(this.i + 1);
@@ -144,6 +161,32 @@ export class Explorer {
     };
     this.reset();
     ($('#ex-close', this.host) as HTMLElement).focus({ preventScroll: true });
+    void this.loadCapture();
+  }
+
+  /** "What if they take?": the engine on the capture of the piece the best move leaves en prise (fixed depth, cached). */
+  async loadCapture() {
+    const cap = this.cap;
+    if (!cap) return;
+    const box = () => this.host.querySelector<HTMLElement>('#ex-capture');
+    try {
+      const depth = this.o.before.depth || 16;
+      const legal = new Chess(cap.fenAfter).moves().length;
+      let ev = await cachedAtLeast(cap.fenAfter, depth, 1, legal);
+      if (!ev) { this.pool ??= new EnginePool(1); ev = await putCached(cap.fenAfter, depth, 1, await this.pool.analyse(cap.fenAfter, depth, 1, 15000)); }
+      if (!this.ov.isConnected) return;
+      const n = captureNote(this.x.fen, this.x.best, cap, ev);
+      const el = box();
+      if (!el) return;
+      if (!n) { el.remove(); return; }
+      this.capLine = n.line;
+      el.innerHTML = `<p class="ex-k">If they take</p>${this.facts(n.facts, new Set())}<div class="ex-cap-foot">${this.stepBtns('capture')}</div>`;
+      this.wireSteps(el);
+      this.buttons();
+      (window as any).__explorerCapture = n;
+    } catch {
+      box()?.remove();
+    }
   }
 
   answer(html: string) { $('#ex-answer', this.host).innerHTML = html; }
@@ -170,14 +213,19 @@ export class Explorer {
     $<HTMLButtonElement>('#ex-prev', this.host).disabled = !this.which || this.i <= 0;
     $<HTMLButtonElement>('#ex-next', this.host).disabled = !this.which || this.i >= this.steps.length;
     $<HTMLButtonElement>('#ex-reset', this.host).disabled = !this.which && !this.tryFen;
-    this.host.querySelectorAll<HTMLButtonElement>('[data-line]').forEach((b) => b.classList.toggle('on', b.dataset.line === this.which));
+    this.host.querySelectorAll<HTMLButtonElement>('[data-line]').forEach((b) => {
+      const k = b.dataset.line as Line, on = k === this.which;
+      b.classList.toggle('on', on);
+      b.textContent = !on ? LINE_LABEL[k] : this.i < this.steps.length ? `Next move (${this.i + 1}/${this.steps.length})` : 'Start again';
+    });
+    this.host.querySelectorAll<HTMLButtonElement>('[data-back]').forEach((b) => { b.hidden = b.dataset.back !== this.which || this.i <= 0; });
   }
 
-  line(which: 'best' | 'played') {
+  line(which: Line) {
+    if (which === 'capture' && !this.capLine) return;
     this.reset();
     this.which = which;
-    const s = which === 'best' ? this.x.best : this.x.played;
-    this.steps = stepLine(this.x.fen, s.line, this.mover, 6);
+    this.steps = which === 'capture' ? stepLine(this.x.fen, this.capLine!, this.mover, 7) : stepLine(this.x.fen, (which === 'best' ? this.x.best : this.x.played).line, this.mover, 6);
     this.go(1);
   }
 
@@ -194,7 +242,7 @@ export class Explorer {
     if (next) shapes.push({ orig: next.uci.slice(0, 2) as Key, dest: next.uci.slice(2, 4) as Key, brush: 'paleBlue' });
     this.cg.setAutoShapes(shapes);
     $('#ex-board', this.host).setAttribute('aria-label', boardDescription(fen));
-    const name = this.which === 'best' ? 'Best line' : this.you ? 'Your line' : 'Game line';
+    const name = this.which === 'best' ? 'Best line' : this.which === 'capture' ? 'If they take' : this.you ? 'Your line' : 'Game line';
     $('#ex-pos', this.host).textContent = `${name} · ${this.i}/${this.steps.length}`;
     $('#ex-steptext', this.host).innerHTML = st ? `<b>${esc(st.san)}</b> — ${this.txt(st.text, new Set())}${this.i === this.steps.length ? ' <span class="muted">End of the engine line.</span>' : ''}` : 'Start of the line.';
     this.buttons();

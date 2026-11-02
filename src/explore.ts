@@ -266,3 +266,96 @@ export function whatIf(fen: string, uci: string, ev: PosEval, bestWp: number): {
   if (left.still.length || left.created.length) facts.push({ text: `After ${tok}, ${(left.still[0] ?? left.created[0])}.`, src: 'rules' });
   return { tok, wp, score: l.score, facts };
 }
+
+// ---------------- "What if they take?" ----------------
+const numbered = (fen: string, uci: string): string => {
+  const c = new Chess(fen);
+  const n = Number(fen.split(' ')[5]) || 1, w = c.turn() === 'w';
+  const mv = uciToMove(c, uci);
+  return mv ? `${n}${w ? '.' : '…'}${tokMove(fen, mv.san)}` : uci;
+};
+const material = (c: Chess, pov: Color) => { let s = 0; for (const row of c.board()) for (const p of row) if (p) s += (p.color === pov ? 1 : -1) * VAL[p.type]; return s; };
+
+export interface CaptureTry { uci: string; fenAfterBest: string; fenAfter: string; sq: Square; piece: PieceSymbol; label: string }
+/** After the best move, the most valuable piece of the mover's left under attack and the opponent's cheapest legal
+ *  capture of it. Null when nothing is left en prise or the engine's own reply already takes it (the line shows that). */
+export function captureToTest(fen: string, best: Side): CaptureTry | null {
+  const c = new Chess(fen);
+  const mover = c.turn();
+  if (!uciToMove(c, best.uci)) return null;
+  const fa = c.fen();
+  const ts = threatsTo(fa, mover).captures.filter((t) => c.get(t.sq)?.color === mover).sort((a, b) => VAL[b.type] - VAL[a.type]);
+  const t = ts[0];
+  if (!t || best.reply?.uci.slice(2, 4) === t.sq) return null;
+  const caps = c.moves({ verbose: true }).filter((m) => m.to === t.sq && m.captured).sort((a, b) => VAL[a.piece] - VAL[b.piece]);
+  const m = caps[0];
+  if (!m) return null;
+  const uci = m.from + m.to + (m.promotion ?? '');
+  const after = new Chess(fa); uciToMove(after, uci);
+  return { uci, fenAfterBest: fa, fenAfter: after.fen(), sq: t.sq, piece: t.type, label: numbered(fa, uci) };
+}
+
+/** The opponent piece a slider on `from` pins to its king (an absolute pin, checked on the board), if any. */
+export function pinnedBy(fen: string, from: Square): Square | null {
+  const c = new Chess(fen);
+  const p = c.get(from);
+  if (!p || !'brq'.includes(p.type)) return null;
+  const dirs = [...(p.type !== 'r' ? [[1, 1], [1, -1], [-1, 1], [-1, -1]] : []), ...(p.type !== 'b' ? [[1, 0], [-1, 0], [0, 1], [0, -1]] : [])];
+  for (const [df, dr] of dirs) {
+    let f = from.charCodeAt(0) - 97 + df, r = Number(from[1]) - 1 + dr, first: Square | null = null;
+    while (f >= 0 && f < 8 && r >= 0 && r < 8) {
+      const sq = `${String.fromCharCode(97 + f)}${r + 1}` as Square;
+      const q = c.get(sq);
+      if (q) {
+        if (q.color === p.color) break;
+        if (!first) { if (q.type === 'k') break; first = sq; }
+        else { if (q.type === 'k') return first; break; }
+      }
+      f += df; r += dr;
+    }
+  }
+  return null;
+}
+
+/** One grounded sentence (plus the engine number) on what happens if they take the piece the best move leaves en prise.
+ *  `ev` is the engine's answer in the position after the capture. Pins and "wins it back" are only said when the board shows them. */
+export function captureNote(fen: string, best: Side, cap: CaptureTry, ev: PosEval): { facts: Fact[]; line: string[]; wp: number; fine: boolean } | null {
+  const mover = new Chess(fen).turn();
+  const l = ev.lines[0];
+  if (!l?.pv.length) return null;
+  const c = new Chess(cap.fenAfter);
+  if (!uciToMove(c, l.pv[0])) return null;
+  const wp = winPct(l.score, mover);
+  const line = [best.uci, cap.uci, ...l.pv];
+  const reply = numbered(cap.fenAfter, l.pv[0]);
+  const eng: Fact = { text: `Engine after ${reply}: ${povScore(l.score, mover)} for ${sideName(mover)}, ${pct(wp)} win chance (${pct(best.wp)} after their best reply).`, src: 'engine' };
+  const fine = wp < 60 || wp < best.wp - 15;
+  if (fine) return { facts: [{ text: `If they take with ${cap.label}, that is a reasonable option for them: the engine answers ${reply}.`, src: 'engine' }, eng], line, wp, fine };
+  // does the reply pin something, and does the line win the piece back?
+  const pin = pinnedBy(c.fen(), l.pv[0].slice(2, 4) as Square);
+  const base = material(new Chess(cap.fenAfterBest), mover);
+  const walk = new Chess(c.fen());
+  let back = -1, att = -1;
+  for (let i = 1; i < Math.min(l.pv.length, 9); i++) {
+    const mv = uciToMove(walk, l.pv[i]);
+    if (!mv) break;
+    if (mv.color !== mover) continue;
+    if (pin && mv.to === pin && mv.captured) { if (material(walk, mover) >= base) back = i; break; }
+    if (pin && att < 0 && walk.attackers(pin, mover).includes(mv.to)) att = i;
+  }
+  const lbl = (i: number) => { const w = new Chess(c.fen()); for (let k = 1; k < i; k++) uciToMove(w, l.pv[k]); return numbered(w.fen(), l.pv[i]); };
+  let text: string;
+  if (pin) {
+    const pp = c.get(pin)!;
+    text = `If they take with ${cap.label}, ${reply} pins their ${NAME[pp.type]} on ${pin} to the king`;
+    if (back > 0) text += `, and ${att > 0 && att < back ? `${lbl(att)} then ` : ''}${lbl(back)} wins it back`;
+    text += '.';
+  } else {
+    const w = new Chess(c.fen());
+    let net = -Infinity;
+    for (let i = 0; i < Math.min(l.pv.length, 8); i++) { if (!uciToMove(w, l.pv[i])) break; net = material(w, mover) - base; }
+    const rf = moveFacts(cap.fenAfter, l.pv[0], mover).filter((f) => !f.startsWith('it takes'));
+    text = `If they take with ${cap.label}, the engine answers ${reply}${rf.length ? `: ${rf[0]}` : ''}${net >= 0 ? `, and along its line ${sideName(mover)} wins the material back` : ''}.`;
+  }
+  return { facts: [{ text, src: 'rules' }, eng], line, wp, fine };
+}

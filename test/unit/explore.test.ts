@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { parseGame, reviewGame, decidedState, decidedWording, type Book } from '../../src/review';
-import { buildExplore, moveFacts, threatText, stepLine, whatIf, gapVerdict } from '../../src/explore';
+import { buildExplore, moveFacts, threatText, stepLine, whatIf, gapVerdict, captureToTest, captureNote, pinnedBy } from '../../src/explore';
 import { renderText } from '../../src/words';
 
 const book: Book = JSON.parse(readFileSync('public/book.json', 'utf8'));
@@ -102,5 +102,44 @@ describe('decided-position wording', () => {
     expect(decidedState('excellent', 40, 38)).toBeNull();
     expect(decidedState('book', 2, 2)).toBeNull();
     expect(decidedState('good', 5, 4)).toBe('lost');
+  });
+});
+
+describe('what if they take: 14.Nxg5 (before 14.a3)', () => {
+  const F = '3k3r/2p2p2/rpnb1n1p/p3p1p1/4P3/2N1BN2/PPP2PPP/R2R2K1 w - - 0 14';
+  const sc = (cp: number) => ({ cp, mate: null });
+  // native Stockfish depth 24: Nxg5 best (+5.06, reply Ke8); after Nxg5 hxg5 the answer is Bxg5 (+4.37)
+  const before = { depth: 24, lines: [{ score: sc(506), pv: ['f3g5', 'd8e8'], depth: 24 }, { score: sc(120), pv: ['a2a3', 'd8e7'], depth: 24 }] } as any;
+  const x = buildExplore(F, 'a2a3', before, null)!;
+  const takeEv = { depth: 24, lines: [{ score: sc(437), pv: ['e3g5', 'd8e7', 'c3d5', 'e7e6', 'd5f6'], depth: 24 }] } as any;
+  it('flags the knight on g5 as left under attack and picks the pawn capture hxg5', () => {
+    expect(x.best.san).toBe('Nxg5');
+    expect(x.best.left.created.join(' ')).toMatch(/knight on g5 is attacked by their pawn on h6/);
+    const cap = captureToTest(F, x.best)!;
+    expect(cap.uci).toBe('h6g5');
+    expect(san(cap.label)).toBe('14…hxg5');
+  });
+  it('says Bxg5 pins the f6 knight to the king and Nd5+ then Nxf6 wins it back, with the engine number', () => {
+    const cap = captureToTest(F, x.best)!;
+    const n = captureNote(F, x.best, cap, takeEv)!;
+    expect(n.fine).toBe(false);
+    expect(san(n.facts[0].text)).toBe('If they take with 14…hxg5, 15.Bxg5 pins their knight on f6 to the king, and 16.Nd5+ then 17.Nxf6 wins it back.');
+    expect(san(n.facts[1].text)).toMatch(/^Engine after 15\.Bxg5: \+4\.4 for White, \d+% win chance \(\d+% after their best reply\)\.$/);
+    expect(n.line.slice(0, 4)).toEqual(['f3g5', 'h6g5', 'e3g5', 'd8e7']);
+    const steps = stepLine(F, n.line, 'w', 7);
+    expect(steps.map((s) => s.san)).toEqual(['Nxg5', 'hxg5', 'Bxg5', 'Ke7', 'Nd5+', 'Ke6', 'Nxf6']);
+  });
+  it('only claims a pin the board shows', () => {
+    expect(pinnedBy('3k3r/2p2p2/rpnb1n2/p3p1B1/4P3/2N5/PPP2PPP/R2R2K1 b - - 0 15', 'g5')).toBe('f6');
+    expect(pinnedBy('4k2r/2p2p2/rpnb1n2/p3p1B1/4P3/2N5/PPP2PPP/R2R2K1 b - - 0 15', 'g5')).toBeNull();
+  });
+  it('is honest when taking is fine for them, and falls back to the concrete line without a pin', () => {
+    const cap = captureToTest(F, x.best)!;
+    const ok = captureNote(F, x.best, cap, { depth: 24, lines: [{ score: sc(10), pv: ['e3g5', 'd8e7'], depth: 24 }] } as any)!;
+    expect(ok.fine).toBe(true);
+    expect(san(ok.facts[0].text)).toBe('If they take with 14…hxg5, that is a reasonable option for them: the engine answers 15.Bxg5.');
+    const noPin = captureNote(F, x.best, cap, { depth: 24, lines: [{ score: sc(400), pv: ['c3d5', 'f6d5'], depth: 24 }] } as any)!;
+    expect(san(noPin.facts[0].text)).toMatch(/^If they take with 14…hxg5, the engine answers 15\.Nd5/);
+    expect(noPin.facts[0].text).not.toMatch(/pins/);
   });
 });
