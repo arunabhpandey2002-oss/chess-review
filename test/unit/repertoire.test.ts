@@ -14,6 +14,8 @@ describe('opening library data', () => {
     const ids = OPENINGS.map((o) => o.id);
     for (const id of ['reti', 'english', 'london', 'qg', 'italian', 'ruy', 'scotch', 'kia', 'kings-gambit', 'danish', 'evans']) expect(ids).toContain(id);
     for (const id of ['sicilian', 'french', 'caro-kann', 'scandinavian', 'kid', 'pirc']) expect(ids).toContain(id);
+    for (const id of ['three-knights', 'bishops', 'wayward-queen', 'center-game', 'vienna']) expect(ids).toContain(id);
+    for (const id of ['qpg-symmetrical', 'qpg-chigorin', 'indian-knights', 'englund', 'mikenas', 'dutch']) expect(ids).toContain(id);
     expect(OPENINGS.filter((o) => o.side === 'b').every((o) => o.plies[0].mine === false)).toBe(true);
     expect(OPENINGS.filter((o) => o.side === 'w').every((o) => o.plies[0].mine === true)).toBe(true);
   });

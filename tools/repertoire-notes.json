@@ -1,36 +1,310 @@
 {
-"reti": {"idea": "White develops the knight first and hits your d5 pawn from the side with c4, hoping you overextend. Stay calm: back d5 up with ...e6, castle quickly, and only take on c4 once White's king has castled and d4 is played.",
- "moves": {"1:d5": "Claim the centre straight away.", "3:e6": "Support d5 with a pawn so c4xd5 can be met by ...exd5.", "5:Nf6": "Develop and guard d5 a second time.", "7:Be7": "Quiet development; gets ready to castle.", "9:O-O": "King safe before the centre opens.", "11:dxc4": "Now that d4 is in, grab c4 — White needs time to win it back."}},
-"kia": {"idea": "White sets up a slow fianchetto (Nf3, g3, Bg2, O-O, d3, Nbd2) and later pushes e4. Build a classical centre with ...d5 and ...e6, castle, then gain space on the queenside with ...c5.",
- "moves": {"1:d5": "Claim the centre straight away.", "3:Nf6": "Develop and control e4, White's key square.", "5:e6": "Solid pawn chain; opens the way for the dark bishop.", "7:Be7": "Develop and prepare to castle.", "9:O-O": "King safe before White pushes e4.", "11:c5": "Grab queenside space — your counterplay while White plays on the kingside."}},
-"english": {"idea": "1.c4 is a Sicilian with colours reversed. Answer with ...e5 and quick development; after ...d5 and the trade on d5 your knight drops back to b6, where it hits c4 and stays safe.",
- "moves": {"1:e5": "Take a central square White isn't controlling.", "3:Nf6": "Develop and prepare ...d5.", "5:d5": "Strike in the centre while White is busy with g3.", "7:Nxd5": "Recapture with the knight; it's centralised.", "9:Nb6": "Step out of the Bg2 pin on the long diagonal and away from Nxd5 trades."}},
-"london": {"idea": "White plays the same setup every game: d4, Bf4, e3, c3, Bd3. Mirror it solidly with ...d5, ...Nf6, ...e6, challenge the bishop with ...Bd6, castle, and hit the centre with ...c5.",
- "moves": {"1:d5": "Claim the centre straight away.", "3:Nf6": "Develop and stop e4.", "5:e6": "Solid; opens the dark bishop.", "7:Bd6": "Offer a bishop trade — the Bf4 is White's best piece.", "9:O-O": "King safe first.", "11:c5": "Challenge d4; this is your main counterplay.", "13:Nc6": "Pile up on d4 and develop the last minor piece."}},
-"qg": {"idea": "It isn't a real gambit: c4 can be taken back. Hold the centre with ...e6 (Queen's Gambit Declined), develop calmly, castle, and ask the Bg5 a question with ...h6.",
- "moves": {"1:d5": "Claim the centre straight away.", "3:e6": "Defend d5 with a pawn — the solid Declined.", "5:Nf6": "Develop and defend d5 again.", "7:Be7": "Break the pin on your f6 knight.", "9:O-O": "King safe first.", "11:h6": "Make the bishop decide: trade on f6 or retreat."}},
-"italian": {"idea": "White aims the bishop at f7 and wants c3 and d4. Mirror with ...Bc5, hit e4 with ...Nf6, and when White pushes d4, take and give a check on b4 — then ...Nxe4 wins a central pawn.",
- "moves": {"1:e5": "Claim the centre.", "3:Nc6": "Develop and defend e5.", "5:Bc5": "Aim at f2, just like White aims at f7.", "7:Nf6": "Develop and attack e4.", "9:exd4": "Take — keeping tension loses the bishop's square.", "11:Bb4+": "Check to gain time before your bishop is hit.", "13:Nxe4": "Grab the central pawn; the knight is safe here."}},
-"evans": {"idea": "White gives a pawn with b4 for quick development and a big centre. Take it, drop the bishop to a5 to keep the extra pawn, take on d4 and develop with ...Nf6 — don't get greedy beyond that.",
- "moves": {"1:e5": "Claim the centre.", "3:Nc6": "Develop and defend e5.", "5:Bc5": "Aim at f2.", "7:Bxb4": "Accept the gambit pawn.", "9:Ba5": "Keep the bishop on the a5–e1 diagonal, pinning a later c3/d4.", "11:exd4": "Remove White's centre pawn.", "13:Nf6": "Develop with tempo on e4 and get ready to castle."}},
-"ruy": {"idea": "White pressures your e5 defender (the c6 knight). Kick the bishop with ...a6 and ...b5, develop with ...Nf6 and ...Be7, and castle into the solid Closed Ruy Lopez.",
- "moves": {"1:e5": "Claim the centre.", "3:Nc6": "Develop and defend e5.", "5:a6": "Ask the bishop straight away — you can always kick it later with ...b5.", "7:Nf6": "Develop and hit e4.", "9:Be7": "Quiet development; get ready to castle.", "11:b5": "Kick the bishop now that Re1 threatens Bxc6 and Nxe5.", "13:O-O": "King safe; the Closed Ruy main line."}},
-"scotch": {"idea": "White opens the centre early with d4. Take, put the bishop on c5 to hit the d4 knight, add ...Qf6 for more pressure, and develop with ...Nge7 so the queen stays defended.",
- "moves": {"1:e5": "Claim the centre.", "3:Nc6": "Develop and defend e5.", "5:exd4": "Take — the pawn can't be held.", "7:Bc5": "Hit the d4 knight straight away.", "9:Qf6": "Add pressure on d4 and f2.", "11:Nge7": "Develop without blocking the queen.", "13:O-O": "King safe."}},
-"kings-gambit": {"idea": "White gives the f-pawn to open the f-file. Take it, protect it with ...g5, and push ...g4 to chase the knight — if White sacrifices it (Muzio), take and defend with ...Qf6.",
- "moves": {"1:e5": "Claim the centre.", "3:exf4": "Accept — the extra pawn is yours to keep.", "5:g5": "Protect the f4 pawn.", "7:g4": "Kick the knight away from e5 and h4.", "9:gxf3": "Take the piece White offered.", "11:Qf6": "Block the f-file and defend f4; you're a piece up."}},
-"danish": {"idea": "White offers two pawns for fast development. You can take both, then give back material with ...Bb4+ and ...Nf6 to finish development — the Copenhagen Defence is safe and good for Black.",
- "moves": {"1:e5": "Claim the centre.", "3:exd4": "Take the centre pawn.", "5:dxc3": "Accept the gambit pawn.", "7:cxb2": "Take again so the c1 bishop can't recapture on c3.", "9:Bb4+": "Check and develop.", "11:Nf6": "Develop and get ready to castle."}},
-"sicilian": {"idea": "Black fights for d4 from the side. Play the Open Sicilian: Nf3 and d4, take back with the knight, and when Black kicks it with ...e5, jump to b5 aiming at d6.",
- "moves": {"0:e4": "Take the centre and open lines for queen and bishop.", "2:Nf3": "Develop and prepare d4.", "4:d4": "Open the centre — the main line.", "6:Nxd4": "Take back with a centralised knight.", "8:Nb5": "Hit d6, the hole ...e5 just created.", "10:N1c3": "Develop and support the b5 knight."}},
-"french": {"idea": "Black's light bishop is blocked by e6. Grab space with e5, support d4 with c3 and Nf3, and point your bishop at Black's kingside.",
- "moves": {"0:e4": "Take the centre.", "2:d4": "Build the big centre.", "4:e5": "Gain space and cramp Black's kingside.", "6:c3": "Shore up d4 against ...c5.", "8:Nf3": "Defend d4 a second time and develop.", "10:Bd3": "Develop toward Black's king."}},
-"caro-kann": {"idea": "Black is solid and wants to develop the light bishop before ...e6. Push e5 for space, trade off that bishop with Bd3, and develop with Ne2 so f-pawn and c-pawn stay free.",
- "moves": {"0:e4": "Take the centre.", "2:d4": "Build the big centre.", "4:e5": "The Advance: gain space.", "6:Bd3": "Offer a trade of Black's good bishop.", "8:Qxd3": "Recapture; your queen is now active.", "10:Ne2": "Develop flexibly; the knight can go to f4 or g3."}},
-"scandinavian": {"idea": "Black brings the queen out early. Take on d5, then hit the queen with Nc3 to gain time, build the centre with d4 and develop Nf3 and Bc4.",
- "moves": {"0:e4": "Take the centre.", "2:exd5": "Take the pawn.", "4:Nc3": "Develop with tempo on the queen.", "6:d4": "Take the centre while the queen is off-side.", "8:Nf3": "Develop.", "10:Bc4": "Develop to an active diagonal and prepare to castle."}},
-"kid": {"idea": "Black lets you take the centre and attacks it later with ...e5. Build e4/d4/c4, develop with Nf3 and Be2, and castle — the solid Classical system.",
- "moves": {"0:d4": "Take the centre.", "2:c4": "Gain more space.", "4:Nc3": "Develop and prepare e4.", "6:e4": "Build the full pawn centre.", "8:Nf3": "Develop and guard d4.", "10:Be2": "Quiet development; get ready to castle.", "12:O-O": "King safe before the centre opens."}},
-"pirc": {"idea": "Black fianchettoes and attacks your centre later. Build it with d4 and Nc3, develop Nf3 and Bc4, castle, and if Black tries the ...Nxe4 trick, simply take back.",
- "moves": {"0:e4": "Take the centre.", "2:d4": "Build the big centre.", "4:Nc3": "Defend e4.", "6:Nf3": "Develop the classical way.", "8:Bc4": "Aim at f7.", "10:O-O": "King safe.", "12:Nxe4": "Take the knight; Black's ...d5 fork wins it back, but you stay fine."}}
+ "reti": {
+  "idea": "White develops the knight first and hits your d5 pawn from the side with c4, hoping you overextend. Stay calm: back d5 up with ...e6, castle quickly, and only take on c4 once White's king has castled and d4 is played.",
+  "moves": {
+   "1:d5": "Claim the centre straight away.",
+   "3:e6": "Support d5 with a pawn so c4xd5 can be met by ...exd5.",
+   "5:Nf6": "Develop and guard d5 a second time.",
+   "7:Be7": "Quiet development; gets ready to castle.",
+   "9:O-O": "King safe before the centre opens.",
+   "11:dxc4": "Now that d4 is in, grab c4 — White needs time to win it back."
+  }
+ },
+ "kia": {
+  "idea": "White sets up a slow fianchetto (Nf3, g3, Bg2, O-O, d3, Nbd2) and later pushes e4. Build a classical centre with ...d5 and ...e6, castle, then gain space on the queenside with ...c5.",
+  "moves": {
+   "1:d5": "Claim the centre straight away.",
+   "3:Nf6": "Develop and control e4, White's key square.",
+   "5:e6": "Solid pawn chain; opens the way for the dark bishop.",
+   "7:Be7": "Develop and prepare to castle.",
+   "9:O-O": "King safe before White pushes e4.",
+   "11:c5": "Grab queenside space — your counterplay while White plays on the kingside."
+  }
+ },
+ "english": {
+  "idea": "1.c4 is a Sicilian with colours reversed. Answer with ...e5 and quick development; after ...d5 and the trade on d5 your knight drops back to b6, where it hits c4 and stays safe.",
+  "moves": {
+   "1:e5": "Take a central square White isn't controlling.",
+   "3:Nf6": "Develop and prepare ...d5.",
+   "5:d5": "Strike in the centre while White is busy with g3.",
+   "7:Nxd5": "Recapture with the knight; it's centralised.",
+   "9:Nb6": "Step out of the Bg2 pin on the long diagonal and away from Nxd5 trades."
+  }
+ },
+ "london": {
+  "idea": "White plays the same setup every game: d4, Bf4, e3, c3, Bd3. Mirror it solidly with ...d5, ...Nf6, ...e6, challenge the bishop with ...Bd6, castle, and hit the centre with ...c5.",
+  "moves": {
+   "1:d5": "Claim the centre straight away.",
+   "3:Nf6": "Develop and stop e4.",
+   "5:e6": "Solid; opens the dark bishop.",
+   "7:Bd6": "Offer a bishop trade — the Bf4 is White's best piece.",
+   "9:O-O": "King safe first.",
+   "11:c5": "Challenge d4; this is your main counterplay.",
+   "13:Nc6": "Pile up on d4 and develop the last minor piece."
+  }
+ },
+ "qg": {
+  "idea": "It isn't a real gambit: c4 can be taken back. Hold the centre with ...e6 (Queen's Gambit Declined), develop calmly, castle, and ask the Bg5 a question with ...h6.",
+  "moves": {
+   "1:d5": "Claim the centre straight away.",
+   "3:e6": "Defend d5 with a pawn — the solid Declined.",
+   "5:Nf6": "Develop and defend d5 again.",
+   "7:Be7": "Break the pin on your f6 knight.",
+   "9:O-O": "King safe first.",
+   "11:h6": "Make the bishop decide: trade on f6 or retreat."
+  }
+ },
+ "italian": {
+  "idea": "White aims the bishop at f7 and wants c3 and d4. Mirror with ...Bc5, hit e4 with ...Nf6, and when White pushes d4, take and give a check on b4 — then ...Nxe4 wins a central pawn.",
+  "moves": {
+   "1:e5": "Claim the centre.",
+   "3:Nc6": "Develop and defend e5.",
+   "5:Bc5": "Aim at f2, just like White aims at f7.",
+   "7:Nf6": "Develop and attack e4.",
+   "9:exd4": "Take — keeping tension loses the bishop's square.",
+   "11:Bb4+": "Check to gain time before your bishop is hit.",
+   "13:Nxe4": "Grab the central pawn; the knight is safe here."
+  }
+ },
+ "evans": {
+  "idea": "White gives a pawn with b4 for quick development and a big centre. Take it, drop the bishop to a5 to keep the extra pawn, take on d4 and develop with ...Nf6 — don't get greedy beyond that.",
+  "moves": {
+   "1:e5": "Claim the centre.",
+   "3:Nc6": "Develop and defend e5.",
+   "5:Bc5": "Aim at f2.",
+   "7:Bxb4": "Accept the gambit pawn.",
+   "9:Ba5": "Keep the bishop on the a5–e1 diagonal, pinning a later c3/d4.",
+   "11:exd4": "Remove White's centre pawn.",
+   "13:Nf6": "Develop with tempo on e4 and get ready to castle."
+  }
+ },
+ "ruy": {
+  "idea": "White pressures your e5 defender (the c6 knight). Kick the bishop with ...a6 and ...b5, develop with ...Nf6 and ...Be7, and castle into the solid Closed Ruy Lopez.",
+  "moves": {
+   "1:e5": "Claim the centre.",
+   "3:Nc6": "Develop and defend e5.",
+   "5:a6": "Ask the bishop straight away — you can always kick it later with ...b5.",
+   "7:Nf6": "Develop and hit e4.",
+   "9:Be7": "Quiet development; get ready to castle.",
+   "11:b5": "Kick the bishop now that Re1 threatens Bxc6 and Nxe5.",
+   "13:O-O": "King safe; the Closed Ruy main line."
+  }
+ },
+ "scotch": {
+  "idea": "White opens the centre early with d4. Take, put the bishop on c5 to hit the d4 knight, add ...Qf6 for more pressure, and develop with ...Nge7 so the queen stays defended.",
+  "moves": {
+   "1:e5": "Claim the centre.",
+   "3:Nc6": "Develop and defend e5.",
+   "5:exd4": "Take — the pawn can't be held.",
+   "7:Bc5": "Hit the d4 knight straight away.",
+   "9:Qf6": "Add pressure on d4 and f2.",
+   "11:Nge7": "Develop without blocking the queen.",
+   "13:O-O": "King safe."
+  }
+ },
+ "kings-gambit": {
+  "idea": "White gives the f-pawn to open the f-file. Take it, protect it with ...g5, and push ...g4 to chase the knight — if White sacrifices it (Muzio), take and defend with ...Qf6.",
+  "moves": {
+   "1:e5": "Claim the centre.",
+   "3:exf4": "Accept — the extra pawn is yours to keep.",
+   "5:g5": "Protect the f4 pawn.",
+   "7:g4": "Kick the knight away from e5 and h4.",
+   "9:gxf3": "Take the piece White offered.",
+   "11:Qf6": "Block the f-file and defend f4; you're a piece up."
+  }
+ },
+ "danish": {
+  "idea": "White offers two pawns for fast development. You can take both, then give back material with ...Bb4+ and ...Nf6 to finish development — the Copenhagen Defence is safe and good for Black.",
+  "moves": {
+   "1:e5": "Claim the centre.",
+   "3:exd4": "Take the centre pawn.",
+   "5:dxc3": "Accept the gambit pawn.",
+   "7:cxb2": "Take again so the c1 bishop can't recapture on c3.",
+   "9:Bb4+": "Check and develop.",
+   "11:Nf6": "Develop and get ready to castle."
+  }
+ },
+ "sicilian": {
+  "idea": "Black fights for d4 from the side. Play the Open Sicilian: Nf3 and d4, take back with the knight, and when Black kicks it with ...e5, jump to b5 aiming at d6.",
+  "moves": {
+   "0:e4": "Take the centre and open lines for queen and bishop.",
+   "2:Nf3": "Develop and prepare d4.",
+   "4:d4": "Open the centre — the main line.",
+   "6:Nxd4": "Take back with a centralised knight.",
+   "8:Nb5": "Hit d6, the hole ...e5 just created.",
+   "10:N1c3": "Develop and support the b5 knight."
+  }
+ },
+ "french": {
+  "idea": "Black's light bishop is blocked by e6. Grab space with e5, support d4 with c3 and Nf3, and point your bishop at Black's kingside.",
+  "moves": {
+   "0:e4": "Take the centre.",
+   "2:d4": "Build the big centre.",
+   "4:e5": "Gain space and cramp Black's kingside.",
+   "6:c3": "Shore up d4 against ...c5.",
+   "8:Nf3": "Defend d4 a second time and develop.",
+   "10:Bd3": "Develop toward Black's king."
+  }
+ },
+ "caro-kann": {
+  "idea": "Black is solid and wants to develop the light bishop before ...e6. Push e5 for space, trade off that bishop with Bd3, and develop with Ne2 so f-pawn and c-pawn stay free.",
+  "moves": {
+   "0:e4": "Take the centre.",
+   "2:d4": "Build the big centre.",
+   "4:e5": "The Advance: gain space.",
+   "6:Bd3": "Offer a trade of Black's good bishop.",
+   "8:Qxd3": "Recapture; your queen is now active.",
+   "10:Ne2": "Develop flexibly; the knight can go to f4 or g3."
+  }
+ },
+ "scandinavian": {
+  "idea": "Black brings the queen out early. Take on d5, then hit the queen with Nc3 to gain time, build the centre with d4 and develop Nf3 and Bc4.",
+  "moves": {
+   "0:e4": "Take the centre.",
+   "2:exd5": "Take the pawn.",
+   "4:Nc3": "Develop with tempo on the queen.",
+   "6:d4": "Take the centre while the queen is off-side.",
+   "8:Nf3": "Develop.",
+   "10:Bc4": "Develop to an active diagonal and prepare to castle."
+  }
+ },
+ "kid": {
+  "idea": "Black lets you take the centre and attacks it later with ...e5. Build e4/d4/c4, develop with Nf3 and Be2, and castle — the solid Classical system.",
+  "moves": {
+   "0:d4": "Take the centre.",
+   "2:c4": "Gain more space.",
+   "4:Nc3": "Develop and prepare e4.",
+   "6:e4": "Build the full pawn centre.",
+   "8:Nf3": "Develop and guard d4.",
+   "10:Be2": "Quiet development; get ready to castle.",
+   "12:O-O": "King safe before the centre opens."
+  }
+ },
+ "pirc": {
+  "idea": "Black fianchettoes and attacks your centre later. Build it with d4 and Nc3, develop Nf3 and Bc4, castle, and if Black tries the ...Nxe4 trick, simply take back.",
+  "moves": {
+   "0:e4": "Take the centre.",
+   "2:d4": "Build the big centre.",
+   "4:Nc3": "Defend e4.",
+   "6:Nf3": "Develop the classical way.",
+   "8:Bc4": "Aim at f7.",
+   "10:O-O": "King safe.",
+   "12:Nxe4": "Take the knight; Black's ...d5 fork wins it back, but you stay fine."
+  }
+ },
+ "three-knights": {
+  "idea": "White brings out both knights before deciding on a plan. Mirror with ...Nf6 (it turns into a Four Knights or Italian-style game), aim the bishop at f2, play ...d6 and ...h6 to stop Ng5/Bg5 ideas, then castle.",
+  "moves": {
+   "5:Nf6": "Develop and hit e4 — the Four Knights.",
+   "7:Bc5": "Aim at f2, just like White aims at f7.",
+   "9:d6": "Support e5 and open the light bishop.",
+   "11:h6": "Take g5 away from White's knight and bishop.",
+   "13:O-O": "King safe; the position is level."
+  }
+ },
+ "bishops": {
+  "idea": "White points the bishop at f7 early, keeping the knight flexible. Develop ...Nc6, ...Bc5 and ...Nf6, and if White builds c3 and d4, take on d4 and give a check on b4.",
+  "moves": {
+   "3:Nc6": "Develop and defend e5.",
+   "5:Bc5": "Aim at f2 — the mirror of White's bishop.",
+   "7:Nf6": "Develop and attack e4.",
+   "9:exd4": "Take — keeping tension lets White win space with d5 or dxe5.",
+   "11:Bb4+": "Check to gain time before your bishop gets hit."
+  }
+ },
+ "wayward-queen": {
+  "idea": "White brings the queen out early to hit e5 and f7 (the 'Scholar's Mate' idea). Defend e5 with ...Nc6, block the queen with ...g6, develop ...Nf6 with tempo and ...Bg7 — the early queen then just loses time.",
+  "moves": {
+   "3:Nc6": "Defend e5 and develop.",
+   "5:g6": "Kick the queen and block the h5–f7 attack. Not ...Nf6?? Qxf7 mate.",
+   "7:Nf6": "Develop and cover f7 again; the queen will be hit again.",
+   "9:Bg7": "Finish the fianchetto and get ready to castle."
+  }
+ },
+ "center-game": {
+  "idea": "White takes back on d4 with the queen, which can be chased. Hit it with ...Nc6, develop ...Nf6 and ...Bb4, castle, and put the rook on e8 against the e4 pawn.",
+  "moves": {
+   "5:Nc6": "Develop with tempo on the queen.",
+   "7:Nf6": "Develop and hit e4.",
+   "9:Bb4": "Pin the c3 knight so e4 gets weaker.",
+   "11:O-O": "King safe first.",
+   "13:Re8": "Rook to the open e-file, pressing on e4."
+  }
+ },
+ "vienna": {
+  "idea": "White develops Nc3 first and often lunges with f4. Develop ...Nc6, ...Nf6 and ...Bc5, support e5 with ...d6 when f4 comes, and castle.",
+  "moves": {
+   "3:Nc6": "Develop and defend e5.",
+   "5:Nf6": "Develop and hit e4.",
+   "7:Bc5": "Aim at f2 and the g1–a7 diagonal.",
+   "9:d6": "Hold e5 against the f4 push.",
+   "11:O-O": "King safe; your bishop on c5 keeps White's king from castling comfortably."
+  }
+ },
+ "qpg-symmetrical": {
+  "idea": "Black copies your 1.d4 2.Nf3 with ...d5 and ...Nf6. The strongest try is c4 (a Queen's Gambit), then Nc3, Bg5 and e3 — classical pressure on d5. If you prefer your usual Nc3 setup, it's playable too.",
+  "moves": {
+   "0:d4": "Take the centre.",
+   "2:Nf3": "Develop and stop ...e5.",
+   "4:c4": "Hit d5 from the side — the Queen's Gambit.",
+   "6:Nc3": "Add pressure on d5.",
+   "8:Bg5": "Pin the f6 knight, d5's defender.",
+   "10:e3": "Open your light bishop and guard d4.",
+   "12:Bh4": "Keep the pin; don't trade your bishop for free."
+  }
+ },
+ "qpg-chigorin": {
+  "idea": "Black plays ...Nc6 early, blocking the c-pawn. Set up the London with Bf4, e3 and Bd3, and trade off Black's light bishop if it comes to f5.",
+  "moves": {
+   "0:d4": "Take the centre.",
+   "2:Nf3": "Develop and stop ...e5.",
+   "4:Bf4": "London setup: develop the bishop outside the pawn chain.",
+   "6:e3": "Solid; support d4 and open the light bishop.",
+   "8:Bd3": "Challenge Black's f5 bishop.",
+   "10:Bxf5": "Trade — you get rid of Black's best bishop and the e6 pawn is doubled up after ...exf5."
+  }
+ },
+ "indian-knights": {
+  "idea": "Black fianchettoes with ...g6 and ...Bg7. Keep your usual Nc3, then grab the centre with e4, develop Bd3 and castle — you get a big pawn centre for free.",
+  "moves": {
+   "0:d4": "Take the centre.",
+   "2:Nf3": "Develop and stop ...e5.",
+   "4:Nc3": "Your usual move: develop and prepare e4.",
+   "6:e4": "Build the full pawn centre.",
+   "8:Bd3": "Develop and guard e4.",
+   "10:O-O": "King safe; White is comfortably better."
+  }
+ },
+ "englund": {
+  "idea": "Black gives the e-pawn for fast development. Take it; if Black gambits more with ...d6, take that too, then develop Nf3, Nc3 and Bg5 — you're a pawn up with an easy game.",
+  "moves": {
+   "0:d4": "Take the centre.",
+   "2:dxe5": "Take the gambit pawn.",
+   "4:exd6": "Take again; Black gets development but no real attack.",
+   "6:Nf3": "Develop and cover d4 and e5.",
+   "8:Nc3": "Develop the second knight.",
+   "10:Bg5": "Develop and pin the f6 knight if it comes."
+  }
+ },
+ "mikenas": {
+  "idea": "Black plays ...Nc6 first and often follows with ...d5. Keep it simple with the London: Nf3, Bf4, e3 and Bd3, offering to trade Black's light bishop.",
+  "moves": {
+   "0:d4": "Take the centre.",
+   "2:Nf3": "Develop and stop ...e5 — the knight's key job here.",
+   "4:Bf4": "London setup: bishop outside the pawn chain.",
+   "6:e3": "Solid; support d4.",
+   "8:Bd3": "Challenge Black's f5 bishop."
+  }
+ },
+ "dutch": {
+  "idea": "Black's ...f5 controls e4 but weakens the king. Fianchetto with g3 and Bg2 so your bishop pressures e4 and the long diagonal, castle, then gain space with c4.",
+  "moves": {
+   "0:d4": "Take the centre.",
+   "2:Nf3": "Develop and cover e5.",
+   "4:g3": "Prepare a fianchetto against Black's e4 grip.",
+   "6:Bg2": "Bishop on the long diagonal.",
+   "8:O-O": "King safe.",
+   "10:c4": "Take queenside space."
+  }
+ }
 }

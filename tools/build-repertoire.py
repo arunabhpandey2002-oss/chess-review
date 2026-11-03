@@ -31,10 +31,26 @@ ENTRIES = [  # id, side you play, moves that identify it (must be an exact line 
   ('scandinavian', 'w', '1. e4 d5', ["Scandinavian Defense"]),
   ('kid', 'w', '1. d4 Nf6 2. c4 g6 3. Nc3', ["King's Indian Defense"]),
   ('pirc', 'w', '1. e4 d6 2. d4 Nf6 3. Nc3 g6', ["Pirc Defense"]),
+  # added after looking at Arunabh's games: as White he plays 1.d4 and 2.Nf3; as Black he meets 1.e4 with ...e5
+  ('three-knights', 'b', '1. e4 e5 2. Nf3 Nc6 3. Nc3', ["Three Knights Opening", "Four Knights Game"]),
+  ('bishops', 'b', '1. e4 e5 2. Bc4', ["Bishop's Opening"]),
+  ('wayward-queen', 'b', '1. e4 e5 2. Qh5', ["King's Pawn Game: Wayward Queen Attack"]),
+  ('center-game', 'b', '1. e4 e5 2. d4 exd4 3. Qxd4', ["Center Game", "Center Game Accepted"]),
+  ('vienna', 'b', '1. e4 e5 2. Nc3', ["Vienna Game"]),
+  ('qpg-symmetrical', 'w', '1. d4 d5 2. Nf3 Nf6', ["Queen's Pawn Game"]),
+  ('qpg-chigorin', 'w', '1. d4 d5 2. Nf3 Nc6', ["Queen's Pawn Game: Chigorin Variation"]),
+  ('indian-knights', 'w', '1. d4 Nf6 2. Nf3', ["Indian Defense"]),
+  ('englund', 'w', '1. d4 e5', ["Englund Gambit", "Englund Gambit Declined", "Englund Gambit Complex", "Englund Gambit Complex Declined"]),
+  ('mikenas', 'w', '1. d4 Nc6', ["Mikenas Defense"]),
+  ('dutch', 'w', '1. d4 f5', ["Dutch Defense"]),
 ]
 
 # where the most popular sound move runs out of sample data fast, use the next most popular sound move
-PREFER = {'reti': {'3': 'e6'}}
+PREFER = {'reti': {'3': 'e6'},
+  # as White he plays 1.d4, 2.Nf3 and 3.Nc3 (from his chess.com games); keep his setup where it's sound
+  'qpg-symmetrical': {'4': 'Nc3'}, 'qpg-chigorin': {'4': 'Bf4'}, 'indian-knights': {'4': 'Nc3'},
+  'mikenas': {'2': 'Nf3', '4': 'Nc3'}, 'dutch': {'2': 'Nf3', '4': 'Nc3'}}
+PREFER_SHARE = 0.03
 
 rows = []
 for f in 'abcde':
@@ -109,10 +125,12 @@ def build(eid, side, idpgn, names):
         mine_turn = ('w' if b.turn else 'b') == side
         extra = len(plies) - idn
         thin = total < MIN_GAMES or not moves
-        if thin and extra >= MIN_EXTRA: break
+        if thin and extra >= MIN_EXTRA and plies[-1]['mine']: break
         if not mine_turn and extra >= TARGET_EXTRA: break
         if thin:
             m = eng.analyse(b, chess.engine.Limit(depth=DEPTH))['pv'][0]
+            pin = [k.split(':', 1)[1] for k in notes.get(eid, {}).get('moves', {}) if k.split(':')[0] == str(len(plies))]
+            if pin and mine_turn: m = b.parse_san(pin[0])  # reviewed engine choice, re-checked by the final depth+2 test
             if mine_turn: add_user(m, total, moves, 'engine')
             else: plies.append({'san': b.san(m), 'uci': m.uci(), 'fen': b.fen(), 'mine': False, 'games': 0, 'share': 0, 'src': 'engine'})
             b.push(m); continue
@@ -123,11 +141,16 @@ def build(eid, side, idpgn, names):
             noted = [k.split(':', 1)[1] for k in notes.get(eid, {}).get('moves', {}) if k.split(':')[0] == str(len(plies))]
             if noted:  # the reviewed line in the notes pins the choice so reruns are stable; it must still be common and sound
                 pick = b.parse_san(noted[0])
-                assert any(x[0] == pick and x[1] / total >= MIN_SHARE for x in moves), f'{eid}: noted move {noted[0]} not common'
+                assert any(x[0] == pick and x[1] / total >= (PREFER_SHARE if PREFER.get(eid, {}).get(str(len(plies))) == noted[0] else MIN_SHARE) for x in moves), f'{eid}: noted move {noted[0]} not common'
                 assert best - sc[pick.uci()] <= MAX_LOSS if pick.uci() in sc else True
-            elif str(len(plies)) in PREFER.get(eid, {}):  # a sound, more mainstream choice where the most popular move leads off the map
-                pick = b.parse_san(PREFER[eid][str(len(plies))])
-                assert any(x[0] == pick and x[1] / total >= MIN_SHARE for x in moves), f'{eid}: preferred move not common'
+            elif str(len(plies)) in PREFER.get(eid, {}):
+                # his own repertoire choice (from his games), used only when it's in the sample at 3%+ and sound
+                try: want = b.parse_san(PREFER[eid][str(len(plies))])
+                except ValueError: want = None
+                n_want = next((x[1] for x in moves if x[0] == want), 0)
+                if want and n_want / total >= PREFER_SHARE:
+                    _, best2, sc2 = scores(b, [want] + [x[0] for x in moves[:6]])
+                    if best2 - sc2[want.uci()] <= PICK_LOSS: pick = want
             if pick is None: pick, src = top, 'engine'
             add_user(pick, total, moves, src)
             b.push(pick)
@@ -165,8 +188,10 @@ def build(eid, side, idpgn, names):
     return {'id': eid, 'side': side, 'eco': row['eco'], 'name': row['name'], 'idPgn': idpgn, 'idPlies': idn, 'names': names,
             'idea': n.get('idea', ''), 'endsIn': endName, 'endEvalCp': endEval, 'plies': plies}
 
+ONLY = next((a.split('=', 1)[1].split(',') for a in sys.argv[1:] if a.startswith('--only=')), None)
 out = []
 for e in ENTRIES:
+    if ONLY and e[0] not in ONLY: continue
     try: r = build(*e)
     except Exception: eng.quit(); raise
     out.append(r)

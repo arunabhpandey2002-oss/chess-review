@@ -38,7 +38,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   await page.goto(BASE + `?user=${USER}&view=openings`);
   await page.waitForSelector('.op-card');
   check(`${tag}: Openings tab is active`, (await page.locator('#tabs a.on').innerText()).trim() === 'Openings');
-  check(`${tag}: 17 openings in the library`, (await page.locator('.op-card').count()) === 17, await page.locator('.op-card').count());
+  check(`${tag}: 28 openings in the library`, (await page.locator('.op-card').count()) === 28, await page.locator('.op-card').count());
   const card = page.locator('#op-reti');
   check(`${tag}: Réti card shows name, ECO, moves and idea`, /Réti Opening/.test(await card.innerText()) && /A09/.test(await card.innerText()) && (await card.locator('.op-moves').innerText()) === '1. Nf3 d5 2. c4' && (await card.locator('.op-idea').innerText()).length > 40);
   await card.locator('summary').click();
