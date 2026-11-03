@@ -17,6 +17,7 @@ import { lineItems, renderText } from './words';
 import { diagnose, clockOf, CHOICES, VERDICT_LABEL, CAUSE_LABEL, type Diagnosis, type Choice } from './diagnose';
 import { openSparring, type SparringOpts } from './sparring';
 import { put as storePut, type ExplanationReport } from './store';
+import { lastMoveOf, lastMoveText, type LastMoveInfo } from './lastmove';
 const putReport = (r: ExplanationReport) => storePut('reports', r);
 import { $, esc, srcChip, dlgHead, reducedMotion, boardDescription, legalDests, parseTyped } from './ui';
 
@@ -40,6 +41,8 @@ export interface TrainerOpts {
   replay?: Pick<SparringOpts, 'original' | 'profileKey' | 'sourceId'>;
   /** Opens this position in the analysis workspace. */
   onAnalyse?: (m: MomentCore) => void;
+  /** For old positions saved without their prior move: look it up (e.g. from the stored game). */
+  findLastMove?: () => Promise<LastMoveInfo>;
 }
 
 const colorName = (c: Color) => (c === 'w' ? 'white' : 'black');
@@ -64,12 +67,30 @@ export class Trainer {
   lastRecord: import('./evidence').ExplanationRecord | null = null;
   diag: Diagnosis | null = null;
   destroyed = false;
+  /** The opponent's move that led to this position (shown above the board and highlighted on it). */
+  last: LastMoveInfo = null;
 
   constructor(host: HTMLElement, o: TrainerOpts) {
     this.host = host;
     this.o = o;
     this.hints = buildHints(o.core);
+    this.last = lastMoveOf(o.core);
     this.render();
+    if (!this.last && o.findLastMove) o.findLastMove().then((l) => { if (l && !this.destroyed) { this.last = l; this.showLast(); if (!this.finished && !this.busy) this.setBoard(o.core.fenBefore); } }).catch(() => {});
+  }
+
+  get lastUci(): string | undefined { return this.last && this.last !== 'start' ? this.last.uci : undefined; }
+
+  showLast() {
+    const el = this.host.querySelector<HTMLElement>('#tr-last');
+    if (!el) return;
+    const t = lastMoveText(this.last);
+    el.hidden = !t;
+    if (!t) return;
+    const l = this.last;
+    el.innerHTML = l && l !== 'start'
+      ? `Last move: <b>${esc(l.label)}</b> <span class="muted">(${esc(l.from)} → ${esc(l.to)})</span>`
+      : esc(t);
   }
 
   get side() { return this.o.core.color === 'w' ? 'White' : 'Black'; }
@@ -80,6 +101,7 @@ export class Trainer {
       ${this.o.onClose ? dlgHead(this.o.title, this.o.subtitle ? esc(this.o.subtitle) : '', 'tr-close', this.o.closeLabel ?? 'Close') : ''}
       <div class="trainer" role="region" aria-label="Retry this position">
         <div class="tr-board-col">
+          <p class="tr-last" id="tr-last" aria-live="polite" hidden></p>
           <div class="tr-board-wrap"><div class="tr-board" id="tr-board" role="img" aria-label="${esc(boardDescription(m.fenBefore))}"></div></div>
           <form class="tr-type" id="tr-type" autocomplete="off">
             <label for="tr-input">Type a move</label>
@@ -107,6 +129,7 @@ export class Trainer {
       coordinates: true,
       animation: { enabled: anim, duration: 160 },
       highlight: { lastMove: true, check: true },
+      lastMove: this.lastUci ? [this.lastUci.slice(0, 2) as Key, this.lastUci.slice(2, 4) as Key] : undefined,
       movable: { free: false, color: colorName(m.color), dests: legalDests(m.fenBefore) as Map<Key, Key[]>, showDests: true, events: { after: (orig, dest) => this.onBoardMove(orig, dest) } },
       draggable: { enabled: true },
       drawable: { enabled: false, visible: true },
@@ -124,6 +147,7 @@ export class Trainer {
     $('#tr-hint', this.host).onclick = () => this.showHint();
     $('#tr-reveal', this.host).onclick = () => this.reveal();
     if (this.o.onClose) $('#tr-close', this.host).onclick = () => this.o.onClose!();
+    this.showLast();
     this.status(`Drag a piece, click a piece then a square, or type a move. You can try as many times as you like.`);
   }
 
@@ -136,6 +160,8 @@ export class Trainer {
   }
 
   setBoard(fen: string, last?: string) {
+    // back on the training position: show the opponent's move that led here again
+    if (!last && fen === this.o.core.fenBefore) last = this.lastUci;
     const c = new Chess(fen);
     const moverToPlay = c.turn() === this.o.core.color && !this.finished;
     this.cg.set({

@@ -30,6 +30,7 @@ import { cachedAtLeast, putCached, pruneCache } from './evalcache';
 import { renderHomePanel, renderPuzzles, renderTrain, renderHistory, renderImport, renderData, destroyTrainer, recordAttempt, recordDiagnosis, newPuzzle, rememberGame, storedGame, SITE_LABEL, type Ctx, type Site } from './pages';
 import { $, esc, cap, srcChip, applyMotionClass, reducedMotion, boardDescription, fmtWhen } from './ui';
 import { isDue, srsStatus } from './srs';
+import { lastMoveFromPgn } from './lastmove';
 
 const DEFAULT_USER = 'Arunabh-pandey';
 const app = $('#app');
@@ -882,6 +883,7 @@ class ReviewView {
         if (p) this.puzzles.set(m.ply, await recordDiagnosis(p, d));
       },
       replay: this.replayLink(m),
+      findLastMove: async () => lastMoveFromPgn(g.pgn, m.fenBefore, m.ply),
       onAnalyse: async (mm) => { const id = await createWorkspace(pk(), lessonDoc(mm, mm.color, `${g.white.username} vs ${g.black.username} · move ${mm.moveNumber}`)); this.closeTrainer(); navigate({ view: 'analysis', ws: id }); },
       onNext: () => (i + 1 < this.moments.length ? this.openTrainer(i + 1) : this.closeTrainer()),
       nextLabel: i + 1 < this.moments.length ? 'Next moment' : 'Back to review',

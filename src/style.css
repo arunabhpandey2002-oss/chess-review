@@ -728,3 +728,5 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
 .ex-cap-foot { margin-top: 6px; }
 .ex-capture ul { margin-top: 2px; }
 .pz-sep { margin: 14px 0 2px; font-size: 0.95rem; color: var(--muted, #888); font-weight: 600; }
+.tr-last { margin: 0 0 8px; font-size: 15px; padding: 6px 10px; background: var(--card2); border: 1px solid var(--line); border-radius: 8px; }
+.tr-last b { font-size: 16px; }

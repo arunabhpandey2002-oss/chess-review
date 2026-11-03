@@ -64,6 +64,9 @@ if (process.env.FULL) {
   await page.locator('[data-retry="0"]').click();
   await page.waitForSelector('.overlay .trainer');
   const best2 = await page.evaluate(() => window.__trainer.o.core.bestSan);
+  const lm = (await page.locator('.overlay #tr-last').innerText()).trim();
+  const lmHl = await page.locator('.overlay #tr-board square.last-move').count();
+  check('review: last move line and highlight in the critical-moment trainer', /^Last move: \d+\.(\.\.)? \S+ \([a-h][1-8] → [a-h][1-8]\)$/.test(lm) && lmHl === 2, `${lm} · ${lmHl} squares`);
   await page.fill('#tr-input', best2);
   await page.press('#tr-input', 'Enter');
   await page.waitForSelector('.tr-status.good', { timeout: 20000 });

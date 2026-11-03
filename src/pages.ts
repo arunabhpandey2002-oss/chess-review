@@ -15,6 +15,7 @@ import { LEVEL_LABEL, type Level } from './moments';
 import { Trainer, releaseTrainerEngine, type TrainResult } from './trainer';
 import { importPgn } from './sources';
 import { $, esc, fmtDate, fmtWhen, applyMotionClass, reducedMotion } from './ui';
+import { lastMoveFromPgn } from './lastmove';
 import type { GameSummary } from './api';
 
 export type Site = 'chesscom' | 'lichess';
@@ -208,6 +209,7 @@ export async function renderTrain(ctx: Ctx, onlyId: string | null) {
       rating: p.rating, prior: p.diagnosis, onDiagnosis: async (d) => { await recordDiagnosis(p, d); },
       replay: { profileKey: p.profileKey, sourceId: p.id, original: p.source && p.source !== 'game' ? null : () => originalForPuzzle(p.profileKey, p.gameId, p.core.fenBefore, p.core.playedUci) },
       onAnalyse: async (m) => { const id = await createWorkspace(ctx.pk, lessonDoc(m, m.color, `${puzzleTitle(p)}`)); ctx.navigate({ view: 'analysis', ws: id, p: null }); },
+      findLastMove: async () => { const g = p.gameId ? await storedGame(p.profileKey, p.gameId) : undefined; return g?.game.pgn ? lastMoveFromPgn(g.game.pgn, p.core.fenBefore, p.core.ply) : null; },
       onNext: () => { i++; show(); }, nextLabel: i + 1 < queue.length ? 'Next position' : 'Finish',
       onClose: () => ctx.navigate({ view: 'puzzles', p: null }), closeLabel: 'Stop',
     });
