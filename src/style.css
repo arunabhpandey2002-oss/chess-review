@@ -826,3 +826,4 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
 .dr-ply.dr-after { opacity: .75; }
 .dr-you { color: #ffc39a; font-size: 12px; }
 .dr-whys { margin: 4px 0 0; padding-left: 18px; color: var(--muted); }
+.op-var-idea { font-size: 13px; color: var(--text); margin: 6px 0; }

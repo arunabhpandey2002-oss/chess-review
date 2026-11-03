@@ -70,6 +70,9 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   check(`${tag}: play mode selected in the mode switch`, (await page.locator('#op-mode-play').getAttribute('aria-pressed')) === 'true');
   check(`${tag}: play mode names the variation`, /Indian Defense: Knights Variation/.test(await page.locator('#op-varname').innerText()) && /A46|A45|Indian/.test(await page.locator('.tr-head h2').innerText()));
   await page.waitForFunction(() => /to move/.test(document.querySelector('#op-task')?.textContent ?? ''));
+  const famIdea = data.families.find((f) => f.id === (ik.family || 'f-indian'))?.idea;
+  const ideaTxt = await page.locator('#op-idea-text').textContent();
+  check(`${tag}: practising one variation shows that variation's own idea`, ideaTxt === ik.idea && ideaTxt !== famIdea, ideaTxt.slice(0, 80));
   await typeMove(page, 'h4');
   await page.waitForFunction(() => /bad|warn/.test(document.querySelector('#tr-status').className));
   check(`${tag}: play mode still rejects a move outside the line`, /isn't the move in this line|Try again/.test(await page.locator('#tr-status').innerText()), await page.locator('#tr-status').innerText());
@@ -158,6 +161,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   const leftPly = await page.locator('#dr-bookline .dr-left').getAttribute('data-ply').catch(() => null);
   const expLeft = r3.played.findIndex((x) => x.endsWith('*'));
   check(`${tag}: book line highlights where you left it`, leftPly !== null && /You left the line at/.test(bl) && /you played/.test(await page.locator('#dr-bookline .dr-left').innerText()), `${leftPly} (first off-book user move #${expLeft + 1})`);
+  check(`${tag}: random review explains this variation's idea`, (await page.locator('#dr-review details.op-line p').last().textContent()) === re.idea);
   check(`${tag}: random review has Drill this line + Next random opening`, (await page.locator('#dr-drill').count()) === 1 && /Next random/.test(await page.locator('#dr-again').innerText()));
   if (mobile) { await page.screenshot({ path: `${OUT}/${tag}-random-2-review-full.png`, fullPage: true }); await page.evaluate(() => { document.querySelector('#dr-review').scrollIntoView(); scrollBy(0, -(document.querySelector('.topbar')?.offsetHeight ?? 60) - 8); }); }
   await page.screenshot({ path: `${OUT}/${tag}-random-2-review.png` });

@@ -1188,7 +1188,7 @@
 "Réti Opening",
 "Zukertort Opening"
 ],
-"idea": "White develops the knight first and hits your d5 pawn from the side with c4, hoping you overextend. Stay calm: back d5 up with ...e6, castle quickly, and only take on c4 once White's king has castled and d4 is played.",
+"idea": "White pressures your d5 pawn from the side with 2.c4 and fianchettoes with 3.g3 and 4.Bg2, hoping to undermine the centre from a distance. Keep it solid with 2...e6, 3...Nf6, 4...Be7 and 5...O-O; once White commits with 6.d4, take with 6...dxc4 and the g2 bishop bites on your e6 pawn.",
 "endsIn": "A09 Réti Opening",
 "endEvalCp": -24,
 "plies": [
@@ -1539,7 +1539,7 @@
 "names": [
 "King's Indian Attack"
 ],
-"idea": "White sets up a slow fianchetto (Nf3, g3, Bg2, O-O, d3, Nbd2) and later pushes e4. Build a classical centre with ...d5 and ...e6, castle, then gain space on the queenside with ...c5.",
+"idea": "White builds the King's Indian Attack with 2.g3, 3.Bg2, 4.O-O, 5.d3 and 6.Nbd2, preparing a central e-pawn push and a later kingside attack. Mirror solidly with 2...Nf6, 3...e6 and 5...O-O, then grab queenside space with 6...c5 — your play is on the queenside while White's comes on the kingside.",
 "endsIn": "A07 King's Indian Attack",
 "endEvalCp": 3,
 "plies": [
@@ -1869,7 +1869,7 @@
 "names": [
 "Zukertort Opening: Old Indian Attack"
 ],
-"idea": "White develops the knight first and hits your d5 pawn from the side with c4, hoping you overextend. Stay calm: back d5 up with ...e6, castle quickly, and only take on c4 once White's king has castled and d4 is played.",
+"idea": "With 2.d3 White adopts a reversed Old Indian setup and then hits your d5 pawn with 4.c4. Take space with 3...c5 and 4...Nc6; after 5.cxd5 recapture 5...Nxd5 and you have an open Sicilian structure with colours reversed, with a centralised knight and easy development.",
 "endsIn": "A06 Zukertort Opening: Old Indian Attack",
 "endEvalCp": -10,
 "plies": [
@@ -2103,7 +2103,7 @@
 "names": [
 "Zukertort Opening: Reversed Mexican Defense"
 ],
-"idea": "White develops the knight first and hits your d5 pawn from the side with c4, hoping you overextend. Stay calm: back d5 up with ...e6, castle quickly, and only take on c4 once White's king has castled and d4 is played.",
+"idea": "2.Nc3 blocks White's own c-pawn, so after 3.d4 White can't easily pressure d5 and instead pins your knight with 4.Bg5, Veresov-style. Break the pin calmly with 4...Be7 and castle with 5...O-O — your d5/e6 centre is rock-solid.",
 "endsIn": "A06 Zukertort Opening: Reversed Mexican Defense",
 "endEvalCp": 16,
 "plies": [
@@ -2400,7 +2400,7 @@
 "English Opening: Carls-Bremen System",
 "English Opening: King's English Variation, Two Knights Variation, Reversed Dragon"
 ],
-"idea": "1.c4 is a Sicilian with colours reversed. Answer with ...e5 and quick development; after ...d5 and the trade on d5 your knight drops back to b6, where it hits c4 and stays safe.",
+"idea": "With 2.Nc3 and 3.g3 White plays a reversed Dragon, aiming the g2 bishop down the long diagonal. Strike at once with 3...d5; after 4.cxd5 Nxd5 5.Bg2 the bishop eyes your knight, so drop it back to b6 with 5...Nb6, out of range and covering c4 and d5.",
 "endsIn": "A22 English Opening: King's English Variation, Two Knights Variation, Reversed Dragon",
 "endEvalCp": -20,
 "plies": [
@@ -2673,7 +2673,7 @@
 "English Opening: King's English Variation, Four Knights Variation",
 "English Opening: King's English Variation, Four Knights Variation, Fianchetto Line"
 ],
-"idea": "1.c4 is a Sicilian with colours reversed. Answer with ...e5 and quick development; after ...d5 and the trade on d5 your knight drops back to b6, where it hits c4 and stays safe.",
+"idea": "All four knights are out, and 4.g3 prepares Bg2 to pressure your queenside along the long diagonal. Free your game with 4...d5; after 5.cxd5 Nxd5 6.Bg2 don't retreat — swap with 6...Nxc3 so the g2 bishop has no knight to hit and White must recapture with a pawn.",
 "endsIn": "A29 English Opening: King's English Variation, Four Knights Variation, Fianchetto Line",
 "endEvalCp": -24,
 "plies": [
@@ -2987,7 +2987,7 @@
 "names": [
 "English Opening: King's English Variation, Nimzowitsch Variation"
 ],
-"idea": "1.c4 is a Sicilian with colours reversed. Answer with ...e5 and quick development; after ...d5 and the trade on d5 your knight drops back to b6, where it hits c4 and stays safe.",
+"idea": "2.Nf3 attacks your e5 pawn straight away, so defend it with 2...Nc6 before playing 3...Nf6. After 4.g3 the position matches the Four Knights fianchetto: break with 4...d5, recapture 5...Nxd5, and once 6.Bg2 aims at your knight, trade it off with 6...Nxc3.",
 "endsIn": "A20 English Opening: King's English Variation, Nimzowitsch Variation",
 "endEvalCp": -23,
 "plies": [
@@ -3287,7 +3287,7 @@
 "names": [
 "English Opening: King's English Variation, Four Knights Variation, Quiet Line"
 ],
-"idea": "1.c4 is a Sicilian with colours reversed. Answer with ...e5 and quick development; after ...d5 and the trade on d5 your knight drops back to b6, where it hits c4 and stays safe.",
+"idea": "4.e3 is a quiet move that keeps White's position compact and prepares a d-pawn push later. Pin the c3 knight with 4...Bb4; when 5.Qc2 defends it, give up the bishop with 5...Bxc3 so the queen has to recapture, then 6...Qe7 guards your e5 pawn and 7...O-O completes development.",
 "endsIn": "A28 English Opening: King's English Variation, Four Knights Variation, Quiet Line",
 "endEvalCp": -1,
 "plies": [
@@ -3603,7 +3603,7 @@
 "Queen's Pawn Game: Zukertort Variation",
 "Queen's Pawn Game: Symmetrical Variation"
 ],
-"idea": "White plays the same setup every game: d4, Bf4, e3, c3, Bd3. Mirror it solidly with ...d5, ...Nf6, ...e6, challenge the bishop with ...Bd6, castle, and hit the centre with ...c5.",
+"idea": "3.Bf4 is the London: White puts the bishop outside the pawn chain, then builds a pyramid with 4.e3 and 7.c3. Challenge the bishop with 4...Bd6; after 5.Bg3 castle and hit d4 with 6...c5 and 7...Nc6, so White always has to keep defending the centre.",
 "endsIn": "D02 Queen's Pawn Game: London System",
 "endEvalCp": -18,
 "plies": [
@@ -4016,7 +4016,7 @@
 "names": [
 "Queen's Pawn Game: Accelerated London System"
 ],
-"idea": "White plays the same setup every game: d4, Bf4, e3, c3, Bd3. Mirror it solidly with ...d5, ...Nf6, ...e6, challenge the bishop with ...Bd6, castle, and hit the centre with ...c5.",
+"idea": "2.Bf4 brings the London bishop out even before Nf3, though here it transposes back after 4.Nf3. Set up with 2...Nf6 and 3...e6, offer the bishop trade with 4...Bd6, and when 5.Bg3 keeps it, castle and strike at d4 with 6...c5.",
 "endsIn": "D00 Queen's Pawn Game: Accelerated London System",
 "endEvalCp": 3,
 "plies": [
@@ -4381,7 +4381,7 @@
 "Queen's Pawn Game: Colle System",
 "Queen's Pawn Game: Colle System, Traditional Colle"
 ],
-"idea": "White plays the same setup every game: d4, Bf4, e3, c3, Bd3. Mirror it solidly with ...d5, ...Nf6, ...e6, challenge the bishop with ...Bd6, castle, and hit the centre with ...c5.",
+"idea": "In the Colle White shuts the c1 bishop in with 3.e3 and builds 4.Bd3, 5.c3 and 6.Nbd2 to prepare a central e-pawn push and a kingside attack. Hit the centre early with 4...c5 and 5...Nc6, put your bishop on d6 with 6...Bd6 to control e5, and castle with 7...O-O.",
 "endsIn": "D05 Queen's Pawn Game: Colle System",
 "endEvalCp": -10,
 "plies": [
@@ -4783,7 +4783,7 @@
 "names": [
 "Queen's Pawn Game: Levitsky Attack"
 ],
-"idea": "White plays the same setup every game: d4, Bf4, e3, c3, Bd3. Mirror it solidly with ...d5, ...Nf6, ...e6, challenge the bishop with ...Bd6, castle, and hit the centre with ...c5.",
+"idea": "2.Bg5 targets your e7 pawn and, after 2...Nf6, White gives up the bishop with 3.Bxf6 to damage your pawns. Recapture 3...exf6 to open lines for your queen and dark bishop, develop 4...Bd6, and when 5.c4 hits d5 simply take with 5...dxc4 — the bishop pair makes up for the doubled pawns.",
 "endsIn": "D00 Queen's Pawn Game: Levitsky Attack",
 "endEvalCp": 5,
 "plies": [
@@ -5033,7 +5033,7 @@
 "names": [
 "Queen's Pawn Game: Symmetrical Variation, Pseudo-Catalan"
 ],
-"idea": "White plays the same setup every game: d4, Bf4, e3, c3, Bd3. Mirror it solidly with ...d5, ...Nf6, ...e6, challenge the bishop with ...Bd6, castle, and hit the centre with ...c5.",
+"idea": "3.g3 is a fianchetto without c4, so your light bishop can come out freely with 3...Bf5 before you play 4...e6. Develop 5...Be7, and when 6.Nh4 attacks the bishop, don't let it be traded on f5 — 6...Be4 keeps it active and blunts the g2 bishop.",
 "endsIn": "D02 Queen's Pawn Game: Symmetrical Variation, Pseudo-Catalan",
 "endEvalCp": 6,
 "plies": [
@@ -5359,7 +5359,7 @@
 "names": [
 "Queen's Pawn Game: Torre Attack"
 ],
-"idea": "White plays the same setup every game: d4, Bf4, e3, c3, Bd3. Mirror it solidly with ...d5, ...Nf6, ...e6, challenge the bishop with ...Bd6, castle, and hit the centre with ...c5.",
+"idea": "The Torre pins your knight with 3.Bg5 and follows with 4.e3, 5.Bd3 and 6.Nbd2 for a compact kingside build-up. Unpin with 3...e6 and 4...Be7, castle with 5...O-O, then counter with 6...c5 to pressure d4 before White's setup is complete.",
 "endsIn": "D03 Queen's Pawn Game: Torre Attack",
 "endEvalCp": -25,
 "plies": [
@@ -5707,7 +5707,7 @@
 "names": [
 "Queen's Pawn Game: Stonewall Attack"
 ],
-"idea": "White plays the same setup every game: d4, Bf4, e3, c3, Bd3. Mirror it solidly with ...d5, ...Nf6, ...e6, challenge the bishop with ...Bd6, castle, and hit the centre with ...c5.",
+"idea": "White is building the Stonewall — pawns on c3, d4, e3 and f4 with 3.Bd3 aimed at your king and a knight heading for e5. Hit d4 early with 4...c5 and 5...Nc6, and after 6.f4 put your bishop on d6 with 6...Bd6 so the e5 square stays contested.",
 "endsIn": "D00 Queen's Pawn Game: Stonewall Attack",
 "endEvalCp": 29,
 "plies": [
@@ -6075,7 +6075,7 @@
 "Queen's Gambit Declined: Normal Defense",
 "Queen's Gambit Declined: Modern Variation"
 ],
-"idea": "It isn't a real gambit: c4 can be taken back. Hold the centre with ...e6 (Queen's Gambit Declined), develop calmly, castle, and ask the Bg5 a question with ...h6.",
+"idea": "This is the main Queen's Gambit Declined: White pins your knight with 4.Bg5 and develops classically with 5.e3 and 6.Nf3. Support d5 with 2...e6, unpin with 4...Be7, castle with 5...O-O, then ask the bishop with 6...h6 — White must choose between keeping the pin or giving up the bishop.",
 "endsIn": "D53 Queen's Gambit Declined",
 "endEvalCp": -13,
 "plies": [
@@ -6445,7 +6445,7 @@
 "names": [
 "Queen's Gambit Declined: Harrwitz Attack"
 ],
-"idea": "It isn't a real gambit: c4 can be taken back. Hold the centre with ...e6 (Queen's Gambit Declined), develop calmly, castle, and ask the Bg5 a question with ...h6.",
+"idea": "With 4.Bf4 White develops the bishop outside the pawn chain instead of pinning. Offer the trade with 4...Bd6; after 5.Bxd6 Qxd6 your queen is active, so take 6...dxc4 once 6.e3 is played and strike at d4 with 7...c5 — White no longer has a dark-squared bishop to help defend it.",
 "endsIn": "D35 Queen's Gambit Declined: Harrwitz Attack",
 "endEvalCp": -7,
 "plies": [
@@ -6763,7 +6763,7 @@
 "names": [
 "Queen's Gambit Declined: Tarrasch Defense, Pseudo-Tarrasch"
 ],
-"idea": "It isn't a real gambit: c4 can be taken back. Hold the centre with ...e6 (Queen's Gambit Declined), develop calmly, castle, and ask the Bg5 a question with ...h6.",
+"idea": "You play the Tarrasch with 3...c5, accepting an isolated d-pawn after 4.cxd5 exd5 in return for free piece play, while White fianchettoes with 6.g3 and 7.Bg2 to pressure d5. Develop 5...Nc6 and 6...Nf6, then clear the centre with 7...cxd4 — keep d5 well guarded, since it is White's main target.",
 "endsIn": "D30 Queen's Gambit Declined: Tarrasch Defense, Pseudo-Tarrasch",
 "endEvalCp": -28,
 "plies": [
@@ -7118,7 +7118,7 @@
 "names": [
 "Queen's Gambit Declined: Three Knights Variation"
 ],
-"idea": "It isn't a real gambit: c4 can be taken back. Hold the centre with ...e6 (Queen's Gambit Declined), develop calmly, castle, and ask the Bg5 a question with ...h6.",
+"idea": "White chooses a quiet 5.e3 setup instead of pinning with Bg5. Castle with 5...O-O, then take 6...dxc4 right after 6.Bd3 so the bishop spends a second move recapturing; follow with 7...a6 and 8...b5 to gain queenside space and open b7 for your light bishop.",
 "endsIn": "D37 Queen's Gambit Declined: Three Knights Variation",
 "endEvalCp": 30,
 "plies": [
@@ -7541,7 +7541,7 @@
 "names": [
 "Queen's Gambit Declined: Harrwitz Attack, Orthodox Defense"
 ],
-"idea": "It isn't a real gambit: c4 can be taken back. Hold the centre with ...e6 (Queen's Gambit Declined), develop calmly, castle, and ask the Bg5 a question with ...h6.",
+"idea": "5.Bf4 keeps White's bishop active on the h2-b8 diagonal. Brace your centre with 6...c6, wait for 7.Bd3 before taking 7...dxc4 so White loses a tempo, then hit d4 with 8...c5; if 9.dxc5, trade queens with 9...Qxd1+ and plan to win back the c5 pawn with your bishop.",
 "endsIn": "D37 Queen's Gambit Declined: Harrwitz Attack, Orthodox Defense",
 "endEvalCp": -48,
 "plies": [
@@ -7968,7 +7968,7 @@
 "Italian Game: Classical Variation, Greco Gambit, Traditional Line",
 "Italian Game: Giuoco Piano, Greco's Attack"
 ],
-"idea": "White aims the bishop at f7 and wants c3 and d4. Mirror with ...Bc5, hit e4 with ...Nf6, and when White pushes d4, take and give a check on b4 — then ...Nxe4 wins a central pawn.",
+"idea": "This is the Giuoco Piano with 4.c3 and 5.d4: White wants a big pawn centre. Hit e4 with 4...Nf6, take 5...exd4, and when 6.cxd4 attacks your c5 bishop move it with check, 6...Bb4+; after 7.Nc3 the knight is pinned to the king, so 7...Nxe4 grabs the centre pawn.",
 "endsIn": "C54 Italian Game: Giuoco Piano, Greco's Attack",
 "endEvalCp": 27,
 "plies": [
@@ -8337,7 +8337,7 @@
 "Italian Game: Evans Gambit, Main Line",
 "Italian Game: Evans Gambit, Pierce Defense"
 ],
-"idea": "White gives a pawn with b4 for quick development and a big centre. Take it, drop the bishop to a5 to keep the extra pawn, take on d4 and develop with ...Nf6 — don't get greedy beyond that.",
+"idea": "With 4.b4 White sacrifices a pawn to gain time for c3 and d4. Accept with 4...Bxb4 and retreat 5...Ba5, keeping the bishop on the a5-e1 diagonal; after 6.d4 exd4 White's c3 pawn is pinned so it can't recapture, which is why White castles with 7.O-O — answer with 7...Nf6.",
 "endsIn": "C52 Italian Game: Evans Gambit, Pierce Defense",
 "endEvalCp": 30,
 "plies": [
@@ -8737,7 +8737,7 @@
 "Italian Game: Giuoco Pianissimo, Normal",
 "Italian Game: Classical Variation, Giuoco Pianissimo"
 ],
-"idea": "White aims the bishop at f7 and wants c3 and d4. Mirror with ...Bc5, hit e4 with ...Nf6, and when White pushes d4, take and give a check on b4 — then ...Nxe4 wins a central pawn.",
+"idea": "4.d3 is the slow Giuoco Pianissimo: White keeps the centre closed and plans long manoeuvres. Mirror with 4...Nf6 and 5...d6, then pin the f3 knight with 6...Bg4; after 7.Nbd2, step back with 7...Bh5 to keep the pin on f3.",
 "endsIn": "C50 Italian Game: Giuoco Pianissimo",
 "endEvalCp": -52,
 "plies": [
@@ -9123,7 +9123,7 @@
 "names": [
 "Italian Game: Classical Variation, Greco Gambit, Dubov Italian"
 ],
-"idea": "White aims the bishop at f7 and wants c3 and d4. Mirror with ...Bc5, hit e4 with ...Nf6, and when White pushes d4, take and give a check on b4 — then ...Nxe4 wins a central pawn.",
+"idea": "In the Dubov Italian White throws in 6.b4 to chase your bishop and then 7.e5 to kick the f6 knight, playing for an attack. Retreat 6...Bb6, hit back with 7...d5, take the bishop after 8.exf6 with 8...dxc4, and block 9.Qe2+ with 9...Be6 — you're a pawn up, but keep an eye on White's f6 pawn.",
 "endsIn": "C54 Italian Game: Classical Variation, Greco Gambit, Dubov Italian",
 "endEvalCp": 19,
 "plies": [
@@ -9489,7 +9489,7 @@
 "names": [
 "Italian Game: Classical Variation, Albin Gambit"
 ],
-"idea": "White aims the bishop at f7 and wants c3 and d4. Mirror with ...Bc5, hit e4 with ...Nf6, and when White pushes d4, take and give a check on b4 — then ...Nxe4 wins a central pawn.",
+"idea": "White castles early with 4.O-O and offers e4 after 5.c3, hoping to open the centre quickly with 6.d4. Take with 5...Nxe4 and 6...exd4, then 7...d5 hits the c4 bishop while protecting your knight; after 8.dxc5 dxc4 the bishops are traded and you are a pawn up.",
 "endsIn": "C50 Italian Game: Classical Variation, Albin Gambit",
 "endEvalCp": 23,
 "plies": [
@@ -9892,7 +9892,7 @@
 "names": [
 "Italian Game: Deutz Gambit"
 ],
-"idea": "White aims the bishop at f7 and wants c3 and d4. Mirror with ...Bc5, hit e4 with ...Nf6, and when White pushes d4, take and give a check on b4 — then ...Nxe4 wins a central pawn.",
+"idea": "5.d4 gambits a pawn to open the centre while White is castled and you are not. Take with 5...Bxd4 and trade knights with 6...Nxd4 to keep the extra pawn; when 7.Bg5 pins your f6 knight, ask the bishop with 7...h6, then 8...d6 keeps your strong knight on d4 supported.",
 "endsIn": "C50 Italian Game: Deutz Gambit",
 "endEvalCp": 32,
 "plies": [
@@ -10261,7 +10261,7 @@
 "Italian Game: Rosentreter Gambit",
 "Italian Game: Classical Variation, Greco Gambit, Main Line"
 ],
-"idea": "White aims the bishop at f7 and wants c3 and d4. Mirror with ...Bc5, hit e4 with ...Nf6, and when White pushes d4, take and give a check on b4 — then ...Nxe4 wins a central pawn.",
+"idea": "4.d4 offers a pawn to open lines, and 5.c3 tries to rebuild the centre. Take 4...exd4, hit e4 with 5...Nf6, check with 6...Bb4+, and grab the pawn with 7...Nxe4; once 8.O-O unpins the c3 knight it attacks your e4 knight, so remove it with 8...Bxc3.",
 "endsIn": "C50 Italian Game: Rosentreter Gambit",
 "endEvalCp": 21,
 "plies": [
@@ -10672,7 +10672,7 @@
 "Ruy Lopez: Morphy Defense",
 "Ruy Lopez: Closed"
 ],
-"idea": "White pressures your e5 defender (the c6 knight). Kick the bishop with ...a6 and ...b5, develop with ...Nf6 and ...Be7, and castle into the solid Closed Ruy Lopez.",
+"idea": "In the main Ruy White's bishop pressures your c6 knight, the defender of e5, and after 6.Re1 winning that pawn becomes a real threat. Kick the bishop with 3...a6 and 6...b5, develop 4...Nf6 and 5...Be7, then castle with 7...O-O into the Closed Ruy Lopez.",
 "endsIn": "C88 Ruy Lopez: Closed",
 "endEvalCp": -33,
 "plies": [
@@ -11057,7 +11057,7 @@
 "Ruy Lopez: Exchange Variation",
 "Ruy Lopez: Exchange Variation, Normal Variation"
 ],
-"idea": "White pressures your e5 defender (the c6 knight). Kick the bishop with ...a6 and ...b5, develop with ...Nf6 and ...Be7, and castle into the solid Closed Ruy Lopez.",
+"idea": "In the Exchange Variation White gives up the bishop with 4.Bxc6 to aim for a better pawn structure in the endgame. Recapture 4...dxc6 to open your light bishop, pin with 5...Bg4, and if 6.h3 play 6...h5 — taking the bishop would open the h-file for your rook; then 7...Qf6 adds pressure on f3.",
 "endsIn": "C69 Ruy Lopez: Exchange Variation, Alapin Gambit",
 "endEvalCp": 3,
 "plies": [
@@ -11401,7 +11401,7 @@
 "names": [
 "Ruy Lopez: Morphy Defense, Anderssen Variation"
 ],
-"idea": "White pressures your e5 defender (the c6 knight). Kick the bishop with ...a6 and ...b5, develop with ...Nf6 and ...Be7, and castle into the solid Closed Ruy Lopez.",
+"idea": "5.d3 is a slow line: White protects e4 and plans a slow build-up with 7.c3 and 9.h3. Kick the bishop with 5...b5, develop 6...Be7, castle with 7...O-O and support e5 with 8...d6; after 9.h3 hit the b3 bishop with 9...Na5 to remove White's best piece.",
 "endsIn": "C77 Ruy Lopez: Morphy Defense, Anderssen Variation",
 "endEvalCp": -8,
 "plies": [
@@ -11856,7 +11856,7 @@
 "names": [
 "Ruy Lopez: Marshall Attack"
 ],
-"idea": "White pressures your e5 defender (the c6 knight). Kick the bishop with ...a6 and ...b5, develop with ...Nf6 and ...Be7, and castle into the solid Closed Ruy Lopez.",
+"idea": "You answer 8.c3 with the Marshall Attack, 8...d5, giving a pawn for a kingside attack. After 9.exd5 Nxd5 10.Nxe5 Nxe5 11.Rxe5 you're a pawn down, so use the time: 11...Bb7 puts your bishop on the long diagonal toward White's king.",
 "endsIn": "C89 Ruy Lopez: Marshall Attack",
 "endEvalCp": -36,
 "plies": [
@@ -12334,7 +12334,7 @@
 "names": [
 "Ruy Lopez: Morphy Defense, Tarrasch Variation"
 ],
-"idea": "White pressures your e5 defender (the c6 knight). Kick the bishop with ...a6 and ...b5, develop with ...Nf6 and ...Be7, and castle into the solid Closed Ruy Lopez.",
+"idea": "5.Nc3 defends e4 and keeps options open, then 7.a4 attacks your b5 pawn. Gain space by pushing past with 7...b4, hitting the c3 knight; when it jumps to d5 with 8.Nd5, simply castle with 8...O-O.",
 "endsIn": "C77 Ruy Lopez: Morphy Defense, Tarrasch Variation",
 "endEvalCp": -26,
 "plies": [
@@ -12702,7 +12702,7 @@
 "Scotch Game",
 "Scotch Game: Classical Variation"
 ],
-"idea": "White opens the centre early with d4. Take, put the bishop on c5 to hit the d4 knight, add ...Qf6 for more pressure, and develop with ...Nge7 so the queen stays defended.",
+"idea": "In the Classical Scotch White trades on d4 and centralises the knight with 4.Nxd4. Attack it with 4...Bc5 and 5...Qf6; after 6.c3 develop with 6...Nge7 rather than ...Nf6 so your queen keeps pressure on d4, then castle with 7...O-O.",
 "endsIn": "C45 Scotch Game: Classical Variation",
 "endEvalCp": -27,
 "plies": [
@@ -13121,7 +13121,7 @@
 "Scotch Game: Scotch Gambit",
 "Scotch Game: Scotch Gambit, Advance Variation"
 ],
-"idea": "White opens the centre early with d4. Take, put the bishop on c5 to hit the d4 knight, add ...Qf6 for more pressure, and develop with ...Nge7 so the queen stays defended.",
+"idea": "In the Scotch Gambit White leaves d4 and plays 4.Bc4 to attack quickly. Develop 4...Nf6, and when 5.e5 kicks it, hit the bishop with 5...d5; after 6.Bb5 plant the knight with 6...Ne4, break the pin with 7...Bd7, and recapture 8...bxc6 toward the centre.",
 "endsIn": "C44 Scotch Game: Scotch Gambit, Advance Variation",
 "endEvalCp": -11,
 "plies": [
@@ -13517,7 +13517,7 @@
 "Scotch Game: Göring Gambit",
 "Scotch Game: Göring Gambit, Main Line"
 ],
-"idea": "White opens the centre early with d4. Take, put the bishop on c5 to hit the d4 knight, add ...Qf6 for more pressure, and develop with ...Nge7 so the queen stays defended.",
+"idea": "In the Göring White gives the c-pawn for fast development. Take it with 4...dxc3, pin the knight with 5...Bb4, and swap with 6...Bxc3+ to double White's pawns; then 7...d6 stops White's e-pawn from advancing and keeps you a pawn up.",
 "endsIn": "C44 Scotch Game: Göring Gambit, Main Line",
 "endEvalCp": 17,
 "plies": [
@@ -13924,7 +13924,7 @@
 "names": [
 "Scotch Game: Göring Gambit, Double Pawn Sacrifice"
 ],
-"idea": "White opens the centre early with d4. Take, put the bishop on c5 to hit the d4 knight, add ...Qf6 for more pressure, and develop with ...Nge7 so the queen stays defended.",
+"idea": "5.Bc4 offers a second pawn for huge development, Danish-style. Take with 5...cxb2, check with 6...Bb4+ after 6.Bxb2, and develop 7...Nf6; after 8.O-O give up the bishop with 8...Bxc3 to remove White's best attacking knight while keeping your extra pawns.",
 "endsIn": "C44 Scotch Game: Göring Gambit, Double Pawn Sacrifice",
 "endEvalCp": 0,
 "plies": [
@@ -14334,7 +14334,7 @@
 "names": [
 "Scotch Game: Potter Variation"
 ],
-"idea": "White opens the centre early with d4. Take, put the bishop on c5 to hit the d4 knight, add ...Qf6 for more pressure, and develop with ...Nge7 so the queen stays defended.",
+"idea": "5.Nb3 chases your bishop and plans to push the a-pawn to trap it. Retreat 5...Bb6, play 6...d6, and stop the a-pawn with 7...a5; after 8.a4 the b4 square is yours, so 8...Nb4 plants the knight on a strong outpost.",
 "endsIn": "C45 Scotch Game: Potter Variation",
 "endEvalCp": -11,
 "plies": [
@@ -14744,7 +14744,7 @@
 "names": [
 "Scotch Game: Classical Variation, Intermezzo Variation"
 ],
-"idea": "White opens the centre early with d4. Take, put the bishop on c5 to hit the d4 knight, add ...Qf6 for more pressure, and develop with ...Nge7 so the queen stays defended.",
+"idea": "5.Nxc6 swaps knights, and you throw in 5...Qf6 hitting f2 before recapturing. When 6.Qf3 defends, recapture 6...dxc6 to free your light bishop, then 7...Qe7 avoids the queen trade and eyes e4, and 8...Bd6 answers 8.Be3's attack on your bishop.",
 "endsIn": "C45 Scotch Game: Classical Variation, Intermezzo Variation",
 "endEvalCp": -28,
 "plies": [
@@ -15111,7 +15111,7 @@
 "Three Knights Opening",
 "Four Knights Game"
 ],
-"idea": "White brings out both knights before deciding on a plan. Mirror with ...Nf6 (it turns into a Four Knights or Italian-style game), aim the bishop at f2, play ...d6 and ...h6 to stop Ng5/Bg5 ideas, then castle.",
+"idea": "3.Nc3 turns into a quiet Italian after 4.Bc4 and 5.d3. Mirror with 3...Nf6, 4...Bc5 and 5...d6, and after 6.h3 play 6...h6 too, so neither side can use the g5 square for a bishop or knight; then castle with 7...O-O.",
 "endsIn": "C47 Four Knights Game",
 "endEvalCp": -18,
 "plies": [
@@ -15532,7 +15532,7 @@
 "Four Knights Game: Scotch Variation",
 "Four Knights Game: Scotch Variation Accepted"
 ],
-"idea": "White brings out both knights before deciding on a plan. Mirror with ...Nf6 (it turns into a Four Knights or Italian-style game), aim the bishop at f2, play ...d6 and ...h6 to stop Ng5/Bg5 ideas, then castle.",
+"idea": "4.d4 opens the centre in the Four Knights. Take 4...exd4, pin the c3 knight with 5...Bb4 so e4 is weak, and after 6.Nxc6 recapture 6...bxc6 toward the centre; then strike with 7...d5 and recapture 8...cxd5 for a strong pawn centre.",
 "endsIn": "C47 Four Knights Game: Scotch Variation Accepted",
 "endEvalCp": -7,
 "plies": [
@@ -15956,7 +15956,7 @@
 "Four Knights Game: Spanish Variation, Double Spanish",
 "Four Knights Game: Spanish Variation"
 ],
-"idea": "White brings out both knights before deciding on a plan. Mirror with ...Nf6 (it turns into a Four Knights or Italian-style game), aim the bishop at f2, play ...d6 and ...h6 to stop Ng5/Bg5 ideas, then castle.",
+"idea": "You mirror White's 4.Bb5 with 4...Bb4, the Double Spanish. Castle with 5...O-O, and after 6.d3 trade with 6...Bxc3 to give White doubled c-pawns, then 7...d6 solidly guards e5.",
 "endsIn": "C49 Four Knights Game: Spanish Variation",
 "endEvalCp": -12,
 "plies": [
@@ -16305,7 +16305,7 @@
 "names": [
 "Four Knights Game: Gunsberg Variation"
 ],
-"idea": "White brings out both knights before deciding on a plan. Mirror with ...Nf6 (it turns into a Four Knights or Italian-style game), aim the bishop at f2, play ...d6 and ...h6 to stop Ng5/Bg5 ideas, then castle.",
+"idea": "4.a3 is a slow move that stops your bishop coming to b4, so take the centre with 4...d5. After 5.exd5 Nxd5 6.Bb5 swap with 6...Nxc3 to double White's pawns, then defend e5 with 7...Bd6.",
 "endsIn": "C47 Four Knights Game: Gunsberg Variation",
 "endEvalCp": 9,
 "plies": [
@@ -16615,7 +16615,7 @@
 "names": [
 "Four Knights Game: Halloween Gambit"
 ],
-"idea": "White brings out both knights before deciding on a plan. Mirror with ...Nf6 (it turns into a Four Knights or Italian-style game), aim the bishop at f2, play ...d6 and ...h6 to stop Ng5/Bg5 ideas, then castle.",
+"idea": "White sacrifices a whole knight with 4.Nxe5 to chase your knights with pawns. Take it with 4...Nxe5, retreat 5...Ng6 and then 6...Ng8 after 6.e5; when 7.Bc4 aims at f7, 7...d5 blocks the diagonal and hits the bishop, and you stay a piece up.",
 "endsIn": "C47 Four Knights Game: Halloween Gambit",
 "endEvalCp": 193,
 "plies": [
@@ -16944,7 +16944,7 @@
 "King's Gambit Declined",
 "King's Gambit Accepted: King's Knight's Gambit"
 ],
-"idea": "White gives the f-pawn to open the f-file. Take it, protect it with ...g5, and push ...g4 to chase the knight — if White sacrifices it (Muzio), take and defend with ...Qf6.",
+"idea": "This is the Muzio Gambit: after 3...g5 4.Bc4 g4 White castles with 5.O-O and lets the f3 knight go. Take it with 5...gxf3, and after 6.Qxf3 defend f4 and block the f-file with 6...Qf6 — you're a piece up, so trade attackers whenever you can.",
 "endsIn": "C37 King's Gambit Accepted: Muzio Gambit, Sarratt Defense",
 "endEvalCp": 114,
 "plies": [
@@ -17255,7 +17255,7 @@
 "names": [
 "King's Gambit Accepted: Bishop's Gambit"
 ],
-"idea": "White gives the f-pawn to open the f-file. Take it, protect it with ...g5, and push ...g4 to chase the knight — if White sacrifices it (Muzio), take and defend with ...Qf6.",
+"idea": "3.Bc4 develops instead of Nf3, leaving h4 undefended. Check with 3...Qh4+ so White loses the right to castle after 4.Kf1, develop 4...Nc6, and when 5.Nf3 hits your queen drop back to 5...Qh6, which still guards the f4 pawn; then 6...Nf6.",
 "endsIn": "C33 King's Gambit Accepted: Bishop's Gambit, Boden Variation",
 "endEvalCp": 42,
 "plies": [
@@ -17545,7 +17545,7 @@
 "names": [
 "King's Gambit Accepted: Kieseritzky Gambit"
 ],
-"idea": "White gives the f-pawn to open the f-file. Take it, protect it with ...g5, and push ...g4 to chase the knight — if White sacrifices it (Muzio), take and defend with ...Qf6.",
+"idea": "In the Kieseritzky White undermines your pawns with 4.h4 and, after 4...g4, plants the knight with 5.Ne5. Develop 5...Nf6, meet 6.Bc4 with 6...d5, return that pawn after 7.exd5 to develop 7...Bd6, then 8...Nh5 keeps your f4 pawn protected.",
 "endsIn": "C39 King's Gambit Accepted: Kieseritzky Gambit, Anderssen Defense",
 "endEvalCp": 82,
 "plies": [
@@ -17897,7 +17897,7 @@
 "names": [
 "King's Gambit Accepted: Rosentreter Gambit"
 ],
-"idea": "White gives the f-pawn to open the f-file. Take it, protect it with ...g5, and push ...g4 to chase the knight — if White sacrifices it (Muzio), take and defend with ...Qf6.",
+"idea": "4.d4 grabs the centre and lets the f3 knight be kicked by 4...g4. When it goes to e5 with 5.Ne5, check with 5...Qh4+; after 6.g3 take 6...fxg3, and if 7.Qxg4 trade queens with 7...Qxg4 — you stay a pawn up with your g3 pawn attacking h2.",
 "endsIn": "C37 King's Gambit Accepted: Rosentreter Gambit, Bird Gambit",
 "endEvalCp": 56,
 "plies": [
@@ -18197,7 +18197,7 @@
 "Center Game: Paulsen Attack Variation",
 "Center Game: Berger Variation"
 ],
-"idea": "White takes back on d4 with the queen, which can be chased. Hit it with ...Nc6, develop ...Nf6 and ...Bb4, castle, and put the rook on e8 against the e4 pawn.",
+"idea": "3.Qxd4 brings the queen out early, and 3...Nc6 gains time so it retreats with 4.Qe3. Develop 4...Nf6 and 5...Bb4 to pin the c3 knight, castle with 6...O-O, and once White castles long with 7.O-O-O, 7...Re8 lines your rook up against e4 and the queen behind it.",
 "endsIn": "C22 Center Game: Berger Variation",
 "endEvalCp": 31,
 "plies": [
@@ -18583,7 +18583,7 @@
 "Danish Gambit Declined",
 "Danish Gambit Accepted: Copenhagen Defense"
 ],
-"idea": "White offers two pawns for fast development. You can take both, then give back material with ...Bb4+ and ...Nf6 to finish development — the Copenhagen Defence is safe and good for Black.",
+"idea": "The Danish gives two pawns so White's bishops can rake your kingside from c4 and b2. Take both with 3...dxc3 and 4...cxb2, check with 5...Bb4+, and after 6.Nc3 develop 6...Nf6 to attack e4 — castle before opening anything else.",
 "endsIn": "C21 Danish Gambit Accepted: Copenhagen Defense",
 "endEvalCp": 46,
 "plies": [
@@ -18950,7 +18950,7 @@
 "names": [
 "Center Game: Kieseritzky Variation"
 ],
-"idea": "White takes back on d4 with the queen, which can be chased. Hit it with ...Nc6, develop ...Nf6 and ...Bb4, castle, and put the rook on e8 against the e4 pawn.",
+"idea": "3.Nf3 delays recapturing on d4, and after 3...Nc6 4.Nxd4 it is a Scotch by transposition. Pressure the d4 knight with 4...Bc5 and 5...Qf6, develop with 6...Nge7 so the queen stays on f6, and castle with 7...O-O — the key is recognising the Scotch structure.",
 "endsIn": "C21 Center Game: Kieseritzky Variation",
 "endEvalCp": -27,
 "plies": [
@@ -19363,7 +19363,7 @@
 "names": [
 "Center Game: Halasz-McDonnell Gambit"
 ],
-"idea": "White takes back on d4 with the queen, which can be chased. Hit it with ...Nc6, develop ...Nf6 and ...Bb4, castle, and put the rook on e8 against the e4 pawn.",
+"idea": "3.f4 leaves the d4 pawn alone and tries to build a big centre with 4.Nf3 and 5.e5. Keep the pawn with 3...Nc6, strike with 4...d5, defend d4 with 5...Bc5, and when 6.Bb5 pins, develop the other knight with 6...Ne7 since f6 is covered by White's e5 pawn.",
 "endsIn": "C21 Center Game: Halasz-McDonnell Gambit",
 "endEvalCp": 176,
 "plies": [
@@ -19646,7 +19646,7 @@
 "names": [
 "Center Game: von der Lasa Gambit"
 ],
-"idea": "White takes back on d4 with the queen, which can be chased. Hit it with ...Nc6, develop ...Nf6 and ...Bb4, castle, and put the rook on e8 against the e4 pawn.",
+"idea": "3.Bc4 leaves d4 alone and, after 4.Nf3, reaches Scotch Gambit positions. Develop 4...Nf6, answer 5.e5 with 5...d5, centralise with 6...Ne4 after 6.Bb5, and when 7.Nxd4 wins back the pawn, unpin with 7...Bd7 — you have easy, active development.",
 "endsIn": "C21 Center Game: von der Lasa Gambit",
 "endEvalCp": -15,
 "plies": [
@@ -20010,7 +20010,7 @@
 "names": [
 "Bishop's Opening"
 ],
-"idea": "White points the bishop at f7 early, keeping the knight flexible. Develop ...Nc6, ...Bc5 and ...Nf6, and if White builds c3 and d4, take on d4 and give a check on b4.",
+"idea": "2.Bc4 aims at f7 before White commits the knight, and after 3.Nf3 it becomes Italian-like. Develop 2...Nc6 and 3...Bc5, hit e4 with 4...Nf6, take 5...exd4 when White pushes, and since 6.cxd4 attacks your c5 bishop, move it with check, 6...Bb4+.",
 "endsIn": "C23 Bishop's Opening",
 "endEvalCp": 13,
 "plies": [
@@ -20320,7 +20320,7 @@
 "Vienna Game: Max Lange Defense",
 "Vienna Game: Stanley Variation, Three Knights Variation"
 ],
-"idea": "White develops Nc3 first and often lunges with f4. Develop ...Nc6, ...Nf6 and ...Bc5, support e5 with ...d6 when f4 comes, and castle.",
+"idea": "Here White plays 3.Bc4 and 4.d3 and then lunges with 5.f4 to attack e5. Develop 2...Nc6, 3...Nf6 and 4...Bc5, support e5 with 5...d6 when f4 arrives, and castle with 6...O-O — once f4 is played your c5 bishop covers g1, which makes White's own kingside castling awkward.",
 "endsIn": "C28 Vienna Game: Stanley Variation, Three Knights Variation",
 "endEvalCp": -26,
 "plies": [
@@ -20674,7 +20674,7 @@
 "names": [
 "Vienna Game: Paulsen Variation"
 ],
-"idea": "White develops Nc3 first and often lunges with f4. Develop ...Nc6, ...Nf6 and ...Bc5, support e5 with ...d6 when f4 comes, and castle.",
+"idea": "3.g3 fianchettoes, with 5.Nge2 keeping the f-pawn free to advance later. Develop 3...Nf6 and 4...Bc5, support e5 with 5...d6, and after 6.h3 play 6...a5 so White's b-pawn can't kick your c5 bishop.",
 "endsIn": "C25 Vienna Game: Paulsen Variation",
 "endEvalCp": -3,
 "plies": [
@@ -20973,7 +20973,7 @@
 "King's Pawn Game: Wayward Queen Attack",
 "King's Pawn Game"
 ],
-"idea": "White brings the queen out early to hit e5 and f7 (the 'Scholar's Mate' idea). Defend e5 with ...Nc6, block the queen with ...g6, develop ...Nf6 with tempo and ...Bg7 — the early queen then just loses time.",
+"idea": "2.Qh5 hits e5 and, with 3.Bc4, threatens mate on f7. Defend e5 with 2...Nc6, block the queen with 3...g6, and when 4.Qf3 renews the threat on f7, cover it with 4...Nf6; then 5...Bg7 completes a comfortable fianchetto.",
 "endsIn": "C20 King's Pawn Game: Wayward Queen Attack",
 "endEvalCp": 22,
 "plies": [
@@ -21219,7 +21219,7 @@
 "names": [
 "King's Pawn Game: Leonardis Variation"
 ],
-"idea": "White brings the queen out early to hit e5 and f7 (the 'Scholar's Mate' idea). Defend e5 with ...Nc6, block the queen with ...g6, develop ...Nf6 with tempo and ...Bg7 — the early queen then just loses time.",
+"idea": "2.d3 is a passive Philidor setup with colours reversed. Develop 2...Nc6 and 3...Nf6, then take the centre with 4...d5; after 5.exd5 Nxd5 you have a free, open game with more space than White.",
 "endsIn": "C20 King's Pawn Game: Leonardis Variation",
 "endEvalCp": 22,
 "plies": [
@@ -21497,7 +21497,7 @@
 "names": [
 "King's Pawn Game: King's Head Opening"
 ],
-"idea": "White brings the queen out early to hit e5 and f7 (the 'Scholar's Mate' idea). Defend e5 with ...Nc6, block the queen with ...g6, develop ...Nf6 with tempo and ...Bg7 — the early queen then just loses time.",
+"idea": "2.f3 weakens White's king and takes the f3 square away from the knight. Develop 2...Nf6, and when 3.d4 opens the centre take 3...exd4, gain time on the queen with 4...Nc6, and after 5.Qe3 check with 5...Bb4+ to keep White's development awkward.",
 "endsIn": "C20 King's Pawn Game: King's Head Opening",
 "endEvalCp": 67,
 "plies": [
@@ -21688,7 +21688,7 @@
 "names": [
 "King's Pawn Game: Tayler Opening"
 ],
-"idea": "White brings the queen out early to hit e5 and f7 (the 'Scholar's Mate' idea). Defend e5 with ...Nc6, block the queen with ...g6, develop ...Nf6 with tempo and ...Bg7 — the early queen then just loses time.",
+"idea": "3.Be2 is modest: White plans 4.d3 and a solid setup. Develop 3...Nf6 and seize the centre with 4...d5; after 5.exd5 Nxd5 6.O-O, protect e5 with 6...Bd6 and you have the freer position.",
 "endsIn": "C44 King's Pawn Game: Tayler Opening",
 "endEvalCp": 22,
 "plies": [
@@ -21965,7 +21965,7 @@
 "names": [
 "King's Pawn Game: MacLeod Attack"
 ],
-"idea": "White brings the queen out early to hit e5 and f7 (the 'Scholar's Mate' idea). Defend e5 with ...Nc6, block the queen with ...g6, develop ...Nf6 with tempo and ...Bg7 — the early queen then just loses time.",
+"idea": "2.c3 prepares d4 for a big centre, like a Ponziani without Nf3. Develop 2...Nc6, take 3...exd4, then challenge the centre with 4...d5; when 5.e5 locks it, undermine the pawn chain at once with 5...f6.",
 "endsIn": "C20 King's Pawn Game: MacLeod Attack",
 "endEvalCp": -15,
 "plies": [
@@ -22257,7 +22257,7 @@
 "names": [
 "King's Pawn Game: Napoleon Attack"
 ],
-"idea": "White brings the queen out early to hit e5 and f7 (the 'Scholar's Mate' idea). Defend e5 with ...Nc6, block the queen with ...g6, develop ...Nf6 with tempo and ...Bg7 — the early queen then just loses time.",
+"idea": "2.Qf3 takes the f3 square from the knight and eyes f7. Develop 2...Nf6 and 3...Nc6, then hit the queen with 4...Nd4; after 5.Qd1 strike with 5...d5 — you're already well ahead in development.",
 "endsIn": "C20 King's Pawn Game: Napoleon Attack",
 "endEvalCp": 96,
 "plies": [
@@ -22434,7 +22434,7 @@
 "names": [
 "King's Pawn Game: Alapin Opening"
 ],
-"idea": "White brings the queen out early to hit e5 and f7 (the 'Scholar's Mate' idea). Defend e5 with ...Nc6, block the queen with ...g6, develop ...Nf6 with tempo and ...Bg7 — the early queen then just loses time.",
+"idea": "2.Ne2 heads for g3, where the knight gets in the way of White's other pieces. Develop 2...Nc6, harass the knight with 3...h5 after 3.Ng3, threatening to push on and kick it; once 5.h4 stops that, take the centre with 5...d5.",
 "endsIn": "C20 King's Pawn Game: Alapin Opening",
 "endEvalCp": 90,
 "plies": [
@@ -22634,7 +22634,7 @@
 "Queen's Pawn Game: Symmetrical Variation",
 "Queen's Pawn Game: Zukertort Variation"
 ],
-"idea": "Black copies your 1.d4 2.Nf3 with ...d5 and ...Nf6. The strongest try is c4 (a Queen's Gambit), then Nc3, Bg5 and e3 — classical pressure on d5. If you prefer your usual Nc3 setup, it's playable too.",
+"idea": "Black mirrors with 1...d5 and 2...Nf6, so turn it into a Queen's Gambit with 3.c4. Develop 4.Nc3, pin with 5.Bg5, play 6.e3, and when 6...h6 asks the bishop, keep the pin with 7.Bh4 rather than trading.",
 "endsIn": "D02 Queen's Pawn Game: Symmetrical Variation",
 "endEvalCp": 9,
 "plies": [
@@ -23031,7 +23031,7 @@
 "names": [
 "Queen's Pawn Game: Chigorin Variation"
 ],
-"idea": "Black plays ...Nc6 early, blocking the c-pawn. Set up the London with Bf4, e3 and Bd3, and trade off Black's light bishop if it comes to f5.",
+"idea": "2...Nc6 blocks Black's c-pawn, so a London setup works well. Play 3.Bf4 and 4.e3, then challenge Black's f5 bishop with 5.Bd3 and take it with 6.Bxf5 — that bishop was Black's best minor piece.",
 "endsIn": "D02 Queen's Pawn Game: Chigorin Variation",
 "endEvalCp": 14,
 "plies": [
@@ -23351,7 +23351,7 @@
 "names": [
 "Queen's Pawn Game: Chigorin Variation"
 ],
-"idea": "Black copies your 1.d4 2.Nf3 with ...d5 and ...Nf6. The strongest try is c4 (a Queen's Gambit), then Nc3, Bg5 and e3 — classical pressure on d5. If you prefer your usual Nc3 setup, it's playable too.",
+"idea": "This is a Jobava-style London with 2.Nc3 and 3.Bf4. After 4.e3 Black offers a bishop trade with 4...Bd6; develop 5.Nf3, and after 5...Bxf4 recapture 6.exf4 — the doubled f-pawn controls e5 and the half-open e-file helps your rook.",
 "endsIn": "A45 Queen's Pawn Game: Chigorin Variation",
 "endEvalCp": 6,
 "plies": [
@@ -23669,7 +23669,7 @@
 "names": [
 "Queen's Pawn Game: Modern Defense"
 ],
-"idea": "Black copies your 1.d4 2.Nf3 with ...d5 and ...Nf6. The strongest try is c4 (a Queen's Gambit), then Nc3, Bg5 and e3 — classical pressure on d5. If you prefer your usual Nc3 setup, it's playable too.",
+"idea": "Black lets you build the full centre with 2.c4, 3.Nc3 and 4.e4, planning to hit it later. Take it all, develop 5.Nf3 and 6.Be2, and you have a Classical King's Indian setup where your space is the main asset.",
 "endsIn": "A42 Modern Defense: Averbakh System",
 "endEvalCp": 60,
 "plies": [
@@ -24025,7 +24025,7 @@
 "names": [
 "Queen's Pawn Game: London System, with e6"
 ],
-"idea": "Black copies your 1.d4 2.Nf3 with ...d5 and ...Nf6. The strongest try is c4 (a Queen's Gambit), then Nc3, Bg5 and e3 — classical pressure on d5. If you prefer your usual Nc3 setup, it's playable too.",
+"idea": "Black's 2...e6 shuts in its own light bishop, so your 3.Bf4 has an easy life. Meet 4...Bd6 with 5.Bg3 to keep your bishop, develop 6.Bd3, support d4 with 7.c3 against 6...c5, and finish with 8.Nbd2.",
 "endsIn": "D02 Queen's Pawn Game: London System, with e6",
 "endEvalCp": 17,
 "plies": [
@@ -24444,7 +24444,7 @@
 "names": [
 "Queen's Pawn Game: Krause Variation"
 ],
-"idea": "Black copies your 1.d4 2.Nf3 with ...d5 and ...Nf6. The strongest try is c4 (a Queen's Gambit), then Nc3, Bg5 and e3 — classical pressure on d5. If you prefer your usual Nc3 setup, it's playable too.",
+"idea": "2...c5 hits d4 at once. Hold it with 3.e3 and 4.c3; after 4...Bg4 take 5.dxc5 to win a pawn, and when Black fianchettoes with 5...g6, unpin with 6.Be2 — Black has to work hard to win the pawn back.",
 "endsIn": "D02 Queen's Pawn Game: Krause Variation",
 "endEvalCp": 55,
 "plies": [
@@ -24755,7 +24755,7 @@
 "names": [
 "Queen's Pawn Game: Anglo-Slav Opening"
 ],
-"idea": "Black copies your 1.d4 2.Nf3 with ...d5 and ...Nf6. The strongest try is c4 (a Queen's Gambit), then Nc3, Bg5 and e3 — classical pressure on d5. If you prefer your usual Nc3 setup, it's playable too.",
+"idea": "Black plays slow 1...c6 and 2...d6, so grab the full centre with 2.c4, 3.Nc3 and 4.e4. After 4...Qa5 pins your knight, protect e4 with 5.Bd3, and when 5...e5 hits d4, develop 6.Ne2 so the c3 knight is defended and your f-pawn stays free.",
 "endsIn": "A40 Queen's Pawn Game: Anglo-Slav Opening",
 "endEvalCp": 96,
 "plies": [
@@ -25068,7 +25068,7 @@
 "Indian Defense",
 "Indian Defense: Knights Variation"
 ],
-"idea": "Black fianchettoes with ...g6 and ...Bg7. Keep your usual Nc3, then grab the centre with e4, develop Bd3 and castle — you get a big pawn centre for free.",
+"idea": "Without c4, use 3.Nc3 and 4.e4 to grab a classical centre against Black's fianchetto, a Pirc-like position. Develop 5.Bd3 to guard e4 and castle with 6.O-O — your space and easy development are the payoff.",
 "endsIn": "A48 East Indian Defense",
 "endEvalCp": 10,
 "plies": [
@@ -25407,7 +25407,7 @@
 "names": [
 "Indian Defense: Wade-Tartakower Defense"
 ],
-"idea": "Black fianchettoes with ...g6 and ...Bg7. Keep your usual Nc3, then grab the centre with e4, develop Bd3 and castle — you get a big pawn centre for free.",
+"idea": "Black's 2...d6 heads for a King's Indian by a different move order. Take space with 3.c4, 4.Nc3 and 5.e4, develop 6.Be2, and when 6...e5 hits d4, castle with 7.O-O before deciding how to resolve the centre.",
 "endsIn": "A46 Indian Defense: Wade-Tartakower Defense",
 "endEvalCp": 46,
 "plies": [
@@ -25805,7 +25805,7 @@
 "names": [
 "Indian Defense: Spielmann-Indian"
 ],
-"idea": "Black fianchettoes with ...g6 and ...Bg7. Keep your usual Nc3, then grab the centre with e4, develop Bd3 and castle — you get a big pawn centre for free.",
+"idea": "2...c5 invites a Benoni. Push past with 3.d5 for space, support it with 4.c4, recapture 5.cxd5 after 4...exd5, then develop 6.Nc3 and grab the centre with 7.e4 — Black's d6 pawn is stuck behind your pawns.",
 "endsIn": "A46 Indian Defense: Spielmann-Indian",
 "endEvalCp": 67,
 "plies": [
@@ -26139,7 +26139,7 @@
 "names": [
 "Indian Defense: London System"
 ],
-"idea": "Black fianchettoes with ...g6 and ...Bg7. Keep your usual Nc3, then grab the centre with e4, develop Bd3 and castle — you get a big pawn centre for free.",
+"idea": "Black starts with 1...Nf6 and 2...e6 before committing the d-pawn; answer with the London, 3.Bf4. After 3...d5 4.e3 Bd6 keep your bishop with 5.Bg3, develop 6.Bd3, and meet 6...c5 with 7.c3 so d4 stays rock-solid.",
 "endsIn": "A46 Indian Defense: London System",
 "endEvalCp": -5,
 "plies": [
@@ -26522,7 +26522,7 @@
 "names": [
 "Indian Defense: Czech-Indian"
 ],
-"idea": "Black fianchettoes with ...g6 and ...Bg7. Keep your usual Nc3, then grab the centre with e4, develop Bd3 and castle — you get a big pawn centre for free.",
+"idea": "2...c6 is a Slav-style setup where Black wants its light bishop out. Play 3.Bf4 and 4.e3; when 4...Bg4 pins, develop 5.Nbd2 and 6.Bd3, then question the bishop with 7.h3 — it must take on f3 or retreat.",
 "endsIn": "A46 Indian Defense: Czech-Indian",
 "endEvalCp": 18,
 "plies": [
@@ -26923,7 +26923,7 @@
 "King's Indian Defense: Normal Variation, Rare Defenses",
 "King's Indian Defense: Orthodox Variation"
 ],
-"idea": "Black lets you take the centre and attacks it later with ...e5. Build e4/d4/c4, develop with Nf3 and Be2, and castle — the solid Classical system.",
+"idea": "Black lets you build the c4/d4/e4 wall and will strike at it with 6...e5. Play the Classical with 5.Nf3, 6.Be2 and 7.O-O — after 6...e5 your d4 pawn is attacked, so castle first and then decide whether to keep the tension.",
 "endsIn": "E94 King's Indian Defense: Orthodox Variation",
 "endEvalCp": 45,
 "plies": [
@@ -27329,7 +27329,7 @@
 "King's Indian Defense: Orthodox Variation, Aronin-Taimanov Defense",
 "King's Indian Defense: Orthodox Variation, Classical System"
 ],
-"idea": "Black lets you take the centre and attacks it later with ...e5. Build e4/d4/c4, develop with Nf3 and Be2, and castle — the solid Classical system.",
+"idea": "7...Nc6 pressures d4, so close the centre with 8.d5, gaining time on the knight. After 8...Ne7 reroute with 9.Ne1, reinforce e4 with 10.f3 so Black's 10...f5 doesn't shake it, and develop 11.Be3 while you prepare queenside play.",
 "endsIn": "E98 King's Indian Defense: Orthodox Variation, Classical System",
 "endEvalCp": 72,
 "plies": [
@@ -27878,7 +27878,7 @@
 "Englund Gambit Complex Declined",
 "Englund Gambit: Hartlaub-Charlick Gambit"
 ],
-"idea": "Black gives the e-pawn for fast development. Take it; if Black gambits more with ...d6, take that too, then develop Nf3, Nc3 and Bg5 — you're a pawn up with an easy game.",
+"idea": "After 2.dxe5 Black offers a second pawn with 2...d6 to open lines. Take it with 3.exd6, then develop 4.Nf3 and 5.Nc3; answer the 5...Bg4 pin with your own pin, 6.Bg5 — you're a pawn up with an easy game.",
 "endsIn": "A40 Englund Gambit: Hartlaub-Charlick Gambit",
 "endEvalCp": 122,
 "plies": [
@@ -28238,7 +28238,7 @@
 "names": [
 "Englund Gambit: Main Line"
 ],
-"idea": "Black gives the e-pawn for fast development. Take it; if Black gambits more with ...d6, take that too, then develop Nf3, Nc3 and Bg5 — you're a pawn up with an easy game.",
+"idea": "This is the Englund trap line: after 4...Qb4+ 5.Bd2 Qxb2 the natural Bc3 loses to a queen mate on c1, so protect calmly with 6.Nc3. After 6...Bb4 chase the queen with 7.Rb1, and after 7...Qa3 jump 8.Nd5, hitting the b4 bishop and c7.",
 "endsIn": "A40 Englund Gambit: Main Line",
 "endEvalCp": 260,
 "plies": [
@@ -28615,7 +28615,7 @@
 "names": [
 "Englund Gambit: Soller Gambit"
 ],
-"idea": "Black gives the e-pawn for fast development. Take it; if Black gambits more with ...d6, take that too, then develop Nf3, Nc3 and Bg5 — you're a pawn up with an easy game.",
+"idea": "2...f6 gives a pawn and weakens Black's kingside. Develop 3.Nf3, win back the e-pawn after 3...fxe5 with 4.Nxe5, fianchetto with 5.g3, and simplify with 6.Nxc6 — you stay a pawn up against a loose structure.",
 "endsIn": "A40 Englund Gambit: Soller Gambit",
 "endEvalCp": 175,
 "plies": [
@@ -28854,7 +28854,7 @@
 "names": [
 "Englund Gambit: Felbecker Gambit"
 ],
-"idea": "Black gives the e-pawn for fast development. Take it; if Black gambits more with ...d6, take that too, then develop Nf3, Nc3 and Bg5 — you're a pawn up with an easy game.",
+"idea": "3...Bc5 aims at f2 to justify the gambit. Develop 4.Nc3, kick the bishop with 5.Ne4, pin the e7 knight with 6.Bg5 so that after 6...Kf8 Black can no longer castle, and bring 7.Qd3 to prepare castling queenside.",
 "endsIn": "A40 Englund Gambit: Felbecker Gambit",
 "endEvalCp": 197,
 "plies": [
@@ -29156,7 +29156,7 @@
 "names": [
 "Englund Gambit: Zilbermints Gambit"
 ],
-"idea": "Black gives the e-pawn for fast development. Take it; if Black gambits more with ...d6, take that too, then develop Nf3, Nc3 and Bg5 — you're a pawn up with an easy game.",
+"idea": "3...Nge7 plans 4...Ng6 to win back the e5 pawn. Develop 4.Nc3, then 5.Bg5 hits the queen; after 5...Be7 trade with 6.Bxe7, and after 6...Qxe7 jump 7.Nd5 to hit the queen and c7 while you keep the extra pawn.",
 "endsIn": "A40 Englund Gambit: Zilbermints Gambit",
 "endEvalCp": 201,
 "plies": [
@@ -29451,7 +29451,7 @@
 "names": [
 "Mikenas Defense"
 ],
-"idea": "Black plays ...Nc6 first and often follows with ...d5. Keep it simple with the London: Nf3, Bf4, e3 and Bd3, offering to trade Black's light bishop.",
+"idea": "1...Nc6 blocks Black's c-pawn, so Black can't easily hit d4 from the side. Play 2.Nf3, 3.Bf4 and 4.e3, and after 4...e6 offer the bishop trade with 5.Bd3 to take away Black's active f5 bishop.",
 "endsIn": "A40 Mikenas Defense",
 "endEvalCp": 12,
 "plies": [
@@ -29750,7 +29750,7 @@
 "names": [
 "Dutch Defense"
 ],
-"idea": "Black's ...f5 controls e4 but weakens the king. Fianchetto with g3 and Bg2 so your bishop pressures e4 and the long diagonal, castle, then gain space with c4.",
+"idea": "1...f5 grabs e4, and here Black goes for a Classical Dutch with 3...e6 and 4...Be7. Fianchetto with 3.g3 and 4.Bg2 so your bishop fights for e4, castle with 5.O-O, and gain queenside space with 6.c4.",
 "endsIn": "A80 Dutch Defense",
 "endEvalCp": 43,
 "plies": [
@@ -30027,7 +30027,7 @@
 "Sicilian Defense: Löwenthal Variation",
 "Sicilian Defense: Kalashnikov Variation"
 ],
-"idea": "Black fights for d4 from the side. Play the Open Sicilian: Nf3 and d4, take back with the knight, and when Black kicks it with ...e5, jump to b5 aiming at d6.",
+"idea": "2...Nc6 and 4...e5 is the Kalashnikov approach, kicking your d4 knight at once. Jump to b5 with 5.Nb5 to eye d6, and after 5...d6 develop 6.N1c3 — the d5 square is now a permanent hole in Black's camp.",
 "endsIn": "B32 Sicilian Defense: Kalashnikov Variation",
 "endEvalCp": 27,
 "plies": [
@@ -30387,7 +30387,7 @@
 "Sicilian Defense: Kan Variation",
 "Sicilian Defense: Kan Variation, Knight Variation"
 ],
-"idea": "Black fights for d4 from the side. Play the Open Sicilian: Nf3 and d4, take back with the knight, and when Black kicks it with ...e5, jump to b5 aiming at d6.",
+"idea": "Black's 4...a6 and early 5...b5 grab queenside space and aim to kick your c3 knight with the b-pawn. Stop that with 6.a3, guard e4 with 7.Bd3, castle with 8.O-O, and then pin the f6 knight with 9.Bg5 while Black's king is still in the centre.",
 "endsIn": "B43 Sicilian Defense: Kan Variation, Wing Attack",
 "endEvalCp": -11,
 "plies": [
@@ -30839,7 +30839,7 @@
 "Sicilian Defense: Najdorf Variation",
 "Sicilian Defense: Najdorf Variation, English Attack"
 ],
-"idea": "Black fights for d4 from the side. Play the Open Sicilian: Nf3 and d4, take back with the knight, and when Black kicks it with ...e5, jump to b5 aiming at d6.",
+"idea": "This is the Najdorf with 5...a6, and you start the English Attack with 6.Be3. When 6...e5 kicks the knight, retreat with 7.Nb3 and keep your eye on the hole on d5.",
 "endsIn": "B90 Sicilian Defense: Najdorf Variation, English Attack",
 "endEvalCp": 41,
 "plies": [
@@ -31243,7 +31243,7 @@
 "Sicilian Defense: Hyperaccelerated Dragon",
 "Sicilian Defense: Accelerated Dragon, Maróczy Bind"
 ],
-"idea": "Black fights for d4 from the side. Play the Open Sicilian: Nf3 and d4, take back with the knight, and when Black kicks it with ...e5, jump to b5 aiming at d6.",
+"idea": "Black delays ...d6 to fianchetto fast, so set up the Maroczy Bind with 5.c4. Protect d4 from the g7 bishop with 6.Be3 and develop 7.Nc3 — your c4 and e4 pawns clamp the d5 square and take away Black's central pawn break.",
 "endsIn": "B27 Sicilian Defense: Hyperaccelerated Dragon",
 "endEvalCp": 65,
 "plies": [
@@ -31611,7 +31611,7 @@
 "Sicilian Defense: Four Knights Variation",
 "Sicilian Defense: Four Knights Variation, Exchange Variation"
 ],
-"idea": "Black fights for d4 from the side. Play the Open Sicilian: Nf3 and d4, take back with the knight, and when Black kicks it with ...e5, jump to b5 aiming at d6.",
+"idea": "Black's 2...e6 and 4...Nc6 keep things flexible. Swap with 6.Nxc6 and push 7.e5 to kick the f6 knight; after 7...Nd5 jump 8.Ne4, and when 8...Qc7 hits e5, defend it with 9.f4 — your kingside space is the trump.",
 "endsIn": "B45 Sicilian Defense: Four Knights Variation, Exchange Variation",
 "endEvalCp": 55,
 "plies": [
@@ -32077,7 +32077,7 @@
 "Sicilian Defense: Accelerated Dragon, Modern Variation",
 "Sicilian Defense: Accelerated Dragon, Modern Bc4 Variation"
 ],
-"idea": "Black fights for d4 from the side. Play the Open Sicilian: Nf3 and d4, take back with the knight, and when Black kicks it with ...e5, jump to b5 aiming at d6.",
+"idea": "Black fianchettoes before committing the d-pawn. Develop 5.Nc3, 6.Be3 and 7.Bc4, tuck the bishop away with 8.Bb3 so it's safe from forks and pawn hits, then play 9.f3 to hold e4 and prepare a kingside pawn storm.",
 "endsIn": "B35 Sicilian Defense: Accelerated Dragon, Modern Bc4 Variation",
 "endEvalCp": 47,
 "plies": [
@@ -32587,7 +32587,7 @@
 "Sicilian Defense: Dragon Variation, Yugoslav Attack",
 "Sicilian Defense: Dragon Variation, Yugoslav Attack, Modern Line"
 ],
-"idea": "Black fights for d4 from the side. Play the Open Sicilian: Nf3 and d4, take back with the knight, and when Black kicks it with ...e5, jump to b5 aiming at d6.",
+"idea": "This is the Yugoslav Attack: 6.Be3, 7.f3 and 8.Qd2, then 9.O-O-O and a kingside pawn storm. Black's main counter is the central break 9...d5 — take it with 10.exd5 and don't let the g7 bishop open up against your king.",
 "endsIn": "B76 Sicilian Defense: Dragon Variation, Yugoslav Attack",
 "endEvalCp": 50,
 "plies": [
@@ -33148,7 +33148,7 @@
 "French Defense: Advance Variation, Paulsen Attack",
 "French Defense: Advance Variation, Milner-Barry Gambit"
 ],
-"idea": "Black's light bishop is blocked by e6. Grab space with e5, support d4 with c3 and Nf3, and point your bishop at Black's kingside.",
+"idea": "In the Advance French Black hits your d4 point with 3...c5, 4...Nc6 and 5...Qb6. Support it with 4.c3 and 5.Nf3, then develop 6.Bd3, the Milner-Barry setup — your e5 pawn cramps Black and its light bishop stays locked behind e6.",
 "endsIn": "C02 French Defense: Advance Variation, Milner-Barry Gambit",
 "endEvalCp": 19,
 "plies": [
@@ -33511,7 +33511,7 @@
 "names": [
 "French Defense: Franco-Sicilian Defense"
 ],
-"idea": "Black's light bishop is blocked by e6. Grab space with e5, support d4 with c3 and Nf3, and point your bishop at Black's kingside.",
+"idea": "2...c5 aims for a Benoni-type game. Gain space with 3.d5, recapture 4.exd5 to keep a pawn wedged on d5, support it with 5.c4, develop 6.Nc3 and play 7.h3 to keep Black's light bishop out of g4.",
 "endsIn": "A43 Benoni Defense: French Benoni",
 "endEvalCp": 111,
 "plies": [
@@ -33838,7 +33838,7 @@
 "names": [
 "French Defense: Advance Variation, Euwe Variation"
 ],
-"idea": "Black's light bishop is blocked by e6. Grab space with e5, support d4 with c3 and Nf3, and point your bishop at Black's kingside.",
+"idea": "5...Bd7 prepares 6...Qb6 and queenside play. Develop 6.Bd3, and after 6...Qb6 release the tension with 7.dxc5 so the bishop recaptures with 7...Bxc5, then castle with 8.O-O and play 9.Qe2 to protect e5 and use d4 for your pieces.",
 "endsIn": "C02 French Defense: Advance Variation, Euwe Variation",
 "endEvalCp": 37,
 "plies": [
@@ -34290,7 +34290,7 @@
 "names": [
 "French Defense: Mediterranean Defense"
 ],
-"idea": "Black's light bishop is blocked by e6. Grab space with e5, support d4 with c3 and Nf3, and point your bishop at Black's kingside.",
+"idea": "2...Nf6 is an Alekhine-style idea, and 3.e5 with 4.c4 chases the knight for a big centre. After 4...Nb6 develop 5.Nc3, and when 5...d5 arrives, take en passant with 6.exd6 to open lines while you're ahead in development.",
 "endsIn": "C00 French Defense: Mediterranean Defense",
 "endEvalCp": 108,
 "plies": [
@@ -34594,7 +34594,7 @@
 "names": [
 "French Defense: Advance Variation, Milner-Barry Gambit, Main Line"
 ],
-"idea": "Black's light bishop is blocked by e6. Grab space with e5, support d4 with c3 and Nf3, and point your bishop at Black's kingside.",
+"idea": "After 6...cxd4 7.cxd4 Bd7 you sacrifice the d4 pawn with 8.O-O. When 8...Nxd4 takes, develop 9.Nbd2 and trade with 10.Nxd4; after 10...Bxd4 bring 11.Nf3 to hit the bishop — you're a pawn down but well ahead in development.",
 "endsIn": "C02 French Defense: Advance Variation, Milner-Barry Gambit, Main Line",
 "endEvalCp": -17,
 "plies": [
@@ -35099,7 +35099,7 @@
 "names": [
 "French Defense: St. George Defense"
 ],
-"idea": "Black's light bishop is blocked by e6. Grab space with e5, support d4 with c3 and Nf3, and point your bishop at Black's kingside.",
+"idea": "Black's 2...a6 and 3...b5 grab queenside space and aim the bishop at e4. Challenge right away with 4.a4; after 4...Bb7 guard e4 with 5.Nbd2, and when 5...b4 advances, develop 6.Bd3 — your big centre outweighs Black's wing play.",
 "endsIn": "C00 French Defense: St. George Defense",
 "endEvalCp": 97,
 "plies": [
@@ -35374,7 +35374,7 @@
 "names": [
 "French Defense: Advance Variation, Wade Variation"
 ],
-"idea": "Black's light bishop is blocked by e6. Grab space with e5, support d4 with c3 and Nf3, and point your bishop at Black's kingside.",
+"idea": "In the Wade, Black wants to swap off its bad light bishop with 6...Bb5. Let it happen on your terms: 7.dxc5 makes Black recapture with 7...Bxc5, then 8.b4 gains time on that bishop, and after 8...Bxd3 recapture 9.Qxd3 with extra queenside space.",
 "endsIn": "C02 French Defense: Advance Variation, Wade Variation",
 "endEvalCp": 45,
 "plies": [
@@ -35797,7 +35797,7 @@
 "Caro-Kann Defense",
 "Caro-Kann Defense: Advance Variation"
 ],
-"idea": "Black is solid and wants to develop the light bishop before ...e6. Push e5 for space, trade off that bishop with Bd3, and develop with Ne2 so f-pawn and c-pawn stay free.",
+"idea": "In the Advance Caro-Kann Black develops the light bishop with 3...Bf5 before 5...e6. Offer the trade with 4.Bd3 to remove that bishop, recapture 5.Qxd3, and develop 6.Ne2 to keep the f-pawn free to support e5.",
 "endsIn": "B12 Caro-Kann Defense: Advance Variation",
 "endEvalCp": 14,
 "plies": [
@@ -36129,7 +36129,7 @@
 "names": [
 "Caro-Kann Defense: Advance Variation, Botvinnik-Carls Defense"
 ],
-"idea": "Black is solid and wants to develop the light bishop before ...e6. Push e5 for space, trade off that bishop with Bd3, and develop with Ne2 so f-pawn and c-pawn stay free.",
+"idea": "3...c5 hits d4 at once, spending a second move on the c-pawn French-style. Support with 4.c3 and 5.Nf3; when 5...Bg4 adds pressure, take 6.dxc5 and hold the extra pawn with 7.Be3.",
 "endsIn": "B12 Caro-Kann Defense: Advance Variation, Botvinnik-Carls Defense",
 "endEvalCp": 47,
 "plies": [
@@ -36513,7 +36513,7 @@
 "Scandinavian Defense: Mieses-Kotroc Variation",
 "Scandinavian Defense: Main Line"
 ],
-"idea": "Black brings the queen out early. Take on d5, then hit the queen with Nc3 to gain time, build the centre with d4 and develop Nf3 and Bc4.",
+"idea": "After 2...Qxd5 hit the queen with 3.Nc3, and 3...Qa5 is the main retreat. Take the centre with 4.d4, develop 5.Nf3 and 6.Bc4 — every tempo the queen loses is a free developing move for you.",
 "endsIn": "B01 Scandinavian Defense: Main Line",
 "endEvalCp": 72,
 "plies": [
@@ -36875,7 +36875,7 @@
 "Scandinavian Defense: Modern Variation",
 "Scandinavian Defense: Marshall Variation"
 ],
-"idea": "Black brings the queen out early. Take on d5, then hit the queen with Nc3 to gain time, build the centre with d4 and develop Nf3 and Bc4.",
+"idea": "2...Nf6 delays retaking d5 so the knight can recapture. Grab space with 3.d4 and 4.c4 to kick the knight back, develop 5.Nc3 and 6.Nf3, then 7.Qb3 hits b7 now that Black's light bishop has left c8.",
 "endsIn": "B01 Scandinavian Defense: Marshall Variation",
 "endEvalCp": 79,
 "plies": [
@@ -37256,7 +37256,7 @@
 "Scandinavian Defense: Valencian Variation",
 "Scandinavian Defense: Valencian Variation, Main Line"
 ],
-"idea": "Black brings the queen out early. Take on d5, then hit the queen with Nc3 to gain time, build the centre with d4 and develop Nf3 and Bc4.",
+"idea": "3...Qd8 retreats all the way home, giving you a big lead in development. Build with 4.d4 and 5.Nf3; when 5...Bg4 pins, ask with 6.h3, and after 6...Bxf3 recapture 7.Qxf3 — your bishop pair and development are the key assets.",
 "endsIn": "B01 Scandinavian Defense: Valencian Variation, Main Line",
 "endEvalCp": 84,
 "plies": [
@@ -37627,7 +37627,7 @@
 "Scandinavian Defense: Blackburne-Kloosterboer Gambit",
 "Scandinavian Defense: Blackburne Gambit"
 ],
-"idea": "Black brings the queen out early. Take on d5, then hit the queen with Nc3 to gain time, build the centre with d4 and develop Nf3 and Bc4.",
+"idea": "2...c6 offers a pawn for quick development. Take it with 3.dxc6, develop 4.Nf3, pin the c6 knight that defends e5 with 5.Bb5, and trade with 6.Bxc6+ to damage Black's pawns while you stay a pawn up.",
 "endsIn": "B01 Scandinavian Defense: Blackburne Gambit",
 "endEvalCp": 55,
 "plies": [
@@ -37935,7 +37935,7 @@
 "Scandinavian Defense: Gubinsky-Melts Defense",
 "Scandinavian Defense: Bronstein Variation"
 ],
-"idea": "Black brings the queen out early. Take on d5, then hit the queen with Nc3 to gain time, build the centre with d4 and develop Nf3 and Bc4.",
+"idea": "3...Qd6 puts the queen in the centre where your pieces can hit it. Develop 4.Nf3 and 5.d4, fianchetto with 6.g3, and after 6...Nc6 gain time with 7.Bf4 attacking the queen.",
 "endsIn": "B01 Scandinavian Defense: Gubinsky-Melts Defense",
 "endEvalCp": 104,
 "plies": [
@@ -38313,7 +38313,7 @@
 "Scandinavian Defense: Main Line, Mieses Variation",
 "Scandinavian Defense: Lasker Variation"
 ],
-"idea": "Black brings the queen out early. Take on d5, then hit the queen with Nc3 to gain time, build the centre with d4 and develop Nf3 and Bc4.",
+"idea": "Black's queen sits on a5, so after 5...Bg4 chase the bishop with 6.h3 and 7.g4. Once it drops to g6, jump in with 8.Ne5 to hit the g6 bishop and eye f7 — Black's queen is far from the defence.",
 "endsIn": "B01 Scandinavian Defense: Lasker Variation",
 "endEvalCp": 120,
 "plies": [
@@ -38719,7 +38719,7 @@
 "Scandinavian Defense: Portuguese Gambit",
 "Scandinavian Defense: Portuguese Gambit, Wuss Variation"
 ],
-"idea": "Black brings the queen out early. Take on d5, then hit the queen with Nc3 to gain time, build the centre with d4 and develop Nf3 and Bc4.",
+"idea": "3...Bg4 hits your queen and leaves the d5 pawn for later. Block calmly with 4.Be2, trade with 5.Nxe2, let Black regain the pawn with 5...Qxd5, then castle with 6.O-O and support d4 with 7.Be3 — your solid centre gives a lasting edge.",
 "endsIn": "B01 Scandinavian Defense: Portuguese Gambit, Wuss Variation",
 "endEvalCp": 41,
 "plies": [
@@ -39084,7 +39084,7 @@
 "Pirc Defense",
 "Pirc Defense: Classical Variation"
 ],
-"idea": "Black fianchettoes and attacks your centre later. Build it with d4 and Nc3, develop Nf3 and Bc4, castle, and if Black tries the ...Nxe4 trick, simply take back.",
+"idea": "Black fianchettoes and invites you to overextend. Develop calmly with 4.Nf3, 5.Bc4 and 6.O-O; if Black tries the 6...Nxe4 trick, just take back with 7.Nxe4 — Black's pawn fork wins the piece back, but your bishop steps away and you keep the better centre.",
 "endsIn": "B08 Pirc Defense: Classical Variation",
 "endEvalCp": 18,
 "plies": [
@@ -39473,7 +39473,7 @@
 "King's Knight Opening: Normal Variation",
 "King's Knight Opening"
 ],
-"idea": "After 1.e4 e5 2.Nf3 Nc6 White skips the main lines (no 3.Bc4, 3.Bb5, 3.d4 or 3.Nc3) and plays a quiet 3.d3, 3.g3 or 3.Be2. There is no early threat: develop with ...Nf6, take the centre with ...d5 when it is safe, and you are at least equal.",
+"idea": "3.d3 is modest: White solidly protects e4 and hems in its own f1 bishop. Answer with 3...Nf6, and once 4.Be2 confirms the quiet plan, strike with 4...d5; after 5.exd5 Nxd5 your knight is centralised and you have more space.",
 "endsIn": "C44 King's Knight Opening: Normal Variation",
 "endEvalCp": 25,
 "plies": [
@@ -39753,7 +39753,7 @@
 "names": [
 "King's Knight Opening: Konstantinopolsky"
 ],
-"idea": "After 1.e4 e5 2.Nf3 Nc6 White skips the main lines (no 3.Bc4, 3.Bb5, 3.d4 or 3.Nc3) and plays a quiet 3.d3, 3.g3 or 3.Be2. There is no early threat: develop with ...Nf6, take the centre with ...d5 when it is safe, and you are at least equal.",
+"idea": "3.g3 is a quiet fianchetto plan with 4.d3 and 5.Bg2. Develop 3...Nf6, aim 4...Bc5 at f2, support e5 with 5...d6, and when 6.c3 prepares queenside expansion, play 6...a5 so the b-pawn can't chase your bishop.",
 "endsIn": "C44 King's Knight Opening: Konstantinopolsky",
 "endEvalCp": -1,
 "plies": [

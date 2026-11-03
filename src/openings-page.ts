@@ -104,6 +104,7 @@ export async function renderOpenings(ctx: OpeningsCtx, id: string | null, mode: 
       <div class="op-var-def"><span class="muted small">Defend against it (you play ${sideWord(other(o.side))}):</span> <span class="op-status op-${dst.cls}">${esc(dst.text)}</span> <button class="btn small" data-defend="${esc(o.id)}" aria-label="Defend against ${esc(o.name)}">Defend</button></div>
       <details class="op-line"><summary>${esc(moveText(o.plies.slice(0, o.idPlies)))} — your line (${o.plies.length - o.idPlies} moves)</summary>
         <p class="op-full">${esc(moveText(o.plies))}</p>
+        <p class="op-var-idea">${esc(o.idea)}</p>
         <ul>${resp.map(({ p, i }) => `<li><b>${esc(moveLabel(i, p.san))}</b> — ${esc(p.why!)}</li>`).join('')}</ul>
         ${o.also?.length ? `<p class="muted small">This line also covers: ${esc(o.also.join('; '))}</p>` : ''}
         <p class="muted small">Ends in: ${esc(o.endsIn)} · Stockfish: ${o.endEvalCp >= 0 ? '+' : ''}${(o.endEvalCp / 100).toFixed(1)} for you</p>
@@ -307,7 +308,7 @@ class Drill implements Round {
             <button class="btn" id="tr-hint">Hint (1 of 3)</button>
             <button class="btn ghost" id="tr-reveal">Show answer</button>
           </div>
-          <details class="op-line"><summary>The idea</summary><p>${esc(this.o.family?.idea || e.idea)}</p></details>
+          <details class="op-line" id="op-idea-box"><summary id="op-idea-sum">The idea</summary><p id="op-idea-text">${esc(this.o.branching ? this.o.family!.idea : e.idea)}</p></details>
           <div class="tr-lesson" id="tr-lesson" hidden></div>
         </div>
       </div>`;
@@ -386,7 +387,11 @@ class Drill implements Round {
   /** In branching practice the variation is named once the opponent has committed to it. */
   varName() {
     const el = $('#op-varname', this.host);
-    if (this.o.branching && this.i < this.e.idPlies && !this.done) { el.innerHTML = '<span class="muted">Which variation? Watch the opponent\'s moves.</span>'; return; }
+    const committed = !(this.o.branching && this.i < this.e.idPlies && !this.done);
+    // The idea: the family's while the variation is still unknown, then the variation's own.
+    $('#op-idea-text', this.host).textContent = committed ? this.e.idea : this.o.family!.idea;
+    $('#op-idea-sum', this.host).textContent = committed && this.o.branching ? `The idea (${this.e.name})` : 'The idea';
+    if (!committed) { el.innerHTML = '<span class="muted">Which variation? Watch the opponent\'s moves.</span>'; return; }
     el.innerHTML = `Variation: <b>${esc(this.e.name)}</b> <span class="op-eco">${esc(this.e.eco)}</span>${this.o.family && this.o.family.variations.length > 1 ? ` <span class="muted small">(${Math.round(this.o.share * 100)}% of this family's games)</span>` : ''}`;
   }
 
@@ -555,7 +560,7 @@ class DefendRound implements Round {
             <button class="btn" id="tr-hint">Hint (1 of 2)</button>
             <button class="btn ghost" id="dr-restart">Restart</button>
           </div>
-          ${this.random ? '' : `<details class="op-line"><summary>The idea</summary><p>${esc(this.o.family?.idea || this.e.idea)}</p><p class="muted small">This is ${them}'s plan; you are on the other side. Your book replies come from the most played moves in the sample, checked with Stockfish.</p></details>`}
+          ${this.random ? '' : `<details class="op-line"><summary>The idea</summary><p>${esc(this.o.branching ? this.o.family!.idea : this.e.idea)}</p><p class="muted small">This is ${them}'s plan; you are on the other side. Your book replies come from the most played moves in the sample, checked with Stockfish.</p></details>`}
           <div class="tr-lesson" id="tr-lesson" hidden></div>
         </div>
       </div>`;
@@ -801,7 +806,7 @@ class DefendRound implements Round {
           <tbody>${this.rows.map(row).join('')}</tbody>
         </table></div>
         <p class="muted small">Tap a move to see it on the board: <span class="dr-key dr-key-best">green</span> is the move you should have played, your move is drawn in blue (book or good), yellow (inaccuracy) or red (mistake/blunder). Eval: Stockfish depth ${DEPTH} with the best move → after yours, in pawns from your side. Good loses at most ${(LOSS.good / 100).toFixed(1)}, inaccuracy ${(LOSS.inaccuracy / 100).toFixed(1)}, mistake ${(LOSS.mistake / 100).toFixed(1)}; more is a blunder. Book = played in ${'≥'}5% of games here and Stockfish-sound.</p>
-        <details class="op-line"${this.random ? ' open' : ''}><summary>${this.random ? 'The idea of this line' : 'The idea you were facing'}</summary><p>${esc(this.o.family?.idea || this.e.idea)}</p></details>
+        <details class="op-line"${this.random ? ' open' : ''}><summary>${this.random ? 'The idea of this line' : 'The idea you were facing'}</summary><p>${esc(reached.idea)}</p></details>
         <p class="muted small" id="op-mastery">Progress (${this.random ? 'random openings' : 'defending'}): ${esc(progress)}${this.random ? (lineLeft?.byYou || s.mistakes + s.blunders ? ' — it will come up again soon.' : ' — it will come up less often now.') : ''}</p>
         <div class="tr-after">${this.random
           ? `<button class="btn primary" id="dr-drill">Drill this line</button><button class="btn" id="dr-again">Next random opening</button><button class="btn ghost" id="dr-back">All openings</button>`
