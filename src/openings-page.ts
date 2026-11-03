@@ -1,5 +1,6 @@
-// Openings: a library of the openings you meet, practice of one sound reply line per opening (spaced repetition
-// per opening), and which openings you face most in your own games.
+// Openings: a library of opening families you meet, each with its main named variations and a sound reply line for
+// each; practice that branches on the opponent's choices (weighted by how often each is played, spaced repetition per
+// variation); and which variations you face most in your own games.
 import { Chess } from 'chess.js';
 import { Chessground } from 'chessground';
 import type { Api as CgApi } from 'chessground/api';
@@ -12,7 +13,7 @@ import type { Book } from './review';
 import { newSrs, schedule, srsStatus, isDue, type SrsState } from './srs';
 import { describeMove } from './lastmove';
 import { $, esc, fmtWhen, reducedMotion, boardDescription, legalDests, parseTyped } from './ui';
-import { OPENINGS, REPERTOIRE, openingById, moveText, moveLabel, judgeMove, wrongText, facedStats, progressKey, type RepEntry, type OpeningProgress, type FacedRow, type GameLike } from './repertoire';
+import { OPENINGS, FAMILIES, REPERTOIRE, openingById, familyById, familyOf, variationsOf, variationWeights, pickVariation, moveText, moveLabel, judgeMove, wrongText, facedStats, progressKey, type RepEntry, type RepFamily, type OpeningProgress, type FacedRow, type GameLike } from './repertoire';
 import type { Ctx } from './pages';
 
 export interface OpeningsCtx extends Ctx { games: () => GameSummary[]; book: () => Promise<Book | null>; loadGames: () => Promise<void> }
@@ -52,41 +53,69 @@ async function myGames(ctx: OpeningsCtx): Promise<GameLike[]> {
 }
 
 // ---------------- library ----------------
+const pctText = (x: number) => (x >= 0.995 ? '100%' : x < 0.01 ? '<1%' : `${Math.round(x * 100)}%`);
+
+function familyStatus(f: RepFamily, prog: Map<string, OpeningProgress>, now: number) {
+  const vs = f.variations;
+  const mastered = vs.filter((id) => { const p = prog.get(id); return p && srsStatus(p.srs, now) === 'mastered'; }).length;
+  const due = vs.filter((id) => { const p = prog.get(id); return p && isDue(p.srs, now); }).length;
+  const tried = vs.filter((id) => prog.get(id)).length;
+  if (due) return { cls: 'due', text: `${due} due · ${mastered} of ${vs.length} mastered` };
+  if (!tried) return { cls: 'new', text: `Not practised · ${vs.length} variation${vs.length === 1 ? '' : 's'}` };
+  return { cls: mastered === vs.length ? 'mastered' : 'learning', text: `${mastered} of ${vs.length} mastered · ${tried} practised` };
+}
+
 export async function renderOpenings(ctx: OpeningsCtx, id: string | null) {
   destroyDrill();
+  const fam = familyById(id);
+  if (fam) return renderDrill(ctx, fam, null);
   const entry = openingById(id);
-  if (entry) return renderDrill(ctx, entry);
+  if (entry) return renderDrill(ctx, familyOf(entry), entry);
   document.title = 'Openings · rook-i.e. mistakes';
   const now = Date.now();
   const prog = await loadProgress(ctx.pk);
   const due = OPENINGS.filter((o) => { const p = prog.get(o.id); return p && isDue(p.srs, now); });
-  const card = (o: RepEntry) => {
+  const varRow = (f: RepFamily, o: RepEntry, w: number) => {
     const st = statusOf(prog.get(o.id), now);
     const resp = o.plies.map((p, i) => ({ p, i })).filter(({ p, i }) => p.mine && i >= o.idPlies - 1 && p.why);
-    return `<article class="card op-card" id="op-${esc(o.id)}" data-op="${esc(o.id)}">
-      <div class="op-top"><h3>${esc(o.name)} <span class="op-eco">${esc(o.eco)}</span></h3><span class="op-status op-${st.cls}">${esc(st.text)}</span></div>
-      <p class="op-moves">${esc(moveText(o.plies.slice(0, o.idPlies)))}</p>
-      <p class="op-idea">${esc(o.idea)}</p>
-      <details class="op-line"><summary>Your line as ${sideWord(o.side)} (${o.plies.length - o.idPlies} moves after ${esc(moveText(o.plies.slice(0, o.idPlies)).split(' ').slice(-1)[0])})</summary>
+    const short = o.name.startsWith(family(f, o.name)) && o.name.includes(':') ? o.name.slice(o.name.indexOf(':') + 1).trim() : o.name;
+    return `<li class="op-var" id="op-${esc(o.id)}" data-op="${esc(o.id)}">
+      <div class="op-var-top"><span class="op-var-name"><b>${esc(short)}</b> <span class="op-eco">${esc(o.eco)}</span>${o.fromGames ? ` <span class="op-mine" title="Seen in your games">in your games ×${o.fromGames}</span>` : ''}</span>
+        <span class="op-var-meta"><span class="muted small" title="Share of this family's sample games">${pctText(w)}</span> <span class="op-status op-${st.cls}">${esc(st.text)}</span> <button class="btn small" data-practice="${esc(o.id)}" aria-label="Practise ${esc(o.name)}">Practise</button></span></div>
+      <details class="op-line"><summary>${esc(moveText(o.plies.slice(0, o.idPlies)))} — your line (${o.plies.length - o.idPlies} moves)</summary>
         <p class="op-full">${esc(moveText(o.plies))}</p>
         <ul>${resp.map(({ p, i }) => `<li><b>${esc(moveLabel(i, p.san))}</b> — ${esc(p.why!)}</li>`).join('')}</ul>
+        ${o.also?.length ? `<p class="muted small">This line also covers: ${esc(o.also.join('; '))}</p>` : ''}
         <p class="muted small">Ends in: ${esc(o.endsIn)} · Stockfish: ${o.endEvalCp >= 0 ? '+' : ''}${(o.endEvalCp / 100).toFixed(1)} for you</p>
-      </details>
-      <div class="op-actions"><button class="btn primary" data-practice="${esc(o.id)}">Practise</button></div>
+      </details></li>`;
+  };
+  const card = (f: RepFamily) => {
+    const st = familyStatus(f, prog, now);
+    const w = variationWeights(f);
+    const vs = variationsOf(f);
+    const sk = f.skipped.filter((x) => x.games);
+    return `<article class="card op-card" id="op-${esc(f.id)}" data-family="${esc(f.id)}">
+      <div class="op-top"><h3>${esc(f.name)}</h3><span class="op-status op-${st.cls}">${esc(st.text)}</span></div>
+      <p class="op-moves">${esc(f.root)}</p>
+      <p class="op-idea">${esc(f.idea)}</p>
+      <ul class="op-vars">${vs.map((o) => varRow(f, o, w.get(o.id) ?? 0)).join('')}</ul>
+      ${sk.length ? `<p class="muted small op-skipped">From your games, not in this line: ${sk.map((x) => `${esc(x.name)} (${esc(x.why)})`).join('; ')}.</p>` : ''}
+      <div class="op-actions"><button class="btn primary" data-practice="${esc(f.id)}">Practise all ${vs.length > 1 ? `${vs.length} variations` : ''}</button><span class="muted small">The app picks the opponent's moves by how often each variation is played.</span></div>
     </article>`;
   };
+  const nVars = FAMILIES.reduce((a, f) => a + f.variations.length, 0);
   ctx.app.innerHTML = `
     <section class="page openings">
-      <div class="page-head"><h1>Openings</h1><span class="muted">${OPENINGS.length} openings · ${due.length ? `${due.length} due for practice` : 'practise any of them'}</span></div>
+      <div class="page-head"><h1>Openings</h1><span class="muted">${FAMILIES.length} families · ${nVars} variations · ${due.length ? `${due.length} due for practice` : 'practise any of them'}</span></div>
       <div class="card" id="op-faced"><h2>Openings you face most</h2><p class="muted">Looking through your games…</p></div>
       ${due.length ? `<div class="card op-due"><b>Due now:</b> ${due.map((o) => `<button class="chip" data-practice="${esc(o.id)}">${esc(o.name)}</button>`).join(' ')}</div>` : ''}
       <h2 class="op-group">When you're Black</h2>
-      <p class="muted small">The opponent opens; you learn a sound reply.</p>
-      <div class="op-grid">${OPENINGS.filter((o) => o.side === 'b').map(card).join('')}</div>
+      <p class="muted small">The opponent opens; you learn a sound reply to each of its main variations.</p>
+      <div class="op-grid">${FAMILIES.filter((f) => f.side === 'b').map(card).join('')}</div>
       <h2 class="op-group">When you're White</h2>
-      <p class="muted small">You play 1.e4 or 1.d4; you learn what to do against each defence.</p>
-      <div class="op-grid">${OPENINGS.filter((o) => o.side === 'w').map(card).join('')}</div>
-      <p class="muted small op-src">Names and ECO codes: ${esc(REPERTOIRE.meta.sources.names)}. Moves: ${esc(REPERTOIRE.meta.sources.moves)}. ${esc(REPERTOIRE.meta.sources.check)}.</p>
+      <p class="muted small">You open; you learn what to do against each defence and its main variations.</p>
+      <div class="op-grid">${FAMILIES.filter((f) => f.side === 'w').map(card).join('')}</div>
+      <p class="muted small op-src">Names and ECO codes: ${esc(REPERTOIRE.meta.sources.names)}. Moves: ${esc(REPERTOIRE.meta.sources.moves)}. ${esc(REPERTOIRE.meta.sources.check)}.${REPERTOIRE.meta.sources.yourGames ? ` Variations marked "in your games": ${esc(REPERTOIRE.meta.sources.yourGames)}` : ''}</p>
     </section>`;
   const wire = (root: ParentNode) => root.querySelectorAll<HTMLButtonElement>('[data-practice]').forEach((b) => (b.onclick = () => ctx.navigate({ view: 'openings', o: b.dataset.practice! })));
   wire(ctx.app);
@@ -94,46 +123,69 @@ export async function renderOpenings(ctx: OpeningsCtx, id: string | null) {
   const [games, book] = await Promise.all([myGames(ctx), ctx.book()]);
   const el = document.getElementById('op-faced');
   if (!el) return;
-  const rows = facedStats(games, book).slice(0, 10);
-  el.innerHTML = `<h2>Openings you face most</h2>${rows.length ? `
-    <p class="muted small">From ${games.length} of your games. Score counts a win as 1 and a draw as ½.</p>
-    <table class="rec op-faced"><thead><tr><th>Opening</th><th>You</th><th>Games</th><th>Score</th><th></th></tr></thead><tbody>
-    ${rows.map((r: FacedRow) => `<tr class="${r.struggling ? 'op-struggle' : ''}" data-faced="${esc(r.key)}">
-      <td>${esc(r.label)} <span class="op-eco">${esc(r.eco)}</span>${r.struggling ? ' <span class="op-flag">You struggle here</span>' : ''}</td>
+  const all = facedStats(games, book);
+  const row = (r: FacedRow) => {
+    const target = r.entry && (r.entry.name === r.label || r.entry.names.includes(r.label)) ? r.entry : null;
+    const btn = target ? `<button class="btn small" data-practice="${esc(target.id)}">Practise</button>`
+      : r.family ? `<button class="btn small" data-practice="${esc(r.family.id)}">Practise ${esc(r.family.name)}</button>` : '<span class="muted small">no line yet</span>';
+    return `<tr class="${r.struggling ? 'op-struggle' : ''}" data-faced="${esc(r.key)}">
+      <td>${esc(r.label)} <span class="op-eco">${esc(r.eco)}</span>${r.struggling ? ' <span class="op-flag">You struggle here</span>' : ''}${target && target.name !== r.label ? `<div class="muted small">Line: ${esc(target.name)}</div>` : ''}${r.differs ? `<div class="muted small">Your trainer line differs: it ${esc(r.differs)}.</div>` : ''}</td>
       <td>${sideWord(r.myColor)}</td><td>${r.games}</td>
       <td>${Math.round(r.score * 100)}% <span class="muted small">(${r.wins}W ${r.draws}D ${r.losses}L)</span></td>
-      <td>${r.entry ? `<button class="btn small" data-practice="${esc(r.entry.id)}">Practise</button>` : '<span class="muted small">no line yet</span>'}</td></tr>`).join('')}
-    </tbody></table>` : '<p class="muted">No games found yet. Open the Games tab to load your games, then come back.</p>'}`;
+      <td>${btn}</td></tr>`;
+  };
+  const head = '<thead><tr><th>Opening (lichess name)</th><th>You</th><th>Games</th><th>Score</th><th></th></tr></thead>';
+  el.innerHTML = `<h2>Openings you face most</h2>${all.length ? `
+    <p class="muted small">From ${games.length} of your games, by exact variation name. Score counts a win as 1 and a draw as ½.</p>
+    <table class="rec op-faced">${head}<tbody>${all.slice(0, 12).map(row).join('')}</tbody></table>
+    ${all.length > 12 ? `<details class="op-more"><summary>All ${all.length} variations from your games</summary><table class="rec op-faced">${head}<tbody>${all.slice(12).map(row).join('')}</tbody></table></details>` : ''}`
+    : '<p class="muted">No games found yet. Open the Games tab to load your games, then come back.</p>'}`;
   wire(el);
 }
+
+/** Family prefix of a variation name, e.g. "Center Game" for "Center Game: Paulsen Attack". */
+function family(_f: RepFamily, name: string) { return name.split(':')[0]; }
 
 // ---------------- practice ----------------
 let drill: Drill | null = null;
 export function destroyDrill() { drill?.destroy(); drill = null; }
 
-async function renderDrill(ctx: OpeningsCtx, e: RepEntry) {
-  document.title = `${e.name} · Openings · rook-i.e. mistakes`;
-  ctx.app.innerHTML = `<section class="page train openings-train"><div class="page-head"><h1>Practise: ${esc(e.name)}</h1><button class="btn ghost" id="op-back">‹ All openings</button></div><div id="op-host"></div></section>`;
+async function renderDrill(ctx: OpeningsCtx, fam: RepFamily | null, chosen: RepEntry | null, branch = !chosen) {
+  const now = Date.now();
+  const branching = branch && !!fam;
+  let e = chosen;
+  if (!e && fam) { const p = await loadProgress(ctx.pk); e = pickVariation(fam, (id) => p.get(id)?.srs, now); }
+  if (!e) return ctx.navigate({ view: 'openings', o: null });
+  const entry = e;
+  const title = branching ? fam!.name : entry.name;
+  document.title = `${title} · Openings · rook-i.e. mistakes`;
+  ctx.app.innerHTML = `<section class="page train openings-train"><div class="page-head"><h1>Practise: ${esc(title)}</h1><button class="btn ghost" id="op-back">‹ All openings</button></div><div id="op-host"></div></section>`;
   $('#op-back').onclick = () => ctx.navigate({ view: 'openings', o: null });
-  const key = progressKey(ctx.pk, e.id);
-  drill = new Drill($('#op-host'), e, {
+  const key = progressKey(ctx.pk, entry.id);
+  const share = fam ? variationWeights(fam).get(entry.id) ?? 1 : 1;
+  drill = new Drill($('#op-host'), entry, {
+    family: fam, branching, share,
     onDone: async (r) => {
-      const now = Date.now();
+      const t = Date.now();
       let prev: OpeningProgress | undefined;
       try { prev = await store.get<OpeningProgress>('meta', key); } catch { /* no IndexedDB */ }
-      const srs: SrsState = schedule(prev?.srs ?? newSrs(now), r, now);
-      const next: OpeningProgress = { key, profileKey: ctx.pk, openingId: e.id, srs };
+      const srs: SrsState = schedule(prev?.srs ?? newSrs(t), r, t);
+      const next: OpeningProgress = { key, profileKey: ctx.pk, openingId: entry.id, srs };
       try { await store.put('meta', next); } catch { /* storage unavailable: progress isn't saved */ }
-      return statusOf(next, now).text;
+      return statusOf(next, t).text;
     },
     onNext: () => {
-      const now = Date.now();
+      const t = Date.now();
       void loadProgress(ctx.pk).then((p) => {
-        const nxt = OPENINGS.find((o) => o.id !== e.id && p.get(o.id) && isDue(p.get(o.id)!.srs, now)) ?? OPENINGS.find((o) => o.id !== e.id && !p.get(o.id));
+        if (branching && fam && fam.variations.length > 1) {
+          destroyDrill();
+          return void renderDrill(ctx, fam, pickVariation(fam, (id) => p.get(id)?.srs, t, Math.random, entry.id), true);
+        }
+        const nxt = OPENINGS.find((o) => o.id !== entry.id && p.get(o.id) && isDue(p.get(o.id)!.srs, t)) ?? OPENINGS.find((o) => o.id !== entry.id && !p.get(o.id));
         ctx.navigate({ view: 'openings', o: nxt ? nxt.id : null });
       });
     },
-    onAgain: () => { destroyDrill(); void renderDrill(ctx, e); },
+    onAgain: () => { destroyDrill(); void renderDrill(ctx, fam, entry, branching); },
   });
 }
 
@@ -149,7 +201,7 @@ class Drill {
   done = false;
   timer: number | null = null;
   destroyed = false;
-  constructor(public host: HTMLElement, public e: RepEntry, public o: { onDone: (r: DrillResult) => Promise<string>; onNext: () => void; onAgain: () => void }) {
+  constructor(public host: HTMLElement, public e: RepEntry, public o: { family: RepFamily | null; branching: boolean; share: number; onDone: (r: DrillResult) => Promise<string>; onNext: () => void; onAgain: () => void }) {
     this.render();
     this.advance();
   }
@@ -170,7 +222,7 @@ class Drill {
           </form>
         </div>
         <div class="tr-side">
-          <div class="tr-head"><h2>${esc(e.name)} <span class="op-eco">${esc(e.eco)}</span></h2><p class="muted">You play ${sideWord(e.side)}. The app plays the other side's most common moves.</p></div>
+          <div class="tr-head"><h2>${this.o.branching ? esc(this.o.family!.name) : `${esc(e.name)} <span class="op-eco">${esc(e.eco)}</span>`}</h2><p class="muted">You play ${sideWord(e.side)}. ${this.o.branching ? `The app picks the other side's moves among the ${this.o.family!.variations.length} main variations, as often as each is played.` : "The app plays the other side's most common moves."}</p><p class="op-varname" id="op-varname" aria-live="polite"></p></div>
           <p class="tr-task" id="op-task"></p>
           <p class="op-progress" id="op-progress"></p>
           <div class="tr-status" id="tr-status" role="status" aria-live="polite"></div>
@@ -179,7 +231,7 @@ class Drill {
             <button class="btn" id="tr-hint">Hint (1 of 3)</button>
             <button class="btn ghost" id="tr-reveal">Show answer</button>
           </div>
-          <details class="op-line"><summary>The idea</summary><p>${esc(e.idea)}</p></details>
+          <details class="op-line"><summary>The idea</summary><p>${esc(this.o.family?.idea || e.idea)}</p></details>
           <div class="tr-lesson" id="tr-lesson" hidden></div>
         </div>
       </div>`;
@@ -236,6 +288,7 @@ class Drill {
     if (this.i >= this.e.plies.length) return this.finish();
     const p = this.e.plies[this.i];
     this.show(this.i);
+    this.varName();
     if (p.mine) {
       const n = Math.floor(this.i / 2) + 1;
       $('#op-task', this.host).innerHTML = `<b>${sideWord(this.e.side)} to move${this.i === 0 ? '' : ` (move ${n})`}.</b> Find the move in this line.`;
@@ -246,6 +299,13 @@ class Drill {
     }
     $('#op-task', this.host).innerHTML = `<b>${sideWord(this.e.side === 'w' ? 'b' : 'w')} is thinking…</b>`;
     this.timer = window.setTimeout(() => { this.timer = null; this.i++; this.advance(); }, reducedMotion() ? 150 : 650);
+  }
+
+  /** In branching practice the variation is named once the opponent has committed to it. */
+  varName() {
+    const el = $('#op-varname', this.host);
+    if (this.o.branching && this.i < this.e.idPlies && !this.done) { el.innerHTML = '<span class="muted">Which variation? Watch the opponent\'s moves.</span>'; return; }
+    el.innerHTML = `Variation: <b>${esc(this.e.name)}</b> <span class="op-eco">${esc(this.e.eco)}</span>${this.o.family && this.o.family.variations.length > 1 ? ` <span class="muted small">(${Math.round(this.o.share * 100)}% of this family's games)</span>` : ''}`;
   }
 
   onBoardMove(orig: string, dest: string) {
@@ -305,6 +365,7 @@ class Drill {
   async finish() {
     this.done = true;
     this.show(this.e.plies.length);
+    this.varName();
     $('#op-task', this.host).innerHTML = '<b>Line complete.</b>';
     $('#tr-actions', this.host).style.display = 'none';
     $('#tr-type', this.host).style.display = 'none';
@@ -318,7 +379,7 @@ class Drill {
       <p class="${clean ? 'good' : ''}">${clean ? 'Perfect run — every move found first time.' : `Done. ${this.wrong} wrong tr${this.wrong === 1 ? 'y' : 'ies'}${this.hints ? `, ${this.hints} hint${this.hints === 1 ? '' : 's'}` : ''}${this.revealed ? ', answer shown' : ''}.`} ${clean ? 'It comes back in a couple of days.' : this.revealed ? 'It comes back soon so you can lock it in.' : 'It comes back a little sooner.'}</p>
       <p class="muted small" id="op-mastery">Progress: ${esc(status)}</p>
       <p class="muted small">This position: ${esc(this.e.endsIn)}. Stockfish: ${this.e.endEvalCp >= 0 ? '+' : ''}${(this.e.endEvalCp / 100).toFixed(1)} for you.</p>
-      <div class="tr-after"><button class="btn primary" id="op-next">Next opening</button><button class="btn" id="op-again">Practise again</button></div>`;
+      <div class="tr-after"><button class="btn primary" id="op-next">${this.o.branching && this.o.family!.variations.length > 1 ? 'Next variation' : 'Next opening'}</button><button class="btn" id="op-again">Practise again</button></div>`;
     $('#op-next', this.host).onclick = () => this.o.onNext();
     $('#op-again', this.host).onclick = () => this.o.onAgain();
     this.status(`✓ Line complete: ${esc(moveText(this.e.plies))}`, 'good');

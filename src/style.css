@@ -757,6 +757,17 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
 .op-bar { display: inline-block; width: 90px; height: 6px; border-radius: 3px; background: var(--card2); border: 1px solid var(--line); vertical-align: middle; overflow: hidden; }
 .op-bar span { display: block; height: 100%; background: var(--accent); }
 .op-src { margin-top: 10px; }
+.op-grid { grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); }
+.op-vars { list-style: none; margin: 8px 0 4px; padding: 0; border-top: 1px solid var(--line); }
+.op-var { padding: 6px 0; border-bottom: 1px solid var(--line); }
+.op-var-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 14px; }
+.op-var-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.op-var .op-line summary { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+.op-mine { font-size: 11px; color: #b9d7ff; border: 1px solid #4a7fb5; border-radius: 8px; padding: 0 6px; white-space: nowrap; }
+.op-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.op-varname { font-size: 14px; margin: 4px 0 0; min-height: 1.4em; }
+.op-skipped { margin: 6px 0 0; }
+.op-more summary { cursor: pointer; color: var(--muted); font-size: 13px; margin: 8px 0; }
 @media (max-width: 640px) {
   .op-grid { grid-template-columns: minmax(0, 1fr); }
   .op-faced th:nth-child(2), .op-faced td:nth-child(2) { display: none; }

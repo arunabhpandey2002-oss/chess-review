@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { Chess } from 'chess.js';
 import raw from '../../src/repertoire.json';
-import { OPENINGS, validateRepertoire, judgeMove, wrongText, detectOpening, entryFor, facedStats, moveText, moveLabel, MAX_LOSS, type GameLike } from '../../src/repertoire';
+import { OPENINGS, FAMILIES, familyById, variationsOf, variationWeights, pickVariation, validateRepertoire, judgeMove, wrongText, detectOpening, entryFor, facedStats, moveText, moveLabel, MAX_LOSS, type GameLike } from '../../src/repertoire';
 
 const tsv = 'abcde'.split('').flatMap((f) => readFileSync(`data/${f}.tsv`, 'utf8').trim().split('\n').slice(1).map((l) => l.split('\t')));
 const byPgn = new Map(tsv.map(([eco, name, pgn]) => [pgn, { eco, name }]));
@@ -95,22 +95,84 @@ describe('your games', () => {
     expect(d.entry?.id).toBe('reti');
     expect(detectOpening('1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4 Bxb4 5. c3', 'b', book)!.entry?.id).toBe('evans');
     expect(detectOpening('1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6', 'b', book)!.entry?.id).toBe('italian');
-    expect(detectOpening('1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6', 'w', book)!.entry?.id).toBe('sicilian');
+    expect(detectOpening('1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6', 'w', book)!.entry?.id).toBe('sicilian-defense-modern-variations');
     // the same moves with you on the other side: not a line you practise
     expect(detectOpening('1. e4 c5 2. Nf3 d6', 'b', book)!.entry).toBeNull();
     expect(entryFor(['d4', 'd5', 'Nf3', 'Nf6', 'Bf4'], "Queen's Pawn Game: London System", 'b')?.id).toBe('london');
   });
-  it('counts openings faced, your score, and flags where you struggle', () => {
+  it('counts openings faced by exact variation name, your score, and flags where you struggle', () => {
     const games = [
-      g('1', '1. Nf3 d5 2. c4 e6', 'b', 'loss'), g('2', '1. Nf3 d5 2. c4 d4', 'b', 'loss'), g('3', '1. Nf3 d5 2. c4 c6', 'b', 'draw'), g('3', '1. Nf3 d5', 'b', 'win'),
-      g('4', '1. e4 c5 2. Nf3 d6', 'w', 'win'), g('5', '1. e4 c5 2. Nc3', 'w', 'win'),
-      g('6', '1. e4 e6 2. d4 d5', 'w', 'draw'),
+      g('1', '1. e4 c5 2. Nf3 d6 3. d4', 'w', 'loss'), g('2', '1. e4 c5 2. Nf3 d6 3. d4', 'w', 'loss'), g('3', '1. e4 c5 2. Nf3 d6 3. d4', 'w', 'draw'), g('3', '1. e4 c5 2. Nf3 d6 3. d4', 'w', 'win'),
+      g('4', '1. e4 c5 2. Nc3', 'w', 'win'), g('5', '1. e4 c5 2. Nc3', 'w', 'win'),
+      g('6', '1. e4 e5 2. d4 exd4 3. Qxd4 Nc6 4. Qe3', 'b', 'draw'),
     ];
     const rows = facedStats(games, book);
-    const reti = rows.find((r) => r.entry?.id === 'reti')!;
-    expect(reti).toMatchObject({ games: 3, wins: 0, draws: 1, losses: 2, myColor: 'b', struggling: true });
-    expect(reti.score).toBeCloseTo(1 / 6);
-    expect(rows.find((r) => r.entry?.id === 'sicilian')).toMatchObject({ games: 2, wins: 2, score: 1, struggling: false });
+    const name = (pgn: string) => detectOpening(pgn, 'w', book)!.name;
+    const open = rows.find((r) => r.label === name('1. e4 c5 2. Nf3 d6 3. d4'))!;
+    expect(open.label).toMatch(/^Sicilian Defense/);
+    expect(open).toMatchObject({ games: 3, wins: 0, draws: 1, losses: 2, myColor: 'w', struggling: true });
+    expect(open.score).toBeCloseTo(1 / 6);
+    expect(open.family?.id).toBe('f-sicilian');
+    const closed = rows.find((r) => r.label === name('1. e4 c5 2. Nc3'))!;
+    expect(closed).toMatchObject({ games: 2, wins: 2, score: 1, struggling: false });
+    const cg = rows.find((r) => r.myColor === 'b')!;
+    expect(cg.label).toMatch(/^Center Game/);
+    expect(cg.family?.id).toBe('f-center');
     expect(rows[0].games).toBeGreaterThanOrEqual(rows[1].games);
+  });
+});
+
+describe('families and variations', () => {
+  it('every variation sits in exactly one family and nothing is dropped', () => {
+    const fams = (raw as { families: { variations: string[] }[] }).families;
+    expect(FAMILIES.length).toBe(fams.length);
+    const all = FAMILIES.flatMap((f) => f.variations);
+    expect(new Set(all).size).toBe(all.length);
+    expect(all.length).toBe(OPENINGS.length);
+    for (const f of FAMILIES) expect(f.variations.length, f.id).toBeLessThanOrEqual(10);
+  });
+  it('within a family your move for a position is always the same, so the drill can branch on the opponent only', () => {
+    for (const f of FAMILIES) {
+      const mine = new Map<string, string>();
+      for (const v of variationsOf(f)) for (const p of v.plies) if (p.mine) {
+        const k = p.fen.split(' ').slice(0, 3).join(' ');
+        if (mine.has(k)) expect(mine.get(k), `${f.id} ${v.id}`).toBe(p.uci);
+        mine.set(k, p.uci);
+      }
+    }
+  });
+  it('covers the families and variations he asked about, with exact lichess names', () => {
+    const names = (id: string) => variationsOf(familyById(id)!).flatMap((v) => v.names);
+    expect(names('f-center').some((n) => n.startsWith('Center Game'))).toBe(true);
+    expect(names('f-qpg-b')).toEqual(expect.arrayContaining(["Queen's Pawn Game: London System", "Queen's Pawn Game: Accelerated London System"]));
+    expect(names('f-indian')).toContain('Indian Defense: Knights Variation');
+    for (const f of FAMILIES) for (const v of variationsOf(f)) expect(byPgn.get(v.idPgn)?.name).toBe(v.name);
+  });
+  it('drops a variation that contradicts your move elsewhere in its family', () => {
+    // as White, 1.d4 (Queen's Pawn) and 1.e4 (Sicilian) answer the start position differently: one family can't hold both
+    const bad = JSON.parse(JSON.stringify(raw));
+    for (const o of bad.openings) delete o.family;
+    bad.families = [{ id: 'f-mixed', side: 'w', name: 'Mixed', root: '', familyNames: [], idea: 'x', variations: ['qpg-symmetrical', 'sicilian'], skipped: [] }];
+    const r = validateRepertoire(bad);
+    expect(r.families.find((x) => x.id === 'f-mixed')!.variations).toEqual(['qpg-symmetrical']);
+    // the dropped line still gets a family of its own rather than vanishing
+    expect(r.families.some((x) => x.variations.includes('sicilian'))).toBe(true);
+  });
+  it('the trainer picks variations by how often they are played, due ones first', () => {
+    const f = FAMILIES.find((x) => x.variations.length >= 3)!;
+    const vs = variationsOf(f);
+    const w = variationWeights(f);
+    expect([...w.values()].reduce((a, b) => a + b, 0)).toBeCloseTo(1);
+    const seen = new Map<string, number>();
+    let seed = 1;
+    const rand = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    for (let i = 0; i < 4000; i++) { const v = pickVariation(f, () => undefined, 0, rand)!; seen.set(v.id, (seen.get(v.id) ?? 0) + 1); }
+    for (const v of vs) expect((seen.get(v.id) ?? 0) / 4000, v.id).toBeCloseTo(w.get(v.id)!, 1);
+    // one due variation: it comes first
+    const dueId = vs[vs.length - 1].id;
+    const srs = (id: string) => (id === dueId ? { due: 5 } : { due: 1e15 }) as never;
+    expect(pickVariation(f, srs, 10, rand)!.id).toBe(dueId);
+    // never repeats the one you just did when asked not to
+    for (let i = 0; i < 50; i++) expect(pickVariation(f, () => undefined, 0, rand, vs[0].id)!.id).not.toBe(vs[0].id);
   });
 });
