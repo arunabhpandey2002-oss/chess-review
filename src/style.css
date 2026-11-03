@@ -730,3 +730,35 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
 .pz-sep { margin: 14px 0 2px; font-size: 0.95rem; color: var(--muted, #888); font-weight: 600; }
 .tr-last { margin: 0 0 8px; font-size: 15px; padding: 6px 10px; background: var(--card2); border: 1px solid var(--line); border-radius: 8px; }
 .tr-last b { font-size: 16px; }
+
+/* ---------------- openings ---------------- */
+.op-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.op-grid .card { margin-bottom: 0; }
+.op-group { font-size: 18px; margin: 18px 0 2px; }
+.op-card h3 { margin: 0; font-size: 16px; }
+.op-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+.op-eco { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 0 5px; font-weight: 500; vertical-align: middle; }
+.op-moves { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; margin: 6px 0; }
+.op-idea { font-size: 14px; margin: 6px 0; line-height: 1.45; }
+.op-line summary { cursor: pointer; color: var(--muted); font-size: 13px; margin: 4px 0; }
+.op-line ul { margin: 6px 0; padding-left: 18px; font-size: 13px; line-height: 1.5; }
+.op-full { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; margin: 4px 0; }
+.op-actions { margin-top: 8px; }
+.op-status { font-size: 12px; border-radius: 10px; padding: 2px 8px; background: var(--card2); border: 1px solid var(--line); white-space: nowrap; }
+.op-status.op-due { border-color: #c9a227; color: #ffe59a; }
+.op-status.op-mastered { border-color: var(--accent); color: var(--accent); }
+.op-status.op-learning, .op-status.op-scheduled { border-color: #4a7fb5; }
+.op-faced { width: 100%; }
+.op-faced td, .op-faced th { padding: 6px 6px; text-align: left; vertical-align: middle; }
+.op-struggle td { background: rgba(255, 140, 60, .09); }
+.op-flag { font-size: 11px; color: #ffc39a; border: 1px solid #a0562a; border-radius: 8px; padding: 0 6px; white-space: nowrap; }
+.op-due .chip { margin: 2px; }
+.op-progress { font-size: 13px; margin: 6px 0; }
+.op-bar { display: inline-block; width: 90px; height: 6px; border-radius: 3px; background: var(--card2); border: 1px solid var(--line); vertical-align: middle; overflow: hidden; }
+.op-bar span { display: block; height: 100%; background: var(--accent); }
+.op-src { margin-top: 10px; }
+@media (max-width: 640px) {
+  .op-grid { grid-template-columns: minmax(0, 1fr); }
+  .op-faced th:nth-child(2), .op-faced td:nth-child(2) { display: none; }
+  .op-faced td, .op-faced th { padding: 5px 3px; font-size: 13px; }
+}

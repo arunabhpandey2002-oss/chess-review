@@ -1,0 +1,6088 @@
+{
+"meta": {
+"sources": {
+"names": "lichess-org/chess-openings (CC0)",
+"moves": "Lichess database sample: 400000 games, 2025-09, blitz, rapid, classical, both players 1800+ (CC0)",
+"check": "Stockfish depth 16: no move of yours loses more than 0.5 pawns"
+}
+},
+"openings": [
+{
+"id": "reti",
+"side": "b",
+"eco": "A09",
+"name": "Réti Opening",
+"idPgn": "1. Nf3 d5 2. c4",
+"idPlies": 3,
+"names": [
+"Réti Opening",
+"Zukertort Opening"
+],
+"idea": "White develops the knight first and hits your d5 pawn from the side with c4, hoping you overextend. Stay calm: back d5 up with ...e6, castle quickly, and only take on c4 once White's king has castled and d4 is played.",
+"endsIn": "A09 Réti Opening",
+"endEvalCp": -24,
+"plies": [
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": false,
+"games": 17945,
+"share": 0.045
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"fen": "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1",
+"mine": true,
+"games": 5963,
+"share": 0.332,
+"lossCp": 2,
+"evalCp": -26,
+"alts": [
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 4140,
+"share": 0.231,
+"lossCp": 0
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 1980,
+"share": 0.11,
+"lossCp": 5
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"games": 1193,
+"share": 0.066,
+"lossCp": 0
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 933,
+"share": 0.052,
+"lossCp": 25
+},
+{
+"san": "g6",
+"uci": "g7g6",
+"games": 864,
+"share": 0.048,
+"lossCp": 10
+}
+],
+"src": "",
+"why": "Claim the centre straight away."
+},
+{
+"san": "c4",
+"uci": "c2c4",
+"fen": "rnbqkbnr/ppp1pppp/8/3p4/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 2",
+"mine": false,
+"games": 1186,
+"share": 0.199
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"fen": "rnbqkbnr/ppp1pppp/8/3p4/2P5/5N2/PP1PPPPP/RNBQKB1R b KQkq - 0 2",
+"mine": true,
+"games": 220,
+"share": 0.183,
+"lossCp": 30,
+"evalCp": -24,
+"alts": [
+{
+"san": "d4",
+"uci": "d5d4",
+"games": 301,
+"share": 0.25,
+"lossCp": 0
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 280,
+"share": 0.233,
+"lossCp": 30
+},
+{
+"san": "dxc4",
+"uci": "d5c4",
+"games": 242,
+"share": 0.201,
+"lossCp": 29
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 107,
+"share": 0.089,
+"lossCp": 67
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 16,
+"share": 0.013,
+"lossCp": 94
+}
+],
+"src": "db",
+"why": "Support d5 with a pawn so c4xd5 can be met by ...exd5."
+},
+{
+"san": "g3",
+"uci": "g2g3",
+"fen": "rnbqkbnr/ppp2ppp/4p3/3p4/2P5/5N2/PP1PPPPP/RNBQKB1R w KQkq - 0 3",
+"mine": false,
+"games": 157,
+"share": 0.324,
+"src": "db"
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"fen": "rnbqkbnr/ppp2ppp/4p3/3p4/2P5/5NP1/PP1PPP1P/RNBQKB1R b KQkq - 0 3",
+"mine": true,
+"games": 108,
+"share": 0.603,
+"lossCp": 7,
+"evalCp": -26,
+"alts": [
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 25,
+"share": 0.14,
+"lossCp": 19
+},
+{
+"san": "dxc4",
+"uci": "d5c4",
+"games": 12,
+"share": 0.067,
+"lossCp": 9
+},
+{
+"san": "f5",
+"uci": "f7f5",
+"games": 9,
+"share": 0.05,
+"lossCp": 43
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 8,
+"share": 0.045,
+"lossCp": 18
+},
+{
+"san": "Be7",
+"uci": "f8e7",
+"games": 6,
+"share": 0.034,
+"lossCp": 7
+}
+],
+"src": "db",
+"why": "Develop and guard d5 a second time."
+},
+{
+"san": "Bg2",
+"uci": "f1g2",
+"fen": "rnbqkb1r/ppp2ppp/4pn2/3p4/2P5/5NP1/PP1PPP1P/RNBQKB1R w KQkq - 1 4",
+"mine": false,
+"games": 182,
+"share": 0.843,
+"src": "db"
+},
+{
+"san": "Be7",
+"uci": "f8e7",
+"fen": "rnbqkb1r/ppp2ppp/4pn2/3p4/2P5/5NP1/PP1PPPBP/RNBQK2R b KQkq - 2 4",
+"mine": true,
+"games": 164,
+"share": 0.449,
+"lossCp": 7,
+"evalCp": -30,
+"alts": [
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 71,
+"share": 0.195,
+"lossCp": 18
+},
+{
+"san": "dxc4",
+"uci": "d5c4",
+"games": 38,
+"share": 0.104,
+"lossCp": 5
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 32,
+"share": 0.088,
+"lossCp": 15
+},
+{
+"san": "d4",
+"uci": "d5d4",
+"games": 13,
+"share": 0.036,
+"lossCp": 0
+},
+{
+"san": "Bd6",
+"uci": "f8d6",
+"games": 13,
+"share": 0.036,
+"lossCp": 23
+}
+],
+"src": "db",
+"why": "Quiet development; gets ready to castle."
+},
+{
+"san": "O-O",
+"uci": "e1g1",
+"fen": "rnbqk2r/ppp1bppp/4pn2/3p4/2P5/5NP1/PP1PPPBP/RNBQK2R w KQkq - 3 5",
+"mine": false,
+"games": 151,
+"share": 0.893,
+"src": "db"
+},
+{
+"san": "O-O",
+"uci": "e8g8",
+"fen": "rnbqk2r/ppp1bppp/4pn2/3p4/2P5/5NP1/PP1PPPBP/RNBQ1RK1 b kq - 4 5",
+"mine": true,
+"games": 180,
+"share": 0.909,
+"lossCp": 0,
+"evalCp": -23,
+"alts": [
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 7,
+"share": 0.035,
+"lossCp": 13
+},
+{
+"san": "d4",
+"uci": "d5d4",
+"games": 3,
+"share": 0.015,
+"lossCp": 27
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 3,
+"share": 0.015,
+"lossCp": 9
+}
+],
+"src": "db",
+"why": "King safe before the centre opens."
+},
+{
+"san": "d4",
+"uci": "d2d4",
+"fen": "rnbq1rk1/ppp1bppp/4pn2/3p4/2P5/5NP1/PP1PPPBP/RNBQ1RK1 w - - 5 6",
+"mine": false,
+"games": 84,
+"share": 0.44,
+"src": "db"
+},
+{
+"san": "dxc4",
+"uci": "d5c4",
+"fen": "rnbq1rk1/ppp1bppp/4pn2/3p4/2PP4/5NP1/PP2PPBP/RNBQ1RK1 b - - 0 6",
+"mine": true,
+"games": 183,
+"share": 0.341,
+"lossCp": 0,
+"evalCp": -20,
+"alts": [
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 154,
+"share": 0.287,
+"lossCp": 5
+},
+{
+"san": "b6",
+"uci": "b7b6",
+"games": 77,
+"share": 0.143,
+"lossCp": 26
+},
+{
+"san": "Nbd7",
+"uci": "b8d7",
+"games": 43,
+"share": 0.08,
+"lossCp": 12
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 35,
+"share": 0.065,
+"lossCp": 3
+},
+{
+"san": "a6",
+"uci": "a7a6",
+"games": 12,
+"share": 0.022,
+"lossCp": 25
+}
+],
+"src": "db",
+"why": "Now that d4 is in, grab c4 — White needs time to win it back."
+}
+]
+},
+{
+"id": "kia",
+"side": "b",
+"eco": "A07",
+"name": "King's Indian Attack",
+"idPgn": "1. Nf3 d5 2. g3",
+"idPlies": 3,
+"names": [
+"King's Indian Attack"
+],
+"idea": "White sets up a slow fianchetto (Nf3, g3, Bg2, O-O, d3, Nbd2) and later pushes e4. Build a classical centre with ...d5 and ...e6, castle, then gain space on the queenside with ...c5.",
+"endsIn": "A07 King's Indian Attack",
+"endEvalCp": 3,
+"plies": [
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": false,
+"games": 17945,
+"share": 0.045
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"fen": "rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1",
+"mine": true,
+"games": 5963,
+"share": 0.332,
+"lossCp": 2,
+"evalCp": -26,
+"alts": [
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 4140,
+"share": 0.231,
+"lossCp": 0
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 1980,
+"share": 0.11,
+"lossCp": 5
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"games": 1193,
+"share": 0.066,
+"lossCp": 0
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 933,
+"share": 0.052,
+"lossCp": 25
+},
+{
+"san": "g6",
+"uci": "g7g6",
+"games": 864,
+"share": 0.048,
+"lossCp": 10
+}
+],
+"src": "",
+"why": "Claim the centre straight away."
+},
+{
+"san": "g3",
+"uci": "g2g3",
+"fen": "rnbqkbnr/ppp1pppp/8/3p4/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 2",
+"mine": false,
+"games": 1583,
+"share": 0.266
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"fen": "rnbqkbnr/ppp1pppp/8/3p4/8/5NP1/PPPPPP1P/RNBQKB1R b KQkq - 0 2",
+"mine": true,
+"games": 453,
+"share": 0.277,
+"lossCp": 4,
+"evalCp": -16,
+"alts": [
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 347,
+"share": 0.212,
+"lossCp": 4
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 221,
+"share": 0.135,
+"lossCp": 19
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 210,
+"share": 0.128,
+"lossCp": 4
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"games": 120,
+"share": 0.073,
+"lossCp": 8
+},
+{
+"san": "Bg4",
+"uci": "c8g4",
+"games": 75,
+"share": 0.046,
+"lossCp": 0
+}
+],
+"src": "db",
+"why": "Develop and control e4, White's key square."
+},
+{
+"san": "Bg2",
+"uci": "f1g2",
+"fen": "rnbqkb1r/ppp1pppp/5n2/3p4/8/5NP1/PPPPPP1P/RNBQKB1R w KQkq - 1 3",
+"mine": false,
+"games": 682,
+"share": 0.941,
+"src": "db"
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"fen": "rnbqkb1r/ppp1pppp/5n2/3p4/8/5NP1/PPPPPPBP/RNBQK2R b KQkq - 2 3",
+"mine": true,
+"games": 160,
+"share": 0.209,
+"lossCp": 5,
+"evalCp": -18,
+"alts": [
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 152,
+"share": 0.198,
+"lossCp": 1
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 118,
+"share": 0.154,
+"lossCp": 5
+},
+{
+"san": "Bf5",
+"uci": "c8f5",
+"games": 110,
+"share": 0.143,
+"lossCp": 6
+},
+{
+"san": "g6",
+"uci": "g7g6",
+"games": 98,
+"share": 0.128,
+"lossCp": 0
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 53,
+"share": 0.069,
+"lossCp": 13
+}
+],
+"src": "db",
+"why": "Solid pawn chain; opens the way for the dark bishop."
+},
+{
+"san": "O-O",
+"uci": "e1g1",
+"fen": "rnbqkb1r/ppp2ppp/4pn2/3p4/8/5NP1/PPPPPPBP/RNBQK2R w KQkq - 0 4",
+"mine": false,
+"games": 358,
+"share": 0.765,
+"src": "db"
+},
+{
+"san": "Be7",
+"uci": "f8e7",
+"fen": "rnbqkb1r/ppp2ppp/4pn2/3p4/8/5NP1/PPPPPPBP/RNBQ1RK1 b kq - 1 4",
+"mine": true,
+"games": 198,
+"share": 0.553,
+"lossCp": 9,
+"evalCp": -18,
+"alts": [
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 83,
+"share": 0.232,
+"lossCp": 0
+},
+{
+"san": "Bd6",
+"uci": "f8d6",
+"games": 31,
+"share": 0.087,
+"lossCp": 18
+},
+{
+"san": "Nbd7",
+"uci": "b8d7",
+"games": 8,
+"share": 0.022,
+"lossCp": 17
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 7,
+"share": 0.02,
+"lossCp": 15
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 7,
+"share": 0.02,
+"lossCp": 18
+}
+],
+"src": "db",
+"why": "Develop and prepare to castle."
+},
+{
+"san": "d3",
+"uci": "d2d3",
+"fen": "rnbqk2r/ppp1bppp/4pn2/3p4/8/5NP1/PPPPPPBP/RNBQ1RK1 w kq - 2 5",
+"mine": false,
+"games": 92,
+"share": 0.451,
+"src": "db"
+},
+{
+"san": "O-O",
+"uci": "e8g8",
+"fen": "rnbqk2r/ppp1bppp/4pn2/3p4/8/3P1NP1/PPP1PPBP/RNBQ1RK1 b kq - 0 5",
+"mine": true,
+"games": 103,
+"share": 0.844,
+"lossCp": 0,
+"evalCp": 5,
+"alts": [
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 11,
+"share": 0.09,
+"lossCp": 11
+},
+{
+"san": "Nbd7",
+"uci": "b8d7",
+"games": 4,
+"share": 0.033,
+"lossCp": 22
+}
+],
+"src": "db",
+"why": "King safe before White pushes e4."
+},
+{
+"san": "Nbd2",
+"uci": "b1d2",
+"fen": "rnbq1rk1/ppp1bppp/4pn2/3p4/8/3P1NP1/PPP1PPBP/RNBQ1RK1 w - - 1 6",
+"mine": false,
+"games": 74,
+"share": 0.685,
+"src": "db"
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"fen": "rnbq1rk1/ppp1bppp/4pn2/3p4/8/3P1NP1/PPPNPPBP/R1BQ1RK1 b - - 2 6",
+"mine": true,
+"games": 45,
+"share": 0.577,
+"lossCp": 0,
+"evalCp": 2,
+"alts": [
+{
+"san": "b6",
+"uci": "b7b6",
+"games": 15,
+"share": 0.192,
+"lossCp": 15
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 8,
+"share": 0.103,
+"lossCp": 9
+},
+{
+"san": "Nbd7",
+"uci": "b8d7",
+"games": 4,
+"share": 0.051,
+"lossCp": 13
+}
+],
+"src": "db",
+"why": "Grab queenside space — your counterplay while White plays on the kingside."
+}
+]
+},
+{
+"id": "english",
+"side": "b",
+"eco": "A10",
+"name": "English Opening",
+"idPgn": "1. c4",
+"idPlies": 1,
+"names": [
+"English Opening"
+],
+"idea": "1.c4 is a Sicilian with colours reversed. Answer with ...e5 and quick development; after ...d5 and the trade on d5 your knight drops back to b6, where it hits c4 and stays safe.",
+"endsIn": "A22 English Opening: King's English Variation, Two Knights Variation, Reversed Dragon",
+"endEvalCp": -21,
+"plies": [
+{
+"san": "c4",
+"uci": "c2c4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": false,
+"games": 17692,
+"share": 0.044
+},
+{
+"san": "e5",
+"uci": "e7e5",
+"fen": "rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b KQkq - 0 1",
+"mine": true,
+"games": 4504,
+"share": 0.255,
+"lossCp": 0,
+"evalCp": -13,
+"alts": [
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 3894,
+"share": 0.22,
+"lossCp": 4
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"games": 2138,
+"share": 0.121,
+"lossCp": 10
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 2081,
+"share": 0.118,
+"lossCp": 13
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 1376,
+"share": 0.078,
+"lossCp": 16
+},
+{
+"san": "g6",
+"uci": "g7g6",
+"games": 976,
+"share": 0.055,
+"lossCp": 20
+}
+],
+"src": "db",
+"why": "Take a central square White isn't controlling."
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/2P5/8/PP1PPPPP/RNBQKBNR w KQkq - 0 2",
+"mine": false,
+"games": 2863,
+"share": 0.636,
+"src": "db"
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/2P5/2N5/PP1PPPPP/R1BQKBNR b KQkq - 1 2",
+"mine": true,
+"games": 1079,
+"share": 0.377,
+"lossCp": 0,
+"evalCp": -6,
+"alts": [
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 556,
+"share": 0.194,
+"lossCp": 7
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 338,
+"share": 0.118,
+"lossCp": 26
+},
+{
+"san": "Bc5",
+"uci": "f8c5",
+"games": 236,
+"share": 0.083,
+"lossCp": 51
+},
+{
+"san": "f5",
+"uci": "f7f5",
+"games": 229,
+"share": 0.08,
+"lossCp": 28
+},
+{
+"san": "Bb4",
+"uci": "f8b4",
+"games": 164,
+"share": 0.057,
+"lossCp": 5
+}
+],
+"src": "db",
+"why": "Develop and prepare ...d5."
+},
+{
+"san": "g3",
+"uci": "g2g3",
+"fen": "rnbqkb1r/pppp1ppp/5n2/4p3/2P5/2N5/PP1PPPPP/R1BQKBNR w KQkq - 2 3",
+"mine": false,
+"games": 520,
+"share": 0.4,
+"src": "db"
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"fen": "rnbqkb1r/pppp1ppp/5n2/4p3/2P5/2N3P1/PP1PPP1P/R1BQKBNR b KQkq - 0 3",
+"mine": true,
+"games": 111,
+"share": 0.206,
+"lossCp": 16,
+"evalCp": -24,
+"alts": [
+{
+"san": "Bb4",
+"uci": "f8b4",
+"games": 103,
+"share": 0.191,
+"lossCp": 0
+},
+{
+"san": "Bc5",
+"uci": "f8c5",
+"games": 97,
+"share": 0.18,
+"lossCp": 29
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 91,
+"share": 0.169,
+"lossCp": 14
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 64,
+"share": 0.119,
+"lossCp": 27
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 23,
+"share": 0.043,
+"lossCp": 35
+}
+],
+"src": "db",
+"why": "Strike in the centre while White is busy with g3."
+},
+{
+"san": "cxd5",
+"uci": "c4d5",
+"fen": "rnbqkb1r/ppp2ppp/5n2/3pp3/2P5/2N3P1/PP1PPP1P/R1BQKBNR w KQkq - 0 4",
+"mine": false,
+"games": 101,
+"share": 0.91,
+"src": "db"
+},
+{
+"san": "Nxd5",
+"uci": "f6d5",
+"fen": "rnbqkb1r/ppp2ppp/5n2/3Pp3/8/2N3P1/PP1PPP1P/R1BQKBNR b KQkq - 0 4",
+"mine": true,
+"games": 101,
+"share": 0.981,
+"lossCp": 0,
+"evalCp": -23,
+"alts": [],
+"src": "db",
+"why": "Recapture with the knight; it's centralised."
+},
+{
+"san": "Bg2",
+"uci": "f1g2",
+"fen": "rnbqkb1r/ppp2ppp/8/3np3/8/2N3P1/PP1PPP1P/R1BQKBNR w KQkq - 0 5",
+"mine": false,
+"games": 104,
+"share": 0.963,
+"src": "db"
+},
+{
+"san": "Nb6",
+"uci": "d5b6",
+"fen": "rnbqkb1r/ppp2ppp/8/3np3/8/2N3P1/PP1PPPBP/R1BQK1NR b KQkq - 1 5",
+"mine": true,
+"games": 48,
+"share": 0.294,
+"lossCp": 10,
+"evalCp": -9,
+"alts": [
+{
+"san": "Be6",
+"uci": "c8e6",
+"games": 53,
+"share": 0.325,
+"lossCp": 31
+},
+{
+"san": "Nxc3",
+"uci": "d5c3",
+"games": 37,
+"share": 0.227,
+"lossCp": 7
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 19,
+"share": 0.117,
+"lossCp": 41
+},
+{
+"san": "Nf6",
+"uci": "d5f6",
+"games": 4,
+"share": 0.025,
+"lossCp": 0
+}
+],
+"src": "db",
+"why": "Step out of the Bg2 pin on the long diagonal and away from Nxd5 trades."
+}
+]
+},
+{
+"id": "london",
+"side": "b",
+"eco": "D02",
+"name": "Queen's Pawn Game: London System",
+"idPgn": "1. d4 d5 2. Nf3 Nf6 3. Bf4",
+"idPlies": 5,
+"names": [
+"London System",
+"Queen's Pawn Game: London System",
+"Queen's Pawn Game: Accelerated London System",
+"Indian Defense: Accelerated London System"
+],
+"idea": "White plays the same setup every game: d4, Bf4, e3, c3, Bd3. Mirror it solidly with ...d5, ...Nf6, ...e6, challenge the bishop with ...Bd6, castle, and hit the centre with ...c5.",
+"endsIn": "D02 Queen's Pawn Game: London System",
+"endEvalCp": -14,
+"plies": [
+{
+"san": "d4",
+"uci": "d2d4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": false,
+"games": 115490,
+"share": 0.289
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"fen": "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1",
+"mine": true,
+"games": 41458,
+"share": 0.359,
+"lossCp": 0,
+"evalCp": -23,
+"alts": [
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 35028,
+"share": 0.303,
+"lossCp": 0
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"games": 9533,
+"share": 0.083,
+"lossCp": 8
+},
+{
+"san": "g6",
+"uci": "g7g6",
+"games": 4899,
+"share": 0.042,
+"lossCp": 44
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 4867,
+"share": 0.042,
+"lossCp": 40
+},
+{
+"san": "e5",
+"uci": "e7e5",
+"games": 4742,
+"share": 0.041,
+"lossCp": 115
+}
+],
+"src": "",
+"why": "Claim the centre straight away."
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2",
+"mine": false,
+"games": 8477,
+"share": 0.205
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"fen": "rnbqkbnr/ppp1pppp/8/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 1 2",
+"mine": true,
+"games": 4121,
+"share": 0.404,
+"lossCp": 0,
+"evalCp": -18,
+"alts": [
+{
+"san": "e6",
+"uci": "e7e6",
+"games": 1670,
+"share": 0.164,
+"lossCp": 3
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 1175,
+"share": 0.115,
+"lossCp": 7
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 963,
+"share": 0.094,
+"lossCp": 25
+},
+{
+"san": "Bf5",
+"uci": "c8f5",
+"games": 871,
+"share": 0.085,
+"lossCp": 9
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 712,
+"share": 0.07,
+"lossCp": 11
+}
+],
+"src": "",
+"why": "Develop and stop e4."
+},
+{
+"san": "Bf4",
+"uci": "c1f4",
+"fen": "rnbqkb1r/ppp1pppp/5n2/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 2 3",
+"mine": false,
+"games": 1515,
+"share": 0.251
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"fen": "rnbqkb1r/ppp1pppp/5n2/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R b KQkq - 3 3",
+"mine": true,
+"games": 594,
+"share": 0.274,
+"lossCp": 4,
+"evalCp": -9,
+"alts": [
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 538,
+"share": 0.248,
+"lossCp": 0
+},
+{
+"san": "Bf5",
+"uci": "c8f5",
+"games": 393,
+"share": 0.181,
+"lossCp": 5
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 194,
+"share": 0.089,
+"lossCp": 34
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 145,
+"share": 0.067,
+"lossCp": 26
+},
+{
+"san": "Bg4",
+"uci": "c8g4",
+"games": 123,
+"share": 0.057,
+"lossCp": 37
+}
+],
+"src": "db",
+"why": "Solid; opens the dark bishop."
+},
+{
+"san": "e3",
+"uci": "e2e3",
+"fen": "rnbqkb1r/ppp2ppp/4pn2/3p4/3P1B2/5N2/PPP1PPPP/RN1QKB1R w KQkq - 0 4",
+"mine": false,
+"games": 1101,
+"share": 0.832,
+"src": "db"
+},
+{
+"san": "Bd6",
+"uci": "f8d6",
+"fen": "rnbqkb1r/ppp2ppp/4pn2/3p4/3P1B2/4PN2/PPP2PPP/RN1QKB1R b KQkq - 0 4",
+"mine": true,
+"games": 785,
+"share": 0.439,
+"lossCp": 7,
+"evalCp": -18,
+"alts": [
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 545,
+"share": 0.305,
+"lossCp": 0
+},
+{
+"san": "Be7",
+"uci": "f8e7",
+"games": 206,
+"share": 0.115,
+"lossCp": 21
+},
+{
+"san": "Nbd7",
+"uci": "b8d7",
+"games": 56,
+"share": 0.031,
+"lossCp": 27
+},
+{
+"san": "a6",
+"uci": "a7a6",
+"games": 51,
+"share": 0.029,
+"lossCp": 19
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 32,
+"share": 0.018,
+"lossCp": 37
+}
+],
+"src": "db",
+"why": "Offer a bishop trade — the Bf4 is White's best piece."
+},
+{
+"san": "Bg3",
+"uci": "f4g3",
+"fen": "rnbqk2r/ppp2ppp/3bpn2/3p4/3P1B2/4PN2/PPP2PPP/RN1QKB1R w KQkq - 1 5",
+"mine": false,
+"games": 324,
+"share": 0.395,
+"src": "db"
+},
+{
+"san": "O-O",
+"uci": "e8g8",
+"fen": "rnbqk2r/ppp2ppp/3bpn2/3p4/3P4/4PNB1/PPP2PPP/RN1QKB1R b KQkq - 2 5",
+"mine": true,
+"games": 187,
+"share": 0.444,
+"lossCp": 0,
+"evalCp": -17,
+"alts": [
+{
+"san": "Bxg3",
+"uci": "d6g3",
+"games": 61,
+"share": 0.145,
+"lossCp": 13
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 53,
+"share": 0.126,
+"lossCp": 2
+},
+{
+"san": "Ne4",
+"uci": "f6e4",
+"games": 44,
+"share": 0.105,
+"lossCp": 24
+},
+{
+"san": "h6",
+"uci": "h7h6",
+"games": 19,
+"share": 0.045,
+"lossCp": 13
+},
+{
+"san": "Nbd7",
+"uci": "b8d7",
+"games": 14,
+"share": 0.033,
+"lossCp": 13
+}
+],
+"src": "db",
+"why": "King safe first."
+},
+{
+"san": "Bd3",
+"uci": "f1d3",
+"fen": "rnbq1rk1/ppp2ppp/3bpn2/3p4/3P4/4PNB1/PPP2PPP/RN1QKB1R w KQ - 3 6",
+"mine": false,
+"games": 91,
+"share": 0.487,
+"src": "db"
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"fen": "rnbq1rk1/ppp2ppp/3bpn2/3p4/3P4/3BPNB1/PPP2PPP/RN1QK2R b KQ - 4 6",
+"mine": true,
+"games": 41,
+"share": 0.402,
+"lossCp": 0,
+"evalCp": 1,
+"alts": [
+{
+"san": "b6",
+"uci": "b7b6",
+"games": 19,
+"share": 0.186,
+"lossCp": 8
+},
+{
+"san": "Nbd7",
+"uci": "b8d7",
+"games": 11,
+"share": 0.108,
+"lossCp": 15
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 9,
+"share": 0.088,
+"lossCp": 18
+},
+{
+"san": "Ne4",
+"uci": "f6e4",
+"games": 9,
+"share": 0.088,
+"lossCp": 31
+},
+{
+"san": "h6",
+"uci": "h7h6",
+"games": 5,
+"share": 0.049,
+"lossCp": 21
+}
+],
+"src": "db",
+"why": "Challenge d4; this is your main counterplay."
+},
+{
+"san": "c3",
+"uci": "c2c3",
+"fen": "rnbq1rk1/pp3ppp/3bpn2/2pp4/3P4/3BPNB1/PPP2PPP/RN1QK2R w KQ - 0 7",
+"mine": false,
+"games": 37,
+"share": 0.902,
+"src": "db"
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"fen": "rnbq1rk1/pp3ppp/3bpn2/2pp4/3P4/2PBPNB1/PP3PPP/RN1QK2R b KQ - 0 7",
+"mine": true,
+"games": 20,
+"share": 0.392,
+"lossCp": 14,
+"evalCp": -18,
+"alts": [
+{
+"san": "Qc7",
+"uci": "d8c7",
+"games": 20,
+"share": 0.392,
+"lossCp": 0
+},
+{
+"san": "c4",
+"uci": "c5c4",
+"games": 5,
+"share": 0.098,
+"lossCp": 8
+},
+{
+"san": "cxd4",
+"uci": "c5d4",
+"games": 4,
+"share": 0.078,
+"lossCp": 36
+}
+],
+"src": "db",
+"why": "Pile up on d4 and develop the last minor piece."
+}
+]
+},
+{
+"id": "qg",
+"side": "b",
+"eco": "D06",
+"name": "Queen's Gambit",
+"idPgn": "1. d4 d5 2. c4",
+"idPlies": 3,
+"names": [
+"Queen's Gambit",
+"Queen's Gambit Declined",
+"Queen's Gambit Accepted",
+"Slav Defense"
+],
+"idea": "It isn't a real gambit: c4 can be taken back. Hold the centre with ...e6 (Queen's Gambit Declined), develop calmly, castle, and ask the Bg5 a question with ...h6.",
+"endsIn": "D53 Queen's Gambit Declined",
+"endEvalCp": -18,
+"plies": [
+{
+"san": "d4",
+"uci": "d2d4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": false,
+"games": 115490,
+"share": 0.289
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"fen": "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1",
+"mine": true,
+"games": 41458,
+"share": 0.359,
+"lossCp": 0,
+"evalCp": -23,
+"alts": [
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 35028,
+"share": 0.303,
+"lossCp": 0
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"games": 9533,
+"share": 0.083,
+"lossCp": 8
+},
+{
+"san": "g6",
+"uci": "g7g6",
+"games": 4899,
+"share": 0.042,
+"lossCp": 44
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 4867,
+"share": 0.042,
+"lossCp": 40
+},
+{
+"san": "e5",
+"uci": "e7e5",
+"games": 4742,
+"share": 0.041,
+"lossCp": 115
+}
+],
+"src": "",
+"why": "Claim the centre straight away."
+},
+{
+"san": "c4",
+"uci": "c2c4",
+"fen": "rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2",
+"mine": false,
+"games": 17902,
+"share": 0.432
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"fen": "rnbqkbnr/ppp1pppp/8/3p4/2PP4/8/PP2PPPP/RNBQKBNR b KQkq - 0 2",
+"mine": true,
+"games": 6411,
+"share": 0.358,
+"lossCp": 0,
+"evalCp": -23,
+"alts": [
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 4954,
+"share": 0.276,
+"lossCp": 9
+},
+{
+"san": "dxc4",
+"uci": "d5c4",
+"games": 2422,
+"share": 0.135,
+"lossCp": 13
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 1962,
+"share": 0.109,
+"lossCp": 59
+},
+{
+"san": "e5",
+"uci": "e7e5",
+"games": 784,
+"share": 0.044,
+"lossCp": 51
+},
+{
+"san": "Bf5",
+"uci": "c8f5",
+"games": 523,
+"share": 0.029,
+"lossCp": 61
+}
+],
+"src": "db",
+"why": "Defend d5 with a pawn — the solid Declined."
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"fen": "rnbqkbnr/ppp2ppp/4p3/3p4/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 3",
+"mine": false,
+"games": 5353,
+"share": 0.635,
+"src": "db"
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"fen": "rnbqkbnr/ppp2ppp/4p3/3p4/2PP4/2N5/PP2PPPP/R1BQKBNR b KQkq - 1 3",
+"mine": true,
+"games": 3335,
+"share": 0.604,
+"lossCp": 0,
+"evalCp": -25,
+"alts": [
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 784,
+"share": 0.142,
+"lossCp": 17
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 304,
+"share": 0.055,
+"lossCp": 9
+},
+{
+"san": "Bb4",
+"uci": "f8b4",
+"games": 296,
+"share": 0.054,
+"lossCp": 3
+},
+{
+"san": "dxc4",
+"uci": "d5c4",
+"games": 220,
+"share": 0.04,
+"lossCp": 17
+},
+{
+"san": "f5",
+"uci": "f7f5",
+"games": 175,
+"share": 0.032,
+"lossCp": 70
+}
+],
+"src": "db",
+"why": "Develop and defend d5 again."
+},
+{
+"san": "Bg5",
+"uci": "c1g5",
+"fen": "rnbqkb1r/ppp2ppp/4pn2/3p4/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+"mine": false,
+"games": 1598,
+"share": 0.31,
+"src": "db"
+},
+{
+"san": "Be7",
+"uci": "f8e7",
+"fen": "rnbqkb1r/ppp2ppp/4pn2/3p2B1/2PP4/2N5/PP2PPPP/R2QKBNR b KQkq - 3 4",
+"mine": true,
+"games": 1047,
+"share": 0.649,
+"lossCp": 0,
+"evalCp": -20,
+"alts": [
+{
+"san": "Nbd7",
+"uci": "b8d7",
+"games": 166,
+"share": 0.103,
+"lossCp": 14
+},
+{
+"san": "Bb4",
+"uci": "f8b4",
+"games": 140,
+"share": 0.087,
+"lossCp": 15
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 126,
+"share": 0.078,
+"lossCp": 8
+},
+{
+"san": "dxc4",
+"uci": "d5c4",
+"games": 63,
+"share": 0.039,
+"lossCp": 3
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 32,
+"share": 0.02,
+"lossCp": 1
+}
+],
+"src": "db",
+"why": "Break the pin on your f6 knight."
+},
+{
+"san": "e3",
+"uci": "e2e3",
+"fen": "rnbqk2r/ppp1bppp/4pn2/3p2B1/2PP4/2N5/PP2PPPP/R2QKBNR w KQkq - 4 5",
+"mine": false,
+"games": 630,
+"share": 0.597,
+"src": "db"
+},
+{
+"san": "O-O",
+"uci": "e8g8",
+"fen": "rnbqk2r/ppp1bppp/4pn2/3p2B1/2PP4/2N1P3/PP3PPP/R2QKBNR b KQkq - 0 5",
+"mine": true,
+"games": 299,
+"share": 0.472,
+"lossCp": 0,
+"evalCp": -20,
+"alts": [
+{
+"san": "h6",
+"uci": "h7h6",
+"games": 105,
+"share": 0.166,
+"lossCp": 4
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 69,
+"share": 0.109,
+"lossCp": 4
+},
+{
+"san": "a6",
+"uci": "a7a6",
+"games": 50,
+"share": 0.079,
+"lossCp": 17
+},
+{
+"san": "Nbd7",
+"uci": "b8d7",
+"games": 39,
+"share": 0.062,
+"lossCp": 0
+},
+{
+"san": "b6",
+"uci": "b7b6",
+"games": 24,
+"share": 0.038,
+"lossCp": 4
+}
+],
+"src": "db",
+"why": "King safe first."
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "rnbq1rk1/ppp1bppp/4pn2/3p2B1/2PP4/2N1P3/PP3PPP/R2QKBNR w KQ - 1 6",
+"mine": false,
+"games": 217,
+"share": 0.723,
+"src": "db"
+},
+{
+"san": "h6",
+"uci": "h7h6",
+"fen": "rnbq1rk1/ppp1bppp/4pn2/3p2B1/2PP4/2N1PN2/PP3PPP/R2QKB1R b KQ - 2 6",
+"mine": true,
+"games": 181,
+"share": 0.274,
+"lossCp": 7,
+"evalCp": -20,
+"alts": [
+{
+"san": "Nbd7",
+"uci": "b8d7",
+"games": 122,
+"share": 0.185,
+"lossCp": 0
+},
+{
+"san": "b6",
+"uci": "b7b6",
+"games": 107,
+"share": 0.162,
+"lossCp": 4
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 88,
+"share": 0.133,
+"lossCp": 13
+},
+{
+"san": "a6",
+"uci": "a7a6",
+"games": 70,
+"share": 0.106,
+"lossCp": 20
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 50,
+"share": 0.076,
+"lossCp": 12
+}
+],
+"src": "db",
+"why": "Make the bishop decide: trade on f6 or retreat."
+}
+]
+},
+{
+"id": "italian",
+"side": "b",
+"eco": "C50",
+"name": "Italian Game",
+"idPgn": "1. e4 e5 2. Nf3 Nc6 3. Bc4",
+"idPlies": 5,
+"names": [
+"Italian Game",
+"Giuoco Piano"
+],
+"idea": "White aims the bishop at f7 and wants c3 and d4. Mirror with ...Bc5, hit e4 with ...Nf6, and when White pushes d4, take and give a check on b4 — then ...Nxe4 wins a central pawn.",
+"endsIn": "C54 Italian Game: Giuoco Piano, Greco's Attack",
+"endEvalCp": 43,
+"plies": [
+{
+"san": "e4",
+"uci": "e2e4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": false,
+"games": 223672,
+"share": 0.559
+},
+{
+"san": "e5",
+"uci": "e7e5",
+"fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+"mine": true,
+"games": 61744,
+"share": 0.276,
+"lossCp": 0,
+"evalCp": -26,
+"alts": [
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 59829,
+"share": 0.267,
+"lossCp": 2
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"games": 27579,
+"share": 0.123,
+"lossCp": 4
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 24067,
+"share": 0.108,
+"lossCp": 3
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 19023,
+"share": 0.085,
+"lossCp": 42
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 10767,
+"share": 0.048,
+"lossCp": 28
+}
+],
+"src": "",
+"why": "Claim the centre."
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+"mine": false,
+"games": 40374,
+"share": 0.654
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
+"mine": true,
+"games": 28120,
+"share": 0.697,
+"lossCp": 0,
+"evalCp": -38,
+"alts": [
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 4975,
+"share": 0.123,
+"lossCp": 26
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 4308,
+"share": 0.107,
+"lossCp": 10
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 1380,
+"share": 0.034,
+"lossCp": 73
+},
+{
+"san": "Bc5",
+"uci": "f8c5",
+"games": 518,
+"share": 0.013,
+"lossCp": 170
+},
+{
+"san": "f5",
+"uci": "f7f5",
+"games": 489,
+"share": 0.012,
+"lossCp": 156
+}
+],
+"src": "",
+"why": "Develop and defend e5."
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"fen": "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+"mine": false,
+"games": 11287,
+"share": 0.393
+},
+{
+"san": "Bc5",
+"uci": "f8c5",
+"fen": "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+"mine": true,
+"games": 4516,
+"share": 0.376,
+"lossCp": 0,
+"evalCp": -10,
+"alts": [
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 4291,
+"share": 0.357,
+"lossCp": 1
+},
+{
+"san": "Be7",
+"uci": "f8e7",
+"games": 737,
+"share": 0.061,
+"lossCp": 28
+},
+{
+"san": "h6",
+"uci": "h7h6",
+"games": 713,
+"share": 0.059,
+"lossCp": 38
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 653,
+"share": 0.054,
+"lossCp": 28
+},
+{
+"san": "f5",
+"uci": "f7f5",
+"games": 611,
+"share": 0.051,
+"lossCp": 137
+}
+],
+"src": "db",
+"why": "Aim at f2, just like White aims at f7."
+},
+{
+"san": "c3",
+"uci": "c2c3",
+"fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+"mine": false,
+"games": 1666,
+"share": 0.36,
+"src": "db"
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/2P2N2/PP1P1PPP/RNBQK2R b KQkq - 0 4",
+"mine": true,
+"games": 921,
+"share": 0.54,
+"lossCp": 0,
+"evalCp": -8,
+"alts": [
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 496,
+"share": 0.291,
+"lossCp": 32
+},
+{
+"san": "Qf6",
+"uci": "d8f6",
+"games": 63,
+"share": 0.037,
+"lossCp": 82
+},
+{
+"san": "h6",
+"uci": "h7h6",
+"games": 52,
+"share": 0.03,
+"lossCp": 149
+},
+{
+"san": "a6",
+"uci": "a7a6",
+"games": 43,
+"share": 0.025,
+"lossCp": 107
+},
+{
+"san": "Nge7",
+"uci": "g8e7",
+"games": 39,
+"share": 0.023,
+"lossCp": 101
+}
+],
+"src": "db",
+"why": "Develop and attack e4."
+},
+{
+"san": "d4",
+"uci": "d2d4",
+"fen": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2P2N2/PP1P1PPP/RNBQK2R w KQkq - 1 5",
+"mine": false,
+"games": 472,
+"share": 0.497,
+"src": "db"
+},
+{
+"san": "exd4",
+"uci": "e5d4",
+"fen": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2BPP3/2P2N2/PP3PPP/RNBQK2R b KQkq - 0 5",
+"mine": true,
+"games": 459,
+"share": 0.972,
+"lossCp": 0,
+"evalCp": -4,
+"alts": [
+{
+"san": "Bb6",
+"uci": "c5b6",
+"games": 9,
+"share": 0.019,
+"lossCp": 103
+}
+],
+"src": "db",
+"why": "Take — keeping tension loses the bishop's square."
+},
+{
+"san": "cxd4",
+"uci": "c3d4",
+"fen": "r1bqk2r/pppp1ppp/2n2n2/2b5/2BpP3/2P2N2/PP3PPP/RNBQK2R w KQkq - 0 6",
+"mine": false,
+"games": 310,
+"share": 0.598,
+"src": "db"
+},
+{
+"san": "Bb4+",
+"uci": "c5b4",
+"fen": "r1bqk2r/pppp1ppp/2n2n2/2b5/2BPP3/5N2/PP3PPP/RNBQK2R b KQkq - 0 6",
+"mine": true,
+"games": 296,
+"share": 0.955,
+"lossCp": 0,
+"evalCp": 6,
+"alts": [
+{
+"san": "Bb6",
+"uci": "c5b6",
+"games": 13,
+"share": 0.042,
+"lossCp": 216
+}
+],
+"src": "db",
+"why": "Check to gain time before your bishop is hit."
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"fen": "r1bqk2r/pppp1ppp/2n2n2/8/1bBPP3/5N2/PP3PPP/RNBQK2R w KQkq - 1 7",
+"mine": false,
+"games": 182,
+"share": 0.615,
+"src": "db"
+},
+{
+"san": "Nxe4",
+"uci": "f6e4",
+"fen": "r1bqk2r/pppp1ppp/2n2n2/8/1bBPP3/2N2N2/PP3PPP/R1BQK2R b KQkq - 2 7",
+"mine": true,
+"games": 130,
+"share": 0.71,
+"lossCp": 0,
+"evalCp": 30,
+"alts": [
+{
+"san": "O-O",
+"uci": "e8g8",
+"games": 16,
+"share": 0.087,
+"lossCp": 90
+},
+{
+"san": "Bxc3+",
+"uci": "b4c3",
+"games": 13,
+"share": 0.071,
+"lossCp": 88
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 13,
+"share": 0.071,
+"lossCp": 140
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 11,
+"share": 0.06,
+"lossCp": 140
+}
+],
+"src": "db",
+"why": "Grab the central pawn; the knight is safe here."
+}
+]
+},
+{
+"id": "evans",
+"side": "b",
+"eco": "C51",
+"name": "Italian Game: Evans Gambit",
+"idPgn": "1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. b4",
+"idPlies": 7,
+"names": [
+"Italian Game: Evans Gambit"
+],
+"idea": "White gives a pawn with b4 for quick development and a big centre. Take it, drop the bishop to a5 to keep the extra pawn, take on d4 and develop with ...Nf6 — don't get greedy beyond that.",
+"endsIn": "C52 Italian Game: Evans Gambit, Pierce Defense",
+"endEvalCp": 22,
+"plies": [
+{
+"san": "e4",
+"uci": "e2e4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": false,
+"games": 223672,
+"share": 0.559
+},
+{
+"san": "e5",
+"uci": "e7e5",
+"fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+"mine": true,
+"games": 61744,
+"share": 0.276,
+"lossCp": 0,
+"evalCp": -26,
+"alts": [
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 59829,
+"share": 0.267,
+"lossCp": 2
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"games": 27579,
+"share": 0.123,
+"lossCp": 4
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 24067,
+"share": 0.108,
+"lossCp": 3
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 19023,
+"share": 0.085,
+"lossCp": 42
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 10767,
+"share": 0.048,
+"lossCp": 28
+}
+],
+"src": "",
+"why": "Claim the centre."
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+"mine": false,
+"games": 40374,
+"share": 0.654
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
+"mine": true,
+"games": 28120,
+"share": 0.697,
+"lossCp": 0,
+"evalCp": -38,
+"alts": [
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 4975,
+"share": 0.123,
+"lossCp": 26
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 4308,
+"share": 0.107,
+"lossCp": 10
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 1380,
+"share": 0.034,
+"lossCp": 73
+},
+{
+"san": "Bc5",
+"uci": "f8c5",
+"games": 518,
+"share": 0.013,
+"lossCp": 170
+},
+{
+"san": "f5",
+"uci": "f7f5",
+"games": 489,
+"share": 0.012,
+"lossCp": 156
+}
+],
+"src": "",
+"why": "Develop and defend e5."
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"fen": "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+"mine": false,
+"games": 11287,
+"share": 0.393
+},
+{
+"san": "Bc5",
+"uci": "f8c5",
+"fen": "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+"mine": true,
+"games": 4516,
+"share": 0.376,
+"lossCp": 0,
+"evalCp": -10,
+"alts": [
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 4291,
+"share": 0.357,
+"lossCp": 1
+},
+{
+"san": "Be7",
+"uci": "f8e7",
+"games": 737,
+"share": 0.061,
+"lossCp": 28
+},
+{
+"san": "h6",
+"uci": "h7h6",
+"games": 713,
+"share": 0.059,
+"lossCp": 38
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 653,
+"share": 0.054,
+"lossCp": 28
+},
+{
+"san": "f5",
+"uci": "f7f5",
+"games": 611,
+"share": 0.051,
+"lossCp": 137
+}
+],
+"src": "",
+"why": "Aim at f2."
+},
+{
+"san": "b4",
+"uci": "b2b4",
+"fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+"mine": false,
+"games": 507,
+"share": 0.11
+},
+{
+"san": "Bxb4",
+"uci": "c5b4",
+"fen": "r1bqk1nr/pppp1ppp/2n5/2b1p3/1PB1P3/5N2/P1PP1PPP/RNBQK2R b KQkq - 0 4",
+"mine": true,
+"games": 420,
+"share": 0.828,
+"lossCp": 0,
+"evalCp": 17,
+"alts": [
+{
+"san": "Bb6",
+"uci": "c5b6",
+"games": 62,
+"share": 0.122,
+"lossCp": 37
+},
+{
+"san": "Nxb4",
+"uci": "c6b4",
+"games": 12,
+"share": 0.024,
+"lossCp": 33
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 4,
+"share": 0.008,
+"lossCp": 691
+},
+{
+"san": "Bd4",
+"uci": "c5d4",
+"games": 3,
+"share": 0.006,
+"lossCp": 96
+}
+],
+"src": "db",
+"why": "Accept the gambit pawn."
+},
+{
+"san": "c3",
+"uci": "c2c3",
+"fen": "r1bqk1nr/pppp1ppp/2n5/4p3/1bB1P3/5N2/P1PP1PPP/RNBQK2R w KQkq - 0 5",
+"mine": false,
+"games": 419,
+"share": 0.998,
+"src": "db"
+},
+{
+"san": "Ba5",
+"uci": "b4a5",
+"fen": "r1bqk1nr/pppp1ppp/2n5/4p3/1bB1P3/2P2N2/P2P1PPP/RNBQK2R b KQkq - 0 5",
+"mine": true,
+"games": 210,
+"share": 0.501,
+"lossCp": 0,
+"evalCp": 12,
+"alts": [
+{
+"san": "Be7",
+"uci": "b4e7",
+"games": 108,
+"share": 0.258,
+"lossCp": 5
+},
+{
+"san": "Bc5",
+"uci": "b4c5",
+"games": 67,
+"share": 0.16,
+"lossCp": 28
+},
+{
+"san": "Bd6",
+"uci": "b4d6",
+"games": 32,
+"share": 0.076,
+"lossCp": 47
+}
+],
+"src": "db",
+"why": "Keep the bishop on the a5–e1 diagonal, pinning a later c3/d4."
+},
+{
+"san": "d4",
+"uci": "d2d4",
+"fen": "r1bqk1nr/pppp1ppp/2n5/b3p3/2B1P3/2P2N2/P2P1PPP/RNBQK2R w KQkq - 1 6",
+"mine": false,
+"games": 167,
+"share": 0.799,
+"src": "db"
+},
+{
+"san": "exd4",
+"uci": "e5d4",
+"fen": "r1bqk1nr/pppp1ppp/2n5/b3p3/2BPP3/2P2N2/P4PPP/RNBQK2R b KQkq - 0 6",
+"mine": true,
+"games": 120,
+"share": 0.719,
+"lossCp": 0,
+"evalCp": 8,
+"alts": [
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 29,
+"share": 0.174,
+"lossCp": 7
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 5,
+"share": 0.03,
+"lossCp": 213
+},
+{
+"san": "Qe7",
+"uci": "d8e7",
+"games": 4,
+"share": 0.024,
+"lossCp": 140
+},
+{
+"san": "Bb6",
+"uci": "a5b6",
+"games": 3,
+"share": 0.018,
+"lossCp": 60
+}
+],
+"src": "db",
+"why": "Remove White's centre pawn."
+},
+{
+"san": "O-O",
+"uci": "e1g1",
+"fen": "r1bqk1nr/pppp1ppp/2n5/b7/2BpP3/2P2N2/P4PPP/RNBQK2R w KQkq - 0 7",
+"mine": false,
+"games": 82,
+"share": 0.683,
+"src": "db"
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"fen": "r1bqk1nr/pppp1ppp/2n5/b7/2BpP3/2P2N2/P4PPP/RNBQ1RK1 b kq - 1 7",
+"mine": true,
+"games": 16,
+"share": 0.195,
+"lossCp": 1,
+"evalCp": 9,
+"alts": [
+{
+"san": "dxc3",
+"uci": "d4c3",
+"games": 18,
+"share": 0.22,
+"lossCp": 59
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 17,
+"share": 0.207,
+"lossCp": 15
+},
+{
+"san": "Nge7",
+"uci": "g8e7",
+"games": 14,
+"share": 0.171,
+"lossCp": 0
+},
+{
+"san": "Bxc3",
+"uci": "a5c3",
+"games": 4,
+"share": 0.049,
+"lossCp": 154
+},
+{
+"san": "d3",
+"uci": "d4d3",
+"games": 3,
+"share": 0.037,
+"lossCp": 56
+}
+],
+"src": "db",
+"why": "Develop with tempo on e4 and get ready to castle."
+}
+]
+},
+{
+"id": "ruy",
+"side": "b",
+"eco": "C60",
+"name": "Ruy Lopez",
+"idPgn": "1. e4 e5 2. Nf3 Nc6 3. Bb5",
+"idPlies": 5,
+"names": [
+"Ruy Lopez"
+],
+"idea": "White pressures your e5 defender (the c6 knight). Kick the bishop with ...a6 and ...b5, develop with ...Nf6 and ...Be7, and castle into the solid Closed Ruy Lopez.",
+"endsIn": "C88 Ruy Lopez: Closed",
+"endEvalCp": -31,
+"plies": [
+{
+"san": "e4",
+"uci": "e2e4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": false,
+"games": 223672,
+"share": 0.559
+},
+{
+"san": "e5",
+"uci": "e7e5",
+"fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+"mine": true,
+"games": 61744,
+"share": 0.276,
+"lossCp": 0,
+"evalCp": -26,
+"alts": [
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 59829,
+"share": 0.267,
+"lossCp": 2
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"games": 27579,
+"share": 0.123,
+"lossCp": 4
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 24067,
+"share": 0.108,
+"lossCp": 3
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 19023,
+"share": 0.085,
+"lossCp": 42
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 10767,
+"share": 0.048,
+"lossCp": 28
+}
+],
+"src": "",
+"why": "Claim the centre."
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+"mine": false,
+"games": 40374,
+"share": 0.654
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
+"mine": true,
+"games": 28120,
+"share": 0.697,
+"lossCp": 0,
+"evalCp": -38,
+"alts": [
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 4975,
+"share": 0.123,
+"lossCp": 26
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 4308,
+"share": 0.107,
+"lossCp": 10
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 1380,
+"share": 0.034,
+"lossCp": 73
+},
+{
+"san": "Bc5",
+"uci": "f8c5",
+"games": 518,
+"share": 0.013,
+"lossCp": 170
+},
+{
+"san": "f5",
+"uci": "f7f5",
+"games": 489,
+"share": 0.012,
+"lossCp": 156
+}
+],
+"src": "",
+"why": "Develop and defend e5."
+},
+{
+"san": "Bb5",
+"uci": "f1b5",
+"fen": "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+"mine": false,
+"games": 8496,
+"share": 0.296
+},
+{
+"san": "a6",
+"uci": "a7a6",
+"fen": "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+"mine": true,
+"games": 3166,
+"share": 0.372,
+"lossCp": 10,
+"evalCp": -19,
+"alts": [
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 1663,
+"share": 0.196,
+"lossCp": 0
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 1301,
+"share": 0.153,
+"lossCp": 38
+},
+{
+"san": "Bc5",
+"uci": "f8c5",
+"games": 1083,
+"share": 0.127,
+"lossCp": 29
+},
+{
+"san": "Nge7",
+"uci": "g8e7",
+"games": 371,
+"share": 0.044,
+"lossCp": 35
+},
+{
+"san": "f5",
+"uci": "f7f5",
+"games": 361,
+"share": 0.042,
+"lossCp": 47
+}
+],
+"src": "db",
+"why": "Ask the bishop straight away — you can always kick it later with ...b5."
+},
+{
+"san": "Ba4",
+"uci": "b5a4",
+"fen": "r1bqkbnr/1ppp1ppp/p1n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4",
+"mine": false,
+"games": 2476,
+"share": 0.782,
+"src": "db"
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"fen": "r1bqkbnr/1ppp1ppp/p1n5/4p3/B3P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 1 4",
+"mine": true,
+"games": 1730,
+"share": 0.7,
+"lossCp": 1,
+"evalCp": -33,
+"alts": [
+{
+"san": "b5",
+"uci": "b7b5",
+"games": 360,
+"share": 0.146,
+"lossCp": 1
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 178,
+"share": 0.072,
+"lossCp": 12
+},
+{
+"san": "Bc5",
+"uci": "f8c5",
+"games": 115,
+"share": 0.047,
+"lossCp": 15
+},
+{
+"san": "f5",
+"uci": "f7f5",
+"games": 33,
+"share": 0.013,
+"lossCp": 55
+},
+{
+"san": "Be7",
+"uci": "f8e7",
+"games": 25,
+"share": 0.01,
+"lossCp": 0
+}
+],
+"src": "db",
+"why": "Develop and hit e4."
+},
+{
+"san": "O-O",
+"uci": "e1g1",
+"fen": "r1bqkb1r/1ppp1ppp/p1n2n2/4p3/B3P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 2 5",
+"mine": false,
+"games": 1175,
+"share": 0.679,
+"src": "db"
+},
+{
+"san": "Be7",
+"uci": "f8e7",
+"fen": "r1bqkb1r/1ppp1ppp/p1n2n2/4p3/B3P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 3 5",
+"mine": true,
+"games": 518,
+"share": 0.433,
+"lossCp": 4,
+"evalCp": -28,
+"alts": [
+{
+"san": "b5",
+"uci": "b7b5",
+"games": 396,
+"share": 0.331,
+"lossCp": 10
+},
+{
+"san": "Nxe4",
+"uci": "f6e4",
+"games": 120,
+"share": 0.1,
+"lossCp": 0
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 77,
+"share": 0.064,
+"lossCp": 15
+},
+{
+"san": "Bc5",
+"uci": "f8c5",
+"games": 71,
+"share": 0.059,
+"lossCp": 13
+},
+{
+"san": "Bd6",
+"uci": "f8d6",
+"games": 8,
+"share": 0.007,
+"lossCp": 48
+}
+],
+"src": "db",
+"why": "Quiet development; get ready to castle."
+},
+{
+"san": "Re1",
+"uci": "f1e1",
+"fen": "r1bqk2r/1pppbppp/p1n2n2/4p3/B3P3/5N2/PPPP1PPP/RNBQ1RK1 w kq - 4 6",
+"mine": false,
+"games": 392,
+"share": 0.738,
+"src": "db"
+},
+{
+"san": "b5",
+"uci": "b7b5",
+"fen": "r1bqk2r/1pppbppp/p1n2n2/4p3/B3P3/5N2/PPPP1PPP/RNBQR1K1 b kq - 5 6",
+"mine": true,
+"games": 372,
+"share": 0.949,
+"lossCp": 0,
+"evalCp": -32,
+"alts": [
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 13,
+"share": 0.033,
+"lossCp": 8
+},
+{
+"san": "O-O",
+"uci": "e8g8",
+"games": 7,
+"share": 0.018,
+"lossCp": 109
+}
+],
+"src": "db",
+"why": "Kick the bishop now that Re1 threatens Bxc6 and Nxe5."
+},
+{
+"san": "Bb3",
+"uci": "a4b3",
+"fen": "r1bqk2r/2ppbppp/p1n2n2/1p2p3/B3P3/5N2/PPPP1PPP/RNBQR1K1 w kq - 0 7",
+"mine": false,
+"games": 372,
+"share": 1.0,
+"src": "db"
+},
+{
+"san": "O-O",
+"uci": "e8g8",
+"fen": "r1bqk2r/2ppbppp/p1n2n2/1p2p3/4P3/1B3N2/PPPP1PPP/RNBQR1K1 b kq - 1 7",
+"mine": true,
+"games": 312,
+"share": 0.597,
+"lossCp": 0,
+"evalCp": -31,
+"alts": [
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 207,
+"share": 0.396,
+"lossCp": 9
+},
+{
+"san": "Bb7",
+"uci": "c8b7",
+"games": 4,
+"share": 0.008,
+"lossCp": 4
+}
+],
+"src": "db",
+"why": "King safe; the Closed Ruy main line."
+}
+]
+},
+{
+"id": "scotch",
+"side": "b",
+"eco": "C44",
+"name": "Scotch Game",
+"idPgn": "1. e4 e5 2. Nf3 Nc6 3. d4",
+"idPlies": 5,
+"names": [
+"Scotch Game"
+],
+"idea": "White opens the centre early with d4. Take, put the bishop on c5 to hit the d4 knight, add ...Qf6 for more pressure, and develop with ...Nge7 so the queen stays defended.",
+"endsIn": "C45 Scotch Game: Classical Variation",
+"endEvalCp": -21,
+"plies": [
+{
+"san": "e4",
+"uci": "e2e4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": false,
+"games": 223672,
+"share": 0.559
+},
+{
+"san": "e5",
+"uci": "e7e5",
+"fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+"mine": true,
+"games": 61744,
+"share": 0.276,
+"lossCp": 0,
+"evalCp": -26,
+"alts": [
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 59829,
+"share": 0.267,
+"lossCp": 2
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"games": 27579,
+"share": 0.123,
+"lossCp": 4
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 24067,
+"share": 0.108,
+"lossCp": 3
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 19023,
+"share": 0.085,
+"lossCp": 42
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 10767,
+"share": 0.048,
+"lossCp": 28
+}
+],
+"src": "",
+"why": "Claim the centre."
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+"mine": false,
+"games": 40374,
+"share": 0.654
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
+"mine": true,
+"games": 28120,
+"share": 0.697,
+"lossCp": 0,
+"evalCp": -38,
+"alts": [
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 4975,
+"share": 0.123,
+"lossCp": 26
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 4308,
+"share": 0.107,
+"lossCp": 10
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 1380,
+"share": 0.034,
+"lossCp": 73
+},
+{
+"san": "Bc5",
+"uci": "f8c5",
+"games": 518,
+"share": 0.013,
+"lossCp": 170
+},
+{
+"san": "f5",
+"uci": "f7f5",
+"games": 489,
+"share": 0.012,
+"lossCp": 156
+}
+],
+"src": "",
+"why": "Develop and defend e5."
+},
+{
+"san": "d4",
+"uci": "d2d4",
+"fen": "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+"mine": false,
+"games": 5527,
+"share": 0.193
+},
+{
+"san": "exd4",
+"uci": "e5d4",
+"fen": "r1bqkbnr/pppp1ppp/2n5/4p3/3PP3/5N2/PPP2PPP/RNBQKB1R b KQkq - 0 3",
+"mine": true,
+"games": 5078,
+"share": 0.888,
+"lossCp": 0,
+"evalCp": -5,
+"alts": [
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 247,
+"share": 0.043,
+"lossCp": 74
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 134,
+"share": 0.023,
+"lossCp": 103
+},
+{
+"san": "f5",
+"uci": "f7f5",
+"games": 59,
+"share": 0.01,
+"lossCp": 169
+},
+{
+"san": "Nxd4",
+"uci": "c6d4",
+"games": 42,
+"share": 0.007,
+"lossCp": 47
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 39,
+"share": 0.007,
+"lossCp": 75
+}
+],
+"src": "db",
+"why": "Take — the pawn can't be held."
+},
+{
+"san": "Nxd4",
+"uci": "f3d4",
+"fen": "r1bqkbnr/pppp1ppp/2n5/8/3pP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 4",
+"mine": false,
+"games": 2878,
+"share": 0.532,
+"src": "db"
+},
+{
+"san": "Bc5",
+"uci": "f8c5",
+"fen": "r1bqkbnr/pppp1ppp/2n5/8/3NP3/8/PPP2PPP/RNBQKB1R b KQkq - 0 4",
+"mine": true,
+"games": 972,
+"share": 0.337,
+"lossCp": 6,
+"evalCp": -13,
+"alts": [
+{
+"san": "Nxd4",
+"uci": "c6d4",
+"games": 628,
+"share": 0.218,
+"lossCp": 63
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 623,
+"share": 0.216,
+"lossCp": 0
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 183,
+"share": 0.064,
+"lossCp": 53
+},
+{
+"san": "Qf6",
+"uci": "d8f6",
+"games": 153,
+"share": 0.053,
+"lossCp": 13
+},
+{
+"san": "Qh4",
+"uci": "d8h4",
+"games": 78,
+"share": 0.027,
+"lossCp": 52
+}
+],
+"src": "db",
+"why": "Hit the d4 knight straight away."
+},
+{
+"san": "Be3",
+"uci": "c1e3",
+"fen": "r1bqk1nr/pppp1ppp/2n5/2b5/3NP3/8/PPP2PPP/RNBQKB1R w KQkq - 1 5",
+"mine": false,
+"games": 396,
+"share": 0.404,
+"src": "db"
+},
+{
+"san": "Qf6",
+"uci": "d8f6",
+"fen": "r1bqk1nr/pppp1ppp/2n5/2b5/3NP3/4B3/PPP2PPP/RN1QKB1R b KQkq - 2 5",
+"mine": true,
+"games": 187,
+"share": 0.473,
+"lossCp": 0,
+"evalCp": -20,
+"alts": [
+{
+"san": "Bb6",
+"uci": "c5b6",
+"games": 89,
+"share": 0.225,
+"lossCp": 45
+},
+{
+"san": "Nxd4",
+"uci": "c6d4",
+"games": 49,
+"share": 0.124,
+"lossCp": 28
+},
+{
+"san": "Bxd4",
+"uci": "c5d4",
+"games": 27,
+"share": 0.068,
+"lossCp": 28
+},
+{
+"san": "Qe7",
+"uci": "d8e7",
+"games": 14,
+"share": 0.035,
+"lossCp": 52
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 13,
+"share": 0.033,
+"lossCp": 290
+}
+],
+"src": "db",
+"why": "Add pressure on d4 and f2."
+},
+{
+"san": "c3",
+"uci": "c2c3",
+"fen": "r1b1k1nr/pppp1ppp/2n2q2/2b5/3NP3/4B3/PPP2PPP/RN1QKB1R w KQkq - 3 6",
+"mine": false,
+"games": 209,
+"share": 0.86,
+"src": "db"
+},
+{
+"san": "Nge7",
+"uci": "g8e7",
+"fen": "r1b1k1nr/pppp1ppp/2n2q2/2b5/3NP3/2P1B3/PP3PPP/RN1QKB1R b KQkq - 0 6",
+"mine": true,
+"games": 178,
+"share": 0.748,
+"lossCp": 4,
+"evalCp": -16,
+"alts": [
+{
+"san": "Bb6",
+"uci": "c5b6",
+"games": 15,
+"share": 0.063,
+"lossCp": 20
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 15,
+"share": 0.063,
+"lossCp": 0
+},
+{
+"san": "Nxd4",
+"uci": "c6d4",
+"games": 10,
+"share": 0.042,
+"lossCp": 95
+},
+{
+"san": "Qg6",
+"uci": "f6g6",
+"games": 9,
+"share": 0.038,
+"lossCp": 16
+},
+{
+"san": "Bxd4",
+"uci": "c5d4",
+"games": 5,
+"share": 0.021,
+"lossCp": 228
+}
+],
+"src": "db",
+"why": "Develop without blocking the queen."
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"fen": "r1b1k2r/ppppnppp/2n2q2/2b5/3NP3/2P1B3/PP3PPP/RN1QKB1R w KQkq - 1 7",
+"mine": false,
+"games": 77,
+"share": 0.43,
+"src": "db"
+},
+{
+"san": "O-O",
+"uci": "e8g8",
+"fen": "r1b1k2r/ppppnppp/2n2q2/2b5/2BNP3/2P1B3/PP3PPP/RN1QK2R b KQkq - 2 7",
+"mine": true,
+"games": 29,
+"share": 0.377,
+"lossCp": 3,
+"evalCp": -23,
+"alts": [
+{
+"san": "Ne5",
+"uci": "c6e5",
+"games": 21,
+"share": 0.273,
+"lossCp": 0
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 11,
+"share": 0.143,
+"lossCp": 0
+},
+{
+"san": "Bb6",
+"uci": "c5b6",
+"games": 5,
+"share": 0.065,
+"lossCp": 2
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 3,
+"share": 0.039,
+"lossCp": 9
+}
+],
+"src": "db",
+"why": "King safe."
+}
+]
+},
+{
+"id": "kings-gambit",
+"side": "b",
+"eco": "C30",
+"name": "King's Gambit",
+"idPgn": "1. e4 e5 2. f4",
+"idPlies": 3,
+"names": [
+"King's Gambit",
+"King's Gambit Accepted",
+"King's Gambit Declined"
+],
+"idea": "White gives the f-pawn to open the f-file. Take it, protect it with ...g5, and push ...g4 to chase the knight — if White sacrifices it (Muzio), take and defend with ...Qf6.",
+"endsIn": "C37 King's Gambit Accepted: Muzio Gambit, Sarratt Defense",
+"endEvalCp": 114,
+"plies": [
+{
+"san": "e4",
+"uci": "e2e4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": false,
+"games": 223672,
+"share": 0.559
+},
+{
+"san": "e5",
+"uci": "e7e5",
+"fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+"mine": true,
+"games": 61744,
+"share": 0.276,
+"lossCp": 0,
+"evalCp": -26,
+"alts": [
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 59829,
+"share": 0.267,
+"lossCp": 2
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"games": 27579,
+"share": 0.123,
+"lossCp": 4
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 24067,
+"share": 0.108,
+"lossCp": 3
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 19023,
+"share": 0.085,
+"lossCp": 42
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 10767,
+"share": 0.048,
+"lossCp": 28
+}
+],
+"src": "",
+"why": "Claim the centre."
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+"mine": false,
+"games": 5855,
+"share": 0.095
+},
+{
+"san": "exf4",
+"uci": "e5f4",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/4PP2/8/PPPP2PP/RNBQKBNR b KQkq - 0 2",
+"mine": true,
+"games": 2418,
+"share": 0.411,
+"lossCp": 0,
+"evalCp": 56,
+"alts": [
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 1193,
+"share": 0.203,
+"lossCp": 55
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 1082,
+"share": 0.184,
+"lossCp": 28
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 637,
+"share": 0.108,
+"lossCp": 73
+},
+{
+"san": "Bc5",
+"uci": "f8c5",
+"games": 246,
+"share": 0.042,
+"lossCp": 61
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 157,
+"share": 0.027,
+"lossCp": 78
+}
+],
+"src": "db",
+"why": "Accept — the extra pawn is yours to keep."
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "rnbqkbnr/pppp1ppp/8/8/4Pp2/8/PPPP2PP/RNBQKBNR w KQkq - 0 3",
+"mine": false,
+"games": 2190,
+"share": 0.906,
+"src": "db"
+},
+{
+"san": "g5",
+"uci": "g7g5",
+"fen": "rnbqkbnr/pppp1ppp/8/8/4Pp2/5N2/PPPP2PP/RNBQKB1R b KQkq - 1 3",
+"mine": true,
+"games": 603,
+"share": 0.275,
+"lossCp": 0,
+"evalCp": 52,
+"alts": [
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 348,
+"share": 0.159,
+"lossCp": 0
+},
+{
+"san": "Be7",
+"uci": "f8e7",
+"games": 295,
+"share": 0.135,
+"lossCp": 19
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 269,
+"share": 0.123,
+"lossCp": 25
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 173,
+"share": 0.079,
+"lossCp": 55
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 162,
+"share": 0.074,
+"lossCp": 12
+}
+],
+"src": "db",
+"why": "Protect the f4 pawn."
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"fen": "rnbqkbnr/pppp1p1p/8/6p1/4Pp2/5N2/PPPP2PP/RNBQKB1R w KQkq - 0 4",
+"mine": false,
+"games": 339,
+"share": 0.562,
+"src": "db"
+},
+{
+"san": "g4",
+"uci": "g5g4",
+"fen": "rnbqkbnr/pppp1p1p/8/6p1/2B1Pp2/5N2/PPPP2PP/RNBQK2R b KQkq - 1 4",
+"mine": true,
+"games": 125,
+"share": 0.367,
+"lossCp": 0,
+"evalCp": 116,
+"alts": [
+{
+"san": "Bg7",
+"uci": "f8g7",
+"games": 91,
+"share": 0.267,
+"lossCp": 47
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 57,
+"share": 0.167,
+"lossCp": 139
+},
+{
+"san": "h6",
+"uci": "h7h6",
+"games": 15,
+"share": 0.044,
+"lossCp": 47
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 14,
+"share": 0.041,
+"lossCp": 39
+},
+{
+"san": "Qe7",
+"uci": "d8e7",
+"games": 9,
+"share": 0.026,
+"lossCp": 149
+}
+],
+"src": "db",
+"why": "Kick the knight away from e5 and h4."
+},
+{
+"san": "O-O",
+"uci": "e1g1",
+"fen": "rnbqkbnr/pppp1p1p/8/8/2B1Ppp1/5N2/PPPP2PP/RNBQK2R w KQkq - 0 5",
+"mine": false,
+"games": 54,
+"share": 0.435,
+"src": "db"
+},
+{
+"san": "gxf3",
+"uci": "g4f3",
+"fen": "rnbqkbnr/pppp1p1p/8/8/2B1Ppp1/5N2/PPPP2PP/RNBQ1RK1 b kq - 1 5",
+"mine": true,
+"games": 51,
+"share": 0.944,
+"lossCp": 0,
+"evalCp": 120,
+"alts": [],
+"src": "db",
+"why": "Take the piece White offered."
+},
+{
+"san": "Qxf3",
+"uci": "d1f3",
+"fen": "rnbqkbnr/pppp1p1p/8/8/2B1Pp2/5p2/PPPP2PP/RNBQ1RK1 w kq - 0 6",
+"mine": false,
+"games": 45,
+"share": 0.882,
+"src": "db"
+},
+{
+"san": "Qf6",
+"uci": "d8f6",
+"fen": "rnbqkbnr/pppp1p1p/8/8/2B1Pp2/5Q2/PPPP2PP/RNB2RK1 b kq - 0 6",
+"mine": true,
+"games": 35,
+"share": 0.778,
+"lossCp": 0,
+"evalCp": 109,
+"alts": [
+{
+"san": "Bh6",
+"uci": "f8h6",
+"games": 4,
+"share": 0.089,
+"lossCp": 156
+},
+{
+"san": "Bc5+",
+"uci": "f8c5",
+"games": 4,
+"share": 0.089,
+"lossCp": 153
+}
+],
+"src": "db",
+"why": "Block the f-file and defend f4; you're a piece up."
+}
+]
+},
+{
+"id": "danish",
+"side": "b",
+"eco": "C21",
+"name": "Danish Gambit",
+"idPgn": "1. e4 e5 2. d4 exd4 3. c3",
+"idPlies": 5,
+"names": [
+"Danish Gambit",
+"Danish Gambit Accepted",
+"Danish Gambit Declined"
+],
+"idea": "White offers two pawns for fast development. You can take both, then give back material with ...Bb4+ and ...Nf6 to finish development — the Copenhagen Defence is safe and good for Black.",
+"endsIn": "C21 Danish Gambit Accepted: Copenhagen Defense",
+"endEvalCp": 33,
+"plies": [
+{
+"san": "e4",
+"uci": "e2e4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": false,
+"games": 223672,
+"share": 0.559
+},
+{
+"san": "e5",
+"uci": "e7e5",
+"fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+"mine": true,
+"games": 61744,
+"share": 0.276,
+"lossCp": 0,
+"evalCp": -26,
+"alts": [
+{
+"san": "c5",
+"uci": "c7c5",
+"games": 59829,
+"share": 0.267,
+"lossCp": 2
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"games": 27579,
+"share": 0.123,
+"lossCp": 4
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"games": 24067,
+"share": 0.108,
+"lossCp": 3
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 19023,
+"share": 0.085,
+"lossCp": 42
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 10767,
+"share": 0.048,
+"lossCp": 28
+}
+],
+"src": "",
+"why": "Claim the centre."
+},
+{
+"san": "d4",
+"uci": "d2d4",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+"mine": false,
+"games": 3979,
+"share": 0.064
+},
+{
+"san": "exd4",
+"uci": "e5d4",
+"fen": "rnbqkbnr/pppp1ppp/8/4p3/3PP3/8/PPP2PPP/RNBQKBNR b KQkq - 0 2",
+"mine": true,
+"games": 3136,
+"share": 0.774,
+"lossCp": 0,
+"evalCp": 10,
+"alts": [
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 519,
+"share": 0.128,
+"lossCp": 89
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 165,
+"share": 0.041,
+"lossCp": 64
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 92,
+"share": 0.023,
+"lossCp": 162
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 64,
+"share": 0.016,
+"lossCp": 181
+},
+{
+"san": "f5",
+"uci": "f7f5",
+"games": 24,
+"share": 0.006,
+"lossCp": 233
+}
+],
+"src": "",
+"why": "Take the centre pawn."
+},
+{
+"san": "c3",
+"uci": "c2c3",
+"fen": "rnbqkbnr/pppp1ppp/8/8/3pP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3",
+"mine": false,
+"games": 1413,
+"share": 0.451
+},
+{
+"san": "dxc3",
+"uci": "d4c3",
+"fen": "rnbqkbnr/pppp1ppp/8/8/3pP3/2P5/PP3PPP/RNBQKBNR b KQkq - 0 3",
+"mine": true,
+"games": 892,
+"share": 0.631,
+"lossCp": 5,
+"evalCp": 31,
+"alts": [
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 170,
+"share": 0.12,
+"lossCp": 11
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 117,
+"share": 0.083,
+"lossCp": 30
+},
+{
+"san": "d3",
+"uci": "d4d3",
+"games": 70,
+"share": 0.05,
+"lossCp": 100
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 54,
+"share": 0.038,
+"lossCp": 76
+},
+{
+"san": "Qe7",
+"uci": "d8e7",
+"games": 42,
+"share": 0.03,
+"lossCp": 0
+}
+],
+"src": "db",
+"why": "Accept the gambit pawn."
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"fen": "rnbqkbnr/pppp1ppp/8/8/4P3/2p5/PP3PPP/RNBQKBNR w KQkq - 0 4",
+"mine": false,
+"games": 662,
+"share": 0.741,
+"src": "db"
+},
+{
+"san": "cxb2",
+"uci": "c3b2",
+"fen": "rnbqkbnr/pppp1ppp/8/8/2B1P3/2p5/PP3PPP/RNBQK1NR b KQkq - 1 4",
+"mine": true,
+"games": 275,
+"share": 0.415,
+"lossCp": 0,
+"evalCp": 59,
+"alts": [
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 98,
+"share": 0.148,
+"lossCp": 72
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 89,
+"share": 0.134,
+"lossCp": 75
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 42,
+"share": 0.063,
+"lossCp": 72
+},
+{
+"san": "Bb4",
+"uci": "f8b4",
+"games": 29,
+"share": 0.044,
+"lossCp": 71
+},
+{
+"san": "c2",
+"uci": "c3c2",
+"games": 25,
+"share": 0.038,
+"lossCp": 97
+}
+],
+"src": "db",
+"why": "Take again so the c1 bishop can't recapture on c3."
+},
+{
+"san": "Bxb2",
+"uci": "c1b2",
+"fen": "rnbqkbnr/pppp1ppp/8/8/2B1P3/8/Pp3PPP/RNBQK1NR w KQkq - 0 5",
+"mine": false,
+"games": 274,
+"share": 0.996,
+"src": "db"
+},
+{
+"san": "Bb4+",
+"uci": "f8b4",
+"fen": "rnbqkbnr/pppp1ppp/8/8/2B1P3/8/PB3PPP/RN1QK1NR b KQkq - 0 5",
+"mine": true,
+"games": 99,
+"share": 0.361,
+"lossCp": 34,
+"evalCp": 54,
+"alts": [
+{
+"san": "Nf6",
+"uci": "g8f6",
+"games": 49,
+"share": 0.179,
+"lossCp": 16
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 40,
+"share": 0.146,
+"lossCp": 0
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"games": 32,
+"share": 0.117,
+"lossCp": 75
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 28,
+"share": 0.102,
+"lossCp": 46
+},
+{
+"san": "Qe7",
+"uci": "d8e7",
+"games": 10,
+"share": 0.036,
+"lossCp": 129
+}
+],
+"src": "db",
+"why": "Check and develop."
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"fen": "rnbqk1nr/pppp1ppp/8/8/1bB1P3/8/PB3PPP/RN1QK1NR w KQkq - 1 6",
+"mine": false,
+"games": 56,
+"share": 0.566,
+"src": "db"
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"fen": "rnbqk1nr/pppp1ppp/8/8/1bB1P3/2N5/PB3PPP/R2QK1NR b KQkq - 2 6",
+"mine": true,
+"games": 31,
+"share": 0.554,
+"lossCp": 0,
+"evalCp": 36,
+"alts": [
+{
+"san": "Ne7",
+"uci": "g8e7",
+"games": 5,
+"share": 0.089,
+"lossCp": 70
+},
+{
+"san": "Bxc3+",
+"uci": "b4c3",
+"games": 5,
+"share": 0.089,
+"lossCp": 130
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"games": 4,
+"share": 0.071,
+"lossCp": 14
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"games": 3,
+"share": 0.054,
+"lossCp": 36
+},
+{
+"san": "Qe7",
+"uci": "d8e7",
+"games": 3,
+"share": 0.054,
+"lossCp": 40
+}
+],
+"src": "db",
+"why": "Develop and get ready to castle."
+}
+]
+},
+{
+"id": "sicilian",
+"side": "w",
+"eco": "B20",
+"name": "Sicilian Defense",
+"idPgn": "1. e4 c5",
+"idPlies": 2,
+"names": [
+"Sicilian Defense"
+],
+"idea": "Black fights for d4 from the side. Play the Open Sicilian: Nf3 and d4, take back with the knight, and when Black kicks it with ...e5, jump to b5 aiming at d6.",
+"endsIn": "B32 Sicilian Defense: Kalashnikov Variation",
+"endEvalCp": 26,
+"plies": [
+{
+"san": "e4",
+"uci": "e2e4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": true,
+"games": 223672,
+"share": 0.559,
+"lossCp": 0,
+"evalCp": 21,
+"alts": [
+{
+"san": "d4",
+"uci": "d2d4",
+"games": 115490,
+"share": 0.289,
+"lossCp": 0
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 17945,
+"share": 0.045,
+"lossCp": 1
+},
+{
+"san": "c4",
+"uci": "c2c4",
+"games": 17692,
+"share": 0.044,
+"lossCp": 1
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 4999,
+"share": 0.012,
+"lossCp": 37
+},
+{
+"san": "b3",
+"uci": "b2b3",
+"games": 4540,
+"share": 0.011,
+"lossCp": 31
+}
+],
+"src": "",
+"why": "Take the centre and open lines for queen and bishop."
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+"mine": false,
+"games": 59829,
+"share": 0.267
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+"mine": true,
+"games": 34077,
+"share": 0.57,
+"lossCp": 0,
+"evalCp": 21,
+"alts": [
+{
+"san": "Nc3",
+"uci": "b1c3",
+"games": 6223,
+"share": 0.104,
+"lossCp": 2
+},
+{
+"san": "d4",
+"uci": "d2d4",
+"games": 4719,
+"share": 0.079,
+"lossCp": 23
+},
+{
+"san": "c3",
+"uci": "c2c3",
+"games": 4278,
+"share": 0.072,
+"lossCp": 15
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"games": 3013,
+"share": 0.05,
+"lossCp": 28
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 2907,
+"share": 0.049,
+"lossCp": 41
+}
+],
+"src": "db",
+"why": "Develop and prepare d4."
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"fen": "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
+"mine": false,
+"games": 13722,
+"share": 0.4,
+"src": "db"
+},
+{
+"san": "d4",
+"uci": "d2d4",
+"fen": "r1bqkbnr/pp1ppppp/2n5/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+"mine": true,
+"games": 6726,
+"share": 0.49,
+"lossCp": 0,
+"evalCp": 30,
+"alts": [
+{
+"san": "Bb5",
+"uci": "f1b5",
+"games": 2270,
+"share": 0.165,
+"lossCp": 1
+},
+{
+"san": "c3",
+"uci": "c2c3",
+"games": 1517,
+"share": 0.111,
+"lossCp": 22
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"games": 1478,
+"share": 0.108,
+"lossCp": 35
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"games": 745,
+"share": 0.054,
+"lossCp": 4
+},
+{
+"san": "b4",
+"uci": "b2b4",
+"games": 247,
+"share": 0.018,
+"lossCp": 88
+}
+],
+"src": "db",
+"why": "Open the centre — the main line."
+},
+{
+"san": "cxd4",
+"uci": "c5d4",
+"fen": "r1bqkbnr/pp1ppppp/2n5/2p5/3PP3/5N2/PPP2PPP/RNBQKB1R b KQkq - 0 3",
+"mine": false,
+"games": 6579,
+"share": 0.973,
+"src": "db"
+},
+{
+"san": "Nxd4",
+"uci": "f3d4",
+"fen": "r1bqkbnr/pp1ppppp/2n5/8/3pP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 0 4",
+"mine": true,
+"games": 6329,
+"share": 0.918,
+"lossCp": 0,
+"evalCp": 42,
+"alts": [
+{
+"san": "c3",
+"uci": "c2c3",
+"games": 426,
+"share": 0.062,
+"lossCp": 49
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"games": 126,
+"share": 0.018,
+"lossCp": 91
+},
+{
+"san": "Bb5",
+"uci": "f1b5",
+"games": 9,
+"share": 0.001,
+"lossCp": 576
+},
+{
+"san": "Bd3",
+"uci": "f1d3",
+"games": 3,
+"share": 0.0,
+"lossCp": 79
+}
+],
+"src": "db",
+"why": "Take back with a centralised knight."
+},
+{
+"san": "e5",
+"uci": "e7e5",
+"fen": "r1bqkbnr/pp1ppppp/2n5/8/3NP3/8/PPP2PPP/RNBQKB1R b KQkq - 0 4",
+"mine": false,
+"games": 1753,
+"share": 0.277,
+"src": "db"
+},
+{
+"san": "Nb5",
+"uci": "d4b5",
+"fen": "r1bqkbnr/pp1p1ppp/2n5/4p3/3NP3/8/PPP2PPP/RNBQKB1R w KQkq - 0 5",
+"mine": true,
+"games": 927,
+"share": 0.529,
+"lossCp": 0,
+"evalCp": 62,
+"alts": [
+{
+"san": "Nxc6",
+"uci": "d4c6",
+"games": 410,
+"share": 0.234,
+"lossCp": 45
+},
+{
+"san": "Nb3",
+"uci": "d4b3",
+"games": 186,
+"share": 0.106,
+"lossCp": 44
+},
+{
+"san": "Nf3",
+"uci": "d4f3",
+"games": 140,
+"share": 0.08,
+"lossCp": 43
+},
+{
+"san": "Nf5",
+"uci": "d4f5",
+"games": 65,
+"share": 0.037,
+"lossCp": 56
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"games": 11,
+"share": 0.006,
+"lossCp": 615
+}
+],
+"src": "db",
+"why": "Hit d6, the hole ...e5 just created."
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"fen": "r1bqkbnr/pp1p1ppp/2n5/1N2p3/4P3/8/PPP2PPP/RNBQKB1R b KQkq - 1 5",
+"mine": false,
+"games": 636,
+"share": 0.687,
+"src": "db"
+},
+{
+"san": "N1c3",
+"uci": "b1c3",
+"fen": "r1bqkbnr/pp3ppp/2np4/1N2p3/4P3/8/PPP2PPP/RNBQKB1R w KQkq - 0 6",
+"mine": true,
+"games": 416,
+"share": 0.653,
+"lossCp": 19,
+"evalCp": 32,
+"alts": [
+{
+"san": "c4",
+"uci": "c2c4",
+"games": 144,
+"share": 0.226,
+"lossCp": 0
+},
+{
+"san": "Be3",
+"uci": "c1e3",
+"games": 18,
+"share": 0.028,
+"lossCp": 56
+},
+{
+"san": "a4",
+"uci": "a2a4",
+"games": 17,
+"share": 0.027,
+"lossCp": 37
+},
+{
+"san": "N5c3",
+"uci": "b5c3",
+"games": 15,
+"share": 0.024,
+"lossCp": 53
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"games": 8,
+"share": 0.013,
+"lossCp": 47
+}
+],
+"src": "db",
+"why": "Develop and support the b5 knight."
+}
+]
+},
+{
+"id": "french",
+"side": "w",
+"eco": "C00",
+"name": "French Defense",
+"idPgn": "1. e4 e6",
+"idPlies": 2,
+"names": [
+"French Defense"
+],
+"idea": "Black's light bishop is blocked by e6. Grab space with e5, support d4 with c3 and Nf3, and point your bishop at Black's kingside.",
+"endsIn": "C02 French Defense: Advance Variation, Milner-Barry Gambit",
+"endEvalCp": 15,
+"plies": [
+{
+"san": "e4",
+"uci": "e2e4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": true,
+"games": 223672,
+"share": 0.559,
+"lossCp": 0,
+"evalCp": 21,
+"alts": [
+{
+"san": "d4",
+"uci": "d2d4",
+"games": 115490,
+"share": 0.289,
+"lossCp": 0
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 17945,
+"share": 0.045,
+"lossCp": 1
+},
+{
+"san": "c4",
+"uci": "c2c4",
+"games": 17692,
+"share": 0.044,
+"lossCp": 1
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 4999,
+"share": 0.012,
+"lossCp": 37
+},
+{
+"san": "b3",
+"uci": "b2b3",
+"games": 4540,
+"share": 0.011,
+"lossCp": 31
+}
+],
+"src": "",
+"why": "Take the centre."
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+"mine": false,
+"games": 27579,
+"share": 0.123
+},
+{
+"san": "d4",
+"uci": "d2d4",
+"fen": "rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+"mine": true,
+"games": 16400,
+"share": 0.595,
+"lossCp": 0,
+"evalCp": 34,
+"alts": [
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 5347,
+"share": 0.194,
+"lossCp": 20
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"games": 1375,
+"share": 0.05,
+"lossCp": 1
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 1250,
+"share": 0.045,
+"lossCp": 59
+},
+{
+"san": "d3",
+"uci": "d2d3",
+"games": 922,
+"share": 0.033,
+"lossCp": 41
+},
+{
+"san": "c4",
+"uci": "c2c4",
+"games": 707,
+"share": 0.026,
+"lossCp": 39
+}
+],
+"src": "db",
+"why": "Build the big centre."
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"fen": "rnbqkbnr/pppp1ppp/4p3/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq - 0 2",
+"mine": false,
+"games": 14249,
+"share": 0.817,
+"src": "db"
+},
+{
+"san": "e5",
+"uci": "e4e5",
+"fen": "rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3",
+"mine": true,
+"games": 3932,
+"share": 0.273,
+"lossCp": 17,
+"evalCp": 22,
+"alts": [
+{
+"san": "Nc3",
+"uci": "b1c3",
+"games": 3912,
+"share": 0.272,
+"lossCp": 0
+},
+{
+"san": "exd5",
+"uci": "e4d5",
+"games": 3846,
+"share": 0.267,
+"lossCp": 29
+},
+{
+"san": "Nd2",
+"uci": "b1d2",
+"games": 2034,
+"share": 0.141,
+"lossCp": 23
+},
+{
+"san": "Bd3",
+"uci": "f1d3",
+"games": 425,
+"share": 0.03,
+"lossCp": 57
+},
+{
+"san": "Be3",
+"uci": "c1e3",
+"games": 80,
+"share": 0.006,
+"lossCp": 105
+}
+],
+"src": "db",
+"why": "Gain space and cramp Black's kingside."
+},
+{
+"san": "c5",
+"uci": "c7c5",
+"fen": "rnbqkbnr/ppp2ppp/4p3/3pP3/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 3",
+"mine": false,
+"games": 3693,
+"share": 0.898,
+"src": "db"
+},
+{
+"san": "c3",
+"uci": "c2c3",
+"fen": "rnbqkbnr/pp3ppp/4p3/2ppP3/3P4/8/PPP2PPP/RNBQKBNR w KQkq - 0 4",
+"mine": true,
+"games": 3064,
+"share": 0.829,
+"lossCp": 0,
+"evalCp": 24,
+"alts": [
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 323,
+"share": 0.087,
+"lossCp": 36
+},
+{
+"san": "Qg4",
+"uci": "d1g4",
+"games": 92,
+"share": 0.025,
+"lossCp": 131
+},
+{
+"san": "Bb5+",
+"uci": "f1b5",
+"games": 62,
+"share": 0.017,
+"lossCp": 45
+},
+{
+"san": "dxc5",
+"uci": "d4c5",
+"games": 56,
+"share": 0.015,
+"lossCp": 60
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 56,
+"share": 0.015,
+"lossCp": 42
+}
+],
+"src": "db",
+"why": "Shore up d4 against ...c5."
+},
+{
+"san": "Nc6",
+"uci": "b8c6",
+"fen": "rnbqkbnr/pp3ppp/4p3/2ppP3/3P4/2P5/PP3PPP/RNBQKBNR b KQkq - 0 4",
+"mine": false,
+"games": 2410,
+"share": 0.752,
+"src": "db"
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "r1bqkbnr/pp3ppp/2n1p3/2ppP3/3P4/2P5/PP3PPP/RNBQKBNR w KQkq - 1 5",
+"mine": true,
+"games": 1845,
+"share": 0.761,
+"lossCp": 0,
+"evalCp": 24,
+"alts": [
+{
+"san": "Bb5",
+"uci": "f1b5",
+"games": 216,
+"share": 0.089,
+"lossCp": 66
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 125,
+"share": 0.052,
+"lossCp": 88
+},
+{
+"san": "Be3",
+"uci": "c1e3",
+"games": 117,
+"share": 0.048,
+"lossCp": 40
+},
+{
+"san": "a3",
+"uci": "a2a3",
+"games": 66,
+"share": 0.027,
+"lossCp": 40
+},
+{
+"san": "Bd3",
+"uci": "f1d3",
+"games": 20,
+"share": 0.008,
+"lossCp": 85
+}
+],
+"src": "db",
+"why": "Defend d4 a second time and develop."
+},
+{
+"san": "Qb6",
+"uci": "d8b6",
+"fen": "r1bqkbnr/pp3ppp/2n1p3/2ppP3/3P4/2P2N2/PP3PPP/RNBQKB1R b KQkq - 2 5",
+"mine": false,
+"games": 900,
+"share": 0.415,
+"src": "db"
+},
+{
+"san": "Bd3",
+"uci": "f1d3",
+"fen": "r1b1kbnr/pp3ppp/1qn1p3/2ppP3/3P4/2P2N2/PP3PPP/RNBQKB1R w KQkq - 3 6",
+"mine": true,
+"games": 403,
+"share": 0.367,
+"lossCp": 17,
+"evalCp": 23,
+"alts": [
+{
+"san": "a3",
+"uci": "a2a3",
+"games": 302,
+"share": 0.275,
+"lossCp": 0
+},
+{
+"san": "Be2",
+"uci": "f1e2",
+"games": 202,
+"share": 0.184,
+"lossCp": 12
+},
+{
+"san": "b3",
+"uci": "b2b3",
+"games": 41,
+"share": 0.037,
+"lossCp": 76
+},
+{
+"san": "Qb3",
+"uci": "d1b3",
+"games": 38,
+"share": 0.035,
+"lossCp": 50
+},
+{
+"san": "Na3",
+"uci": "b1a3",
+"games": 33,
+"share": 0.03,
+"lossCp": 34
+}
+],
+"src": "db",
+"why": "Develop toward Black's king."
+}
+]
+},
+{
+"id": "caro-kann",
+"side": "w",
+"eco": "B10",
+"name": "Caro-Kann Defense",
+"idPgn": "1. e4 c6",
+"idPlies": 2,
+"names": [
+"Caro-Kann Defense"
+],
+"idea": "Black is solid and wants to develop the light bishop before ...e6. Push e5 for space, trade off that bishop with Bd3, and develop with Ne2 so f-pawn and c-pawn stay free.",
+"endsIn": "B12 Caro-Kann Defense: Advance Variation",
+"endEvalCp": 22,
+"plies": [
+{
+"san": "e4",
+"uci": "e2e4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": true,
+"games": 223672,
+"share": 0.559,
+"lossCp": 0,
+"evalCp": 21,
+"alts": [
+{
+"san": "d4",
+"uci": "d2d4",
+"games": 115490,
+"share": 0.289,
+"lossCp": 0
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 17945,
+"share": 0.045,
+"lossCp": 1
+},
+{
+"san": "c4",
+"uci": "c2c4",
+"games": 17692,
+"share": 0.044,
+"lossCp": 1
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 4999,
+"share": 0.012,
+"lossCp": 37
+},
+{
+"san": "b3",
+"uci": "b2b3",
+"games": 4540,
+"share": 0.011,
+"lossCp": 31
+}
+],
+"src": "",
+"why": "Take the centre."
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+"mine": false,
+"games": 24067,
+"share": 0.108
+},
+{
+"san": "d4",
+"uci": "d2d4",
+"fen": "rnbqkbnr/pp1ppppp/2p5/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+"mine": true,
+"games": 13590,
+"share": 0.565,
+"lossCp": 0,
+"evalCp": 40,
+"alts": [
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 4928,
+"share": 0.205,
+"lossCp": 1
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"games": 1835,
+"share": 0.076,
+"lossCp": 7
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 955,
+"share": 0.04,
+"lossCp": 14
+},
+{
+"san": "c4",
+"uci": "c2c4",
+"games": 782,
+"share": 0.033,
+"lossCp": 8
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"games": 718,
+"share": 0.03,
+"lossCp": 57
+}
+],
+"src": "db",
+"why": "Build the big centre."
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"fen": "rnbqkbnr/pp1ppppp/2p5/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq - 0 2",
+"mine": false,
+"games": 13259,
+"share": 0.938,
+"src": "db"
+},
+{
+"san": "e5",
+"uci": "e4e5",
+"fen": "rnbqkbnr/pp2pppp/2p5/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 0 3",
+"mine": true,
+"games": 4411,
+"share": 0.329,
+"lossCp": 0,
+"evalCp": 34,
+"alts": [
+{
+"san": "exd5",
+"uci": "e4d5",
+"games": 4092,
+"share": 0.305,
+"lossCp": 5
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"games": 3179,
+"share": 0.237,
+"lossCp": 3
+},
+{
+"san": "Nd2",
+"uci": "b1d2",
+"games": 813,
+"share": 0.061,
+"lossCp": 6
+},
+{
+"san": "f3",
+"uci": "f2f3",
+"games": 606,
+"share": 0.045,
+"lossCp": 7
+},
+{
+"san": "Bd3",
+"uci": "f1d3",
+"games": 186,
+"share": 0.014,
+"lossCp": 22
+}
+],
+"src": "db",
+"why": "The Advance: gain space."
+},
+{
+"san": "Bf5",
+"uci": "c8f5",
+"fen": "rnbqkbnr/pp2pppp/2p5/3pP3/3P4/8/PPP2PPP/RNBQKBNR b KQkq - 0 3",
+"mine": false,
+"games": 2805,
+"share": 0.632,
+"src": "db"
+},
+{
+"san": "Bd3",
+"uci": "f1d3",
+"fen": "rn1qkbnr/pp2pppp/2p5/3pPb2/3P4/8/PPP2PPP/RNBQKBNR w KQkq - 1 4",
+"mine": true,
+"games": 588,
+"share": 0.21,
+"lossCp": 11,
+"evalCp": 18,
+"alts": [
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 587,
+"share": 0.209,
+"lossCp": 0
+},
+{
+"san": "h4",
+"uci": "h2h4",
+"games": 566,
+"share": 0.202,
+"lossCp": 3
+},
+{
+"san": "g4",
+"uci": "g2g4",
+"games": 259,
+"share": 0.092,
+"lossCp": 11
+},
+{
+"san": "c3",
+"uci": "c2c3",
+"games": 183,
+"share": 0.065,
+"lossCp": 0
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 165,
+"share": 0.059,
+"lossCp": 47
+}
+],
+"src": "db",
+"why": "Offer a trade of Black's good bishop."
+},
+{
+"san": "Bxd3",
+"uci": "f5d3",
+"fen": "rn1qkbnr/pp2pppp/2p5/3pPb2/3P4/3B4/PPP2PPP/RNBQK1NR b KQkq - 2 4",
+"mine": false,
+"games": 497,
+"share": 0.845,
+"src": "db"
+},
+{
+"san": "Qxd3",
+"uci": "d1d3",
+"fen": "rn1qkbnr/pp2pppp/2p5/3pP3/3P4/3b4/PPP2PPP/RNBQK1NR w KQkq - 0 5",
+"mine": true,
+"games": 480,
+"share": 0.968,
+"lossCp": 1,
+"evalCp": 17,
+"alts": [
+{
+"san": "cxd3",
+"uci": "c2d3",
+"games": 16,
+"share": 0.032,
+"lossCp": 0
+}
+],
+"src": "db",
+"why": "Recapture; your queen is now active."
+},
+{
+"san": "e6",
+"uci": "e7e6",
+"fen": "rn1qkbnr/pp2pppp/2p5/3pP3/3P4/3Q4/PPP2PPP/RNB1K1NR b KQkq - 0 5",
+"mine": false,
+"games": 446,
+"share": 0.929,
+"src": "db"
+},
+{
+"san": "Ne2",
+"uci": "g1e2",
+"fen": "rn1qkbnr/pp3ppp/2p1p3/3pP3/3P4/3Q4/PPP2PPP/RNB1K1NR w KQkq - 0 6",
+"mine": true,
+"games": 120,
+"share": 0.268,
+"lossCp": 0,
+"evalCp": 24,
+"alts": [
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 116,
+"share": 0.26,
+"lossCp": 14
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 108,
+"share": 0.242,
+"lossCp": 42
+},
+{
+"san": "c3",
+"uci": "c2c3",
+"games": 52,
+"share": 0.116,
+"lossCp": 4
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"games": 11,
+"share": 0.025,
+"lossCp": 35
+},
+{
+"san": "a3",
+"uci": "a2a3",
+"games": 11,
+"share": 0.025,
+"lossCp": 14
+}
+],
+"src": "db",
+"why": "Develop flexibly; the knight can go to f4 or g3."
+}
+]
+},
+{
+"id": "scandinavian",
+"side": "w",
+"eco": "B01",
+"name": "Scandinavian Defense",
+"idPgn": "1. e4 d5",
+"idPlies": 2,
+"names": [
+"Scandinavian Defense"
+],
+"idea": "Black brings the queen out early. Take on d5, then hit the queen with Nc3 to gain time, build the centre with d4 and develop Nf3 and Bc4.",
+"endsIn": "B01 Scandinavian Defense: Main Line",
+"endEvalCp": 69,
+"plies": [
+{
+"san": "e4",
+"uci": "e2e4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": true,
+"games": 223672,
+"share": 0.559,
+"lossCp": 0,
+"evalCp": 21,
+"alts": [
+{
+"san": "d4",
+"uci": "d2d4",
+"games": 115490,
+"share": 0.289,
+"lossCp": 0
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 17945,
+"share": 0.045,
+"lossCp": 1
+},
+{
+"san": "c4",
+"uci": "c2c4",
+"games": 17692,
+"share": 0.044,
+"lossCp": 1
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 4999,
+"share": 0.012,
+"lossCp": 37
+},
+{
+"san": "b3",
+"uci": "b2b3",
+"games": 4540,
+"share": 0.011,
+"lossCp": 31
+}
+],
+"src": "",
+"why": "Take the centre."
+},
+{
+"san": "d5",
+"uci": "d7d5",
+"fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+"mine": false,
+"games": 19023,
+"share": 0.085
+},
+{
+"san": "exd5",
+"uci": "e4d5",
+"fen": "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+"mine": true,
+"games": 15007,
+"share": 0.79,
+"lossCp": 0,
+"evalCp": 59,
+"alts": [
+{
+"san": "e5",
+"uci": "e4e5",
+"games": 1448,
+"share": 0.076,
+"lossCp": 78
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 912,
+"share": 0.048,
+"lossCp": 138
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"games": 848,
+"share": 0.045,
+"lossCp": 106
+},
+{
+"san": "d4",
+"uci": "d2d4",
+"games": 421,
+"share": 0.022,
+"lossCp": 130
+},
+{
+"san": "d3",
+"uci": "d2d3",
+"games": 159,
+"share": 0.008,
+"lossCp": 76
+}
+],
+"src": "db",
+"why": "Take the pawn."
+},
+{
+"san": "Qxd5",
+"uci": "d8d5",
+"fen": "rnbqkbnr/ppp1pppp/8/3P4/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2",
+"mine": false,
+"games": 9054,
+"share": 0.604,
+"src": "db"
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"fen": "rnb1kbnr/ppp1pppp/8/3q4/8/8/PPPP1PPP/RNBQKBNR w KQkq - 0 3",
+"mine": true,
+"games": 6062,
+"share": 0.67,
+"lossCp": 0,
+"evalCp": 60,
+"alts": [
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 1408,
+"share": 0.156,
+"lossCp": 35
+},
+{
+"san": "d4",
+"uci": "d2d4",
+"games": 1074,
+"share": 0.119,
+"lossCp": 40
+},
+{
+"san": "c4",
+"uci": "c2c4",
+"games": 317,
+"share": 0.035,
+"lossCp": 125
+},
+{
+"san": "Qf3",
+"uci": "d1f3",
+"games": 91,
+"share": 0.01,
+"lossCp": 82
+},
+{
+"san": "d3",
+"uci": "d2d3",
+"games": 24,
+"share": 0.003,
+"lossCp": 62
+}
+],
+"src": "db",
+"why": "Develop with tempo on the queen."
+},
+{
+"san": "Qa5",
+"uci": "d5a5",
+"fen": "rnb1kbnr/ppp1pppp/8/3q4/8/2N5/PPPP1PPP/R1BQKBNR b KQkq - 1 3",
+"mine": false,
+"games": 2730,
+"share": 0.45,
+"src": "db"
+},
+{
+"san": "d4",
+"uci": "d2d4",
+"fen": "rnb1kbnr/ppp1pppp/8/q7/8/2N5/PPPP1PPP/R1BQKBNR w KQkq - 2 4",
+"mine": true,
+"games": 1051,
+"share": 0.385,
+"lossCp": 0,
+"evalCp": 65,
+"alts": [
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 785,
+"share": 0.288,
+"lossCp": 0
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"games": 401,
+"share": 0.147,
+"lossCp": 19
+},
+{
+"san": "b4",
+"uci": "b2b4",
+"games": 233,
+"share": 0.085,
+"lossCp": 57
+},
+{
+"san": "d3",
+"uci": "d2d3",
+"games": 77,
+"share": 0.028,
+"lossCp": 31
+},
+{
+"san": "g3",
+"uci": "g2g3",
+"games": 31,
+"share": 0.011,
+"lossCp": 19
+}
+],
+"src": "db",
+"why": "Take the centre while the queen is off-side."
+},
+{
+"san": "c6",
+"uci": "c7c6",
+"fen": "rnb1kbnr/ppp1pppp/8/q7/3P4/2N5/PPP2PPP/R1BQKBNR b KQkq - 0 4",
+"mine": false,
+"games": 459,
+"share": 0.431,
+"src": "db"
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "rnb1kbnr/pp2pppp/2p5/q7/3P4/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 5",
+"mine": true,
+"games": 200,
+"share": 0.424,
+"lossCp": 7,
+"evalCp": 71,
+"alts": [
+{
+"san": "Bd2",
+"uci": "c1d2",
+"games": 136,
+"share": 0.288,
+"lossCp": 4
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"games": 78,
+"share": 0.165,
+"lossCp": 0
+},
+{
+"san": "Bd3",
+"uci": "f1d3",
+"games": 17,
+"share": 0.036,
+"lossCp": 35
+},
+{
+"san": "h3",
+"uci": "h2h3",
+"games": 13,
+"share": 0.028,
+"lossCp": 23
+},
+{
+"san": "d5",
+"uci": "d4d5",
+"games": 7,
+"share": 0.015,
+"lossCp": 100
+}
+],
+"src": "db",
+"why": "Develop."
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"fen": "rnb1kbnr/pp2pppp/2p5/q7/3P4/2N2N2/PPP2PPP/R1BQKB1R b KQkq - 1 5",
+"mine": false,
+"games": 137,
+"share": 0.484,
+"src": "db"
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"fen": "rnb1kb1r/pp2pppp/2p2n2/q7/3P4/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 2 6",
+"mine": true,
+"games": 79,
+"share": 0.359,
+"lossCp": 0,
+"evalCp": 78,
+"alts": [
+{
+"san": "Bd2",
+"uci": "c1d2",
+"games": 61,
+"share": 0.277,
+"lossCp": 0
+},
+{
+"san": "Bd3",
+"uci": "f1d3",
+"games": 21,
+"share": 0.095,
+"lossCp": 17
+},
+{
+"san": "Be2",
+"uci": "f1e2",
+"games": 16,
+"share": 0.073,
+"lossCp": 37
+},
+{
+"san": "Ne5",
+"uci": "f3e5",
+"games": 15,
+"share": 0.068,
+"lossCp": 32
+},
+{
+"san": "Bf4",
+"uci": "c1f4",
+"games": 10,
+"share": 0.045,
+"lossCp": 10
+}
+],
+"src": "db",
+"why": "Develop to an active diagonal and prepare to castle."
+}
+]
+},
+{
+"id": "kid",
+"side": "w",
+"eco": "E61",
+"name": "King's Indian Defense",
+"idPgn": "1. d4 Nf6 2. c4 g6 3. Nc3",
+"idPlies": 5,
+"names": [
+"King's Indian Defense"
+],
+"idea": "Black lets you take the centre and attacks it later with ...e5. Build e4/d4/c4, develop with Nf3 and Be2, and castle — the solid Classical system.",
+"endsIn": "E94 King's Indian Defense: Orthodox Variation",
+"endEvalCp": 58,
+"plies": [
+{
+"san": "d4",
+"uci": "d2d4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": true,
+"games": 115490,
+"share": 0.289,
+"lossCp": 0,
+"evalCp": 18,
+"alts": [
+{
+"san": "e4",
+"uci": "e2e4",
+"games": 223672,
+"share": 0.559,
+"lossCp": 0
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 17945,
+"share": 0.045,
+"lossCp": 1
+},
+{
+"san": "c4",
+"uci": "c2c4",
+"games": 17692,
+"share": 0.044,
+"lossCp": 1
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 4999,
+"share": 0.012,
+"lossCp": 37
+},
+{
+"san": "b3",
+"uci": "b2b3",
+"games": 4540,
+"share": 0.011,
+"lossCp": 31
+}
+],
+"src": "",
+"why": "Take the centre."
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"fen": "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1",
+"mine": false,
+"games": 35028,
+"share": 0.303
+},
+{
+"san": "c4",
+"uci": "c2c4",
+"fen": "rnbqkb1r/pppppppp/5n2/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 1 2",
+"mine": true,
+"games": 15890,
+"share": 0.454,
+"lossCp": 2,
+"evalCp": 18,
+"alts": [
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 7378,
+"share": 0.211,
+"lossCp": 0
+},
+{
+"san": "Bf4",
+"uci": "c1f4",
+"games": 4625,
+"share": 0.132,
+"lossCp": 21
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"games": 2800,
+"share": 0.08,
+"lossCp": 22
+},
+{
+"san": "e3",
+"uci": "e2e3",
+"games": 1501,
+"share": 0.043,
+"lossCp": 14
+},
+{
+"san": "Bg5",
+"uci": "c1g5",
+"games": 1407,
+"share": 0.04,
+"lossCp": 24
+}
+],
+"src": "",
+"why": "Gain more space."
+},
+{
+"san": "g6",
+"uci": "g7g6",
+"fen": "rnbqkb1r/pppppppp/5n2/8/2PP4/8/PP2PPPP/RNBQKBNR b KQkq - 0 2",
+"mine": false,
+"games": 4781,
+"share": 0.295
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"fen": "rnbqkb1r/pppppp1p/5np1/8/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 3",
+"mine": true,
+"games": 3872,
+"share": 0.802,
+"lossCp": 0,
+"evalCp": 24,
+"alts": [
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 542,
+"share": 0.112,
+"lossCp": 8
+},
+{
+"san": "g3",
+"uci": "g2g3",
+"games": 169,
+"share": 0.035,
+"lossCp": 13
+},
+{
+"san": "e3",
+"uci": "e2e3",
+"games": 75,
+"share": 0.016,
+"lossCp": 11
+},
+{
+"san": "f3",
+"uci": "f2f3",
+"games": 72,
+"share": 0.015,
+"lossCp": 16
+},
+{
+"san": "Bg5",
+"uci": "c1g5",
+"games": 24,
+"share": 0.005,
+"lossCp": 30
+}
+],
+"src": "",
+"why": "Develop and prepare e4."
+},
+{
+"san": "Bg7",
+"uci": "f8g7",
+"fen": "rnbqkb1r/pppppp1p/5np1/8/2PP4/2N5/PP2PPPP/R1BQKBNR b KQkq - 1 3",
+"mine": false,
+"games": 2697,
+"share": 0.671,
+"src": "db"
+},
+{
+"san": "e4",
+"uci": "e2e4",
+"fen": "rnbqk2r/ppppppbp/5np1/8/2PP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4",
+"mine": true,
+"games": 2144,
+"share": 0.732,
+"lossCp": 0,
+"evalCp": 55,
+"alts": [
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 373,
+"share": 0.127,
+"lossCp": 35
+},
+{
+"san": "Bg5",
+"uci": "c1g5",
+"games": 147,
+"share": 0.05,
+"lossCp": 41
+},
+{
+"san": "Bf4",
+"uci": "c1f4",
+"games": 109,
+"share": 0.037,
+"lossCp": 48
+},
+{
+"san": "g3",
+"uci": "g2g3",
+"games": 60,
+"share": 0.02,
+"lossCp": 49
+},
+{
+"san": "e3",
+"uci": "e2e3",
+"games": 54,
+"share": 0.018,
+"lossCp": 56
+}
+],
+"src": "db",
+"why": "Build the full pawn centre."
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"fen": "rnbqk2r/ppppppbp/5np1/8/2PPP3/2N5/PP3PPP/R1BQKBNR b KQkq - 0 4",
+"mine": false,
+"games": 1730,
+"share": 0.792,
+"src": "db"
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "rnbqk2r/ppp1ppbp/3p1np1/8/2PPP3/2N5/PP3PPP/R1BQKBNR w KQkq - 0 5",
+"mine": true,
+"games": 636,
+"share": 0.24,
+"lossCp": 11,
+"evalCp": 55,
+"alts": [
+{
+"san": "f3",
+"uci": "f2f3",
+"games": 468,
+"share": 0.176,
+"lossCp": 28
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 420,
+"share": 0.158,
+"lossCp": 37
+},
+{
+"san": "Be2",
+"uci": "f1e2",
+"games": 411,
+"share": 0.155,
+"lossCp": 1
+},
+{
+"san": "h3",
+"uci": "h2h3",
+"games": 255,
+"share": 0.096,
+"lossCp": 0
+},
+{
+"san": "Bd3",
+"uci": "f1d3",
+"games": 227,
+"share": 0.085,
+"lossCp": 29
+}
+],
+"src": "db",
+"why": "Develop and guard d4."
+},
+{
+"san": "O-O",
+"uci": "e8g8",
+"fen": "rnbqk2r/ppp1ppbp/3p1np1/8/2PPP3/2N2N2/PP3PPP/R1BQKB1R b KQkq - 1 5",
+"mine": false,
+"games": 1030,
+"share": 0.837,
+"src": "db"
+},
+{
+"san": "Be2",
+"uci": "f1e2",
+"fen": "rnbq1rk1/ppp1ppbp/3p1np1/8/2PPP3/2N2N2/PP3PPP/R1BQKB1R w KQ - 2 6",
+"mine": true,
+"games": 940,
+"share": 0.643,
+"lossCp": 0,
+"evalCp": 58,
+"alts": [
+{
+"san": "h3",
+"uci": "h2h3",
+"games": 185,
+"share": 0.126,
+"lossCp": 13
+},
+{
+"san": "Bd3",
+"uci": "f1d3",
+"games": 184,
+"share": 0.126,
+"lossCp": 25
+},
+{
+"san": "Bg5",
+"uci": "c1g5",
+"games": 61,
+"share": 0.042,
+"lossCp": 30
+},
+{
+"san": "Be3",
+"uci": "c1e3",
+"games": 44,
+"share": 0.03,
+"lossCp": 17
+},
+{
+"san": "Bf4",
+"uci": "c1f4",
+"games": 11,
+"share": 0.008,
+"lossCp": 47
+}
+],
+"src": "db",
+"why": "Quiet development; get ready to castle."
+},
+{
+"san": "e5",
+"uci": "e7e5",
+"fen": "rnbq1rk1/ppp1ppbp/3p1np1/8/2PPP3/2N2N2/PP2BPPP/R1BQK2R b KQ - 3 6",
+"mine": false,
+"games": 410,
+"share": 0.38,
+"src": "db"
+},
+{
+"san": "O-O",
+"uci": "e1g1",
+"fen": "rnbq1rk1/ppp2pbp/3p1np1/4p3/2PPP3/2N2N2/PP2BPPP/R1BQK2R w KQ - 0 7",
+"mine": true,
+"games": 193,
+"share": 0.471,
+"lossCp": 0,
+"evalCp": 52,
+"alts": [
+{
+"san": "d5",
+"uci": "d4d5",
+"games": 107,
+"share": 0.261,
+"lossCp": 12
+},
+{
+"san": "dxe5",
+"uci": "d4e5",
+"games": 57,
+"share": 0.139,
+"lossCp": 46
+},
+{
+"san": "Be3",
+"uci": "c1e3",
+"games": 50,
+"share": 0.122,
+"lossCp": 4
+}
+],
+"src": "db",
+"why": "King safe before the centre opens."
+}
+]
+},
+{
+"id": "pirc",
+"side": "w",
+"eco": "B07",
+"name": "Pirc Defense",
+"idPgn": "1. e4 d6 2. d4 Nf6 3. Nc3 g6",
+"idPlies": 6,
+"names": [
+"Pirc Defense"
+],
+"idea": "Black fianchettoes and attacks your centre later. Build it with d4 and Nc3, develop Nf3 and Bc4, castle, and if Black tries the ...Nxe4 trick, simply take back.",
+"endsIn": "B08 Pirc Defense: Classical Variation",
+"endEvalCp": 28,
+"plies": [
+{
+"san": "e4",
+"uci": "e2e4",
+"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+"mine": true,
+"games": 223672,
+"share": 0.559,
+"lossCp": 0,
+"evalCp": 21,
+"alts": [
+{
+"san": "d4",
+"uci": "d2d4",
+"games": 115490,
+"share": 0.289,
+"lossCp": 0
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 17945,
+"share": 0.045,
+"lossCp": 1
+},
+{
+"san": "c4",
+"uci": "c2c4",
+"games": 17692,
+"share": 0.044,
+"lossCp": 1
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 4999,
+"share": 0.012,
+"lossCp": 37
+},
+{
+"san": "b3",
+"uci": "b2b3",
+"games": 4540,
+"share": 0.011,
+"lossCp": 31
+}
+],
+"src": "",
+"why": "Take the centre."
+},
+{
+"san": "d6",
+"uci": "d7d6",
+"fen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+"mine": false,
+"games": 10767,
+"share": 0.048
+},
+{
+"san": "d4",
+"uci": "d2d4",
+"fen": "rnbqkbnr/ppp1pppp/3p4/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+"mine": true,
+"games": 6779,
+"share": 0.63,
+"lossCp": 0,
+"evalCp": 42,
+"alts": [
+{
+"san": "Nf3",
+"uci": "g1f3",
+"games": 2024,
+"share": 0.188,
+"lossCp": 6
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"games": 604,
+"share": 0.056,
+"lossCp": 6
+},
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 529,
+"share": 0.049,
+"lossCp": 25
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"games": 399,
+"share": 0.037,
+"lossCp": 46
+},
+{
+"san": "d3",
+"uci": "d2d3",
+"games": 148,
+"share": 0.014,
+"lossCp": 46
+}
+],
+"src": "",
+"why": "Build the big centre."
+},
+{
+"san": "Nf6",
+"uci": "g8f6",
+"fen": "rnbqkbnr/ppp1pppp/3p4/8/3PP3/8/PPP2PPP/RNBQKBNR b KQkq - 0 2",
+"mine": false,
+"games": 4164,
+"share": 0.562
+},
+{
+"san": "Nc3",
+"uci": "b1c3",
+"fen": "rnbqkb1r/ppp1pppp/3p1n2/8/3PP3/8/PPP2PPP/RNBQKBNR w KQkq - 1 3",
+"mine": true,
+"games": 2828,
+"share": 0.677,
+"lossCp": 0,
+"evalCp": 47,
+"alts": [
+{
+"san": "Bd3",
+"uci": "f1d3",
+"games": 1009,
+"share": 0.241,
+"lossCp": 12
+},
+{
+"san": "f3",
+"uci": "f2f3",
+"games": 163,
+"share": 0.039,
+"lossCp": 19
+},
+{
+"san": "Nd2",
+"uci": "b1d2",
+"games": 82,
+"share": 0.02,
+"lossCp": 31
+},
+{
+"san": "e5",
+"uci": "e4e5",
+"games": 31,
+"share": 0.007,
+"lossCp": 184
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"games": 17,
+"share": 0.004,
+"lossCp": 69
+}
+],
+"src": "",
+"why": "Defend e4."
+},
+{
+"san": "g6",
+"uci": "g7g6",
+"fen": "rnbqkb1r/ppp1pppp/3p1n2/8/3PP3/2N5/PPP2PPP/R1BQKBNR b KQkq - 2 3",
+"mine": false,
+"games": 1761,
+"share": 0.543
+},
+{
+"san": "Nf3",
+"uci": "g1f3",
+"fen": "rnbqkb1r/ppp1pp1p/3p1np1/8/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 4",
+"mine": true,
+"games": 400,
+"share": 0.193,
+"lossCp": 8,
+"evalCp": 60,
+"alts": [
+{
+"san": "f4",
+"uci": "f2f4",
+"games": 393,
+"share": 0.189,
+"lossCp": 9
+},
+{
+"san": "Bg5",
+"uci": "c1g5",
+"games": 323,
+"share": 0.156,
+"lossCp": 13
+},
+{
+"san": "Be3",
+"uci": "c1e3",
+"games": 321,
+"share": 0.155,
+"lossCp": 0
+},
+{
+"san": "f3",
+"uci": "f2f3",
+"games": 141,
+"share": 0.068,
+"lossCp": 11
+},
+{
+"san": "Bd3",
+"uci": "f1d3",
+"games": 130,
+"share": 0.063,
+"lossCp": 29
+}
+],
+"src": "db",
+"why": "Develop the classical way."
+},
+{
+"san": "Bg7",
+"uci": "f8g7",
+"fen": "rnbqkb1r/ppp1pp1p/3p1np1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R b KQkq - 1 4",
+"mine": false,
+"games": 690,
+"share": 0.945,
+"src": "db"
+},
+{
+"san": "Bc4",
+"uci": "f1c4",
+"fen": "rnbqk2r/ppp1ppbp/3p1np1/8/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 2 5",
+"mine": true,
+"games": 221,
+"share": 0.206,
+"lossCp": 22,
+"evalCp": 27,
+"alts": [
+{
+"san": "Bd3",
+"uci": "f1d3",
+"games": 204,
+"share": 0.19,
+"lossCp": 21
+},
+{
+"san": "Be3",
+"uci": "c1e3",
+"games": 195,
+"share": 0.181,
+"lossCp": 7
+},
+{
+"san": "Bg5",
+"uci": "c1g5",
+"games": 122,
+"share": 0.113,
+"lossCp": 8
+},
+{
+"san": "h3",
+"uci": "h2h3",
+"games": 119,
+"share": 0.111,
+"lossCp": 16
+},
+{
+"san": "Be2",
+"uci": "f1e2",
+"games": 116,
+"share": 0.108,
+"lossCp": 0
+}
+],
+"src": "db",
+"why": "Aim at f7."
+},
+{
+"san": "O-O",
+"uci": "e8g8",
+"fen": "rnbqk2r/ppp1ppbp/3p1np1/8/2BPP3/2N2N2/PPP2PPP/R1BQK2R b KQkq - 3 5",
+"mine": false,
+"games": 304,
+"share": 0.794,
+"src": "db"
+},
+{
+"san": "O-O",
+"uci": "e1g1",
+"fen": "rnbq1rk1/ppp1ppbp/3p1np1/8/2BPP3/2N2N2/PPP2PPP/R1BQK2R w KQ - 4 6",
+"mine": true,
+"games": 180,
+"share": 0.59,
+"lossCp": 5,
+"evalCp": 12,
+"alts": [
+{
+"san": "Bg5",
+"uci": "c1g5",
+"games": 31,
+"share": 0.102,
+"lossCp": 25
+},
+{
+"san": "h3",
+"uci": "h2h3",
+"games": 30,
+"share": 0.098,
+"lossCp": 44
+},
+{
+"san": "Qe2",
+"uci": "d1e2",
+"games": 20,
+"share": 0.066,
+"lossCp": 0
+},
+{
+"san": "Be3",
+"uci": "c1e3",
+"games": 17,
+"share": 0.056,
+"lossCp": 23
+},
+{
+"san": "Bb3",
+"uci": "c4b3",
+"games": 7,
+"share": 0.023,
+"lossCp": 2
+}
+],
+"src": "db",
+"why": "King safe."
+},
+{
+"san": "Nxe4",
+"uci": "f6e4",
+"fen": "rnbq1rk1/ppp1ppbp/3p1np1/8/2BPP3/2N2N2/PPP2PPP/R1BQ1RK1 b - - 5 6",
+"mine": false,
+"games": 55,
+"share": 0.284,
+"src": "db"
+},
+{
+"san": "Nxe4",
+"uci": "c3e4",
+"fen": "rnbq1rk1/ppp1ppbp/3p2p1/8/2BPn3/2N2N2/PPP2PPP/R1BQ1RK1 w - - 0 7",
+"mine": true,
+"games": 33,
+"share": 0.6,
+"lossCp": 0,
+"evalCp": 20,
+"alts": [
+{
+"san": "Bxf7+",
+"uci": "c4f7",
+"games": 19,
+"share": 0.345,
+"lossCp": 24
+}
+],
+"src": "db",
+"why": "Take the knight; Black's ...d5 fork wins it back, but you stay fine."
+}
+]
+}
+]
+}

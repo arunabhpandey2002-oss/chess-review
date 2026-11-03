@@ -30,6 +30,7 @@ import { cachedAtLeast, putCached, pruneCache } from './evalcache';
 import { renderHomePanel, renderPuzzles, renderTrain, renderHistory, renderImport, renderData, destroyTrainer, recordAttempt, recordDiagnosis, newPuzzle, rememberGame, storedGame, SITE_LABEL, type Ctx, type Site } from './pages';
 import { $, esc, cap, srcChip, applyMotionClass, reducedMotion, boardDescription, fmtWhen } from './ui';
 import { isDue, srsStatus } from './srs';
+import { renderOpenings, destroyDrill } from './openings-page';
 import { lastMoveFromPgn } from './lastmove';
 
 const DEFAULT_USER = 'Arunabh-pandey';
@@ -56,7 +57,7 @@ const bookPromise = fetch(`${import.meta.env.BASE_URL}book.json`).then((r) => r.
 function params() {
   const p = new URLSearchParams(location.search);
   const site = (p.get('site') === 'lichess' ? 'lichess' : 'chesscom') as Site;
-  return { user: p.get('user') || DEFAULT_USER, site, game: p.get('game'), view: p.get('view'), ply: p.get('ply'), p: p.get('p'), tag: p.get('tag'), ws: p.get('ws') };
+  return { user: p.get('user') || DEFAULT_USER, site, game: p.get('game'), view: p.get('view'), ply: p.get('ply'), p: p.get('p'), o: p.get('o'), tag: p.get('tag'), ws: p.get('ws') };
 }
 function navigate(q: Record<string, string | null>, replace = false) {
   const p = new URLSearchParams(location.search);
@@ -88,9 +89,9 @@ async function renderTabs(active: string) {
   const el = $('#tabs');
   let due = 0;
   try { due = (await store.byProfile<Puzzle>('puzzles', pk())).filter((p) => isDue(p.srs, Date.now())).length; } catch { /* no IndexedDB */ }
-  const tabs: [string, string][] = [['', 'Games'], ['puzzles', `Mistakes to Master${due ? ` <span class="badge-n" aria-label="${due} due">${due}</span>` : ''}`], ['history', 'History'], ['import', 'Import'], ['data', 'Your data']];
+  const tabs: [string, string][] = [['', 'Games'], ['puzzles', `Mistakes to Master${due ? ` <span class="badge-n" aria-label="${due} due">${due}</span>` : ''}`], ['openings', 'Openings'], ['history', 'History'], ['import', 'Import'], ['data', 'Your data']];
   el.innerHTML = tabs.map(([v, label]) => `<a href="?${new URLSearchParams({ user: state.user, ...(state.site === 'lichess' ? { site: 'lichess' } : {}), ...(v ? { view: v } : {}) })}" data-view="${v}" class="${active === v ? 'on' : ''}" ${active === v ? 'aria-current="page"' : ''}>${label}</a>`).join('');
-  el.querySelectorAll<HTMLAnchorElement>('a').forEach((a) => (a.onclick = (e) => { e.preventDefault(); navigate({ view: a.dataset.view || null, game: null, p: null, tag: null, ply: null }); }));
+  el.querySelectorAll<HTMLAnchorElement>('a').forEach((a) => (a.onclick = (e) => { e.preventDefault(); navigate({ view: a.dataset.view || null, game: null, p: null, tag: null, ply: null, o: null }); }));
 }
 
 function renderHeader() {
@@ -112,7 +113,7 @@ function renderHeader() {
 // ---------------- routing ----------------
 let currentReview: ReviewView | null = null;
 async function route() {
-  const { user, site, game, view, ply, p, tag, ws } = params();
+  const { user, site, game, view, ply, p, tag, ws, o } = params();
   if (user.toLowerCase() !== state.user.toLowerCase() || site !== state.site) {
     state.user = user; state.site = site; state.archives = []; state.loadedMonths = 0; state.exhausted = false; state.games = []; state.gamesById.clear(); state.profile = null; state.rating = 0;
     renderHeader();
@@ -126,9 +127,11 @@ async function route() {
   if (!game || view) { currentReview?.destroy(); currentReview = null; }
   if (view !== 'train') destroyTrainer();
   if (view !== 'analysis') destroyWorkspace();
+  if (view !== 'openings') destroyDrill();
   try {
     if (view === 'puzzles') return await renderPuzzles(ctx, tag);
     if (view === 'train') return await renderTrain(ctx, p);
+    if (view === 'openings') return await renderOpenings({ ...ctx, pk: pk(), user: state.user, site: state.site, games: () => state.games, book: () => bookPromise, loadGames: async () => { try { if (!state.loadedMonths) await loadNextMonth(); while (state.games.length < 80 && state.loadedMonths < 4 && (await loadNextMonth())); } catch { /* offline or no such player: stored games only */ } } }, o);
     if (view === 'history') return await renderHistory(ctx);
     if (view === 'import') return await renderImport(ctx);
     if (view === 'data') return await renderData(ctx);
