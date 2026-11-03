@@ -28,8 +28,8 @@ import { renderWorkspace, destroyWorkspace, createWorkspace, lessonDoc } from '.
 import { renderBatchPanel } from './batch-ui';
 import { cachedAtLeast, putCached, pruneCache } from './evalcache';
 import { renderHomePanel, renderPuzzles, renderTrain, renderHistory, renderImport, renderData, destroyTrainer, recordAttempt, recordDiagnosis, newPuzzle, rememberGame, storedGame, SITE_LABEL, type Ctx, type Site } from './pages';
-import { $, esc, cap, srcChip, applyMotionClass, reducedMotion, boardDescription } from './ui';
-import { isDue } from './srs';
+import { $, esc, cap, srcChip, applyMotionClass, reducedMotion, boardDescription, fmtWhen } from './ui';
+import { isDue, srsStatus } from './srs';
 
 const DEFAULT_USER = 'Arunabh-pandey';
 const app = $('#app');
@@ -79,6 +79,7 @@ const ctx: Ctx = {
   level: (rating?: number) => levelOverride() ?? levelForRating(rating ?? (state.rating || null)),
   setLevel: (l) => { l ? localStorage.setItem('cr-level', l) : localStorage.removeItem('cr-level'); },
   levelOverride,
+  refreshCounts: () => { void renderTabs(params().view ?? ''); },
 };
 
 // ---------------- header ----------------
@@ -765,6 +766,14 @@ class ReviewView {
     renderTabs('');
   }
 
+  /** Reload this game's saved positions from storage, so the moments list shows what the counter counts. */
+  async refreshPuzzles() {
+    const key = pk();
+    for (const m of this.moments) {
+      try { const p = await store.get<Puzzle>('puzzles', `${key}|${this.game.id}|${m.ply}`); if (p) this.puzzles.set(m.ply, p); } catch { /* no IndexedDB */ }
+    }
+  }
+
   renderCoach() {
     const el = $('#coach');
     const s = this.coachSummary;
@@ -774,13 +783,18 @@ class ReviewView {
     const T = (t: string) => esc(renderText(t, nt ? 'san' : 'words', seen));
     const lvl = this.level;
     const phaseRow = s.phases.filter((p) => p.moves).map((p) => `<li><b>${cap(p.phase)}</b>: ${esc(p.label)}${p.accuracy != null ? ` <span class="muted">(accuracy ${p.accuracy.toFixed(0)}, ${p.moves} moves${p.mistakes + p.blunders ? `, ${p.mistakes + p.blunders} error${p.mistakes + p.blunders > 1 ? 's' : ''}` : ''})</span>` : ''}</li>`).join('');
+    // status comes from the same saved spaced-review state the Mistakes to Master counter counts
+    const now = Date.now();
     const statusOf = (m: Moment) => {
       const p = this.puzzles.get(m.ply);
       const h = p?.srs.history ?? [];
-      if (!h.length) return '<span class="st st-new">Not tried</span>';
+      if (!p || !h.length) return '<span class="st st-new">Not tried</span>';
       const last = h[h.length - 1];
-      return last.solved ? `<span class="st st-scheduled">✓ Solved${last.hints ? ` with ${last.hints} hint${last.hints > 1 ? 's' : ''}` : ''}</span>` : '<span class="st st-due">Not solved yet</span>';
+      const st = srsStatus(p.srs, now);
+      const when = st === 'mastered' ? ' · mastered' : st === 'due' ? ' · due now' : ` · next ${fmtWhen(p.srs.due, now)}`;
+      return last.solved ? `<span class="st st-scheduled">✓ Solved${last.hints ? ` with ${last.hints} hint${last.hints > 1 ? 's' : ''}` : ''}${when}</span>` : `<span class="st st-due">Not solved yet${when}</span>`;
     };
+    const dueHere = this.moments.filter((m) => { const p = this.puzzles.get(m.ply); return !p || isDue(p.srs, now); }).length;
     el.innerHTML = `
       <div class="card coach-card">
         <div class="coach-head">
@@ -803,7 +817,7 @@ class ReviewView {
         <div class="src-note">Sources:${srcChip('rules')}${srcChip('estimate')}</div>
       </div>
       <div class="moments">
-        <h2>Critical moments</h2>${this.moments.length ? `<p class="muted small sub">${this.moments.length} position${this.moments.length > 1 ? 's' : ''} to retry, saved to Mistakes to Master</p>` : ''}
+        <h2>Critical moments</h2>${this.moments.length ? `<p class="muted small sub">${this.moments.length} position${this.moments.length > 1 ? 's' : ''} saved to Mistakes to Master · <span id="moments-due">${dueHere ? `${dueHere} to train now` : 'all trained for now'}</span></p>` : ''}
         ${this.moments.length ? `<div class="moment-list">${this.moments.map((m, i) => {
           const cm = CLS_META[m.cls as Cls] ?? CLS_META.mistake;
           const t = m.tags.primary;
@@ -854,6 +868,9 @@ class ReviewView {
       onResult: async (r) => {
         const p = this.puzzles.get(m.ply);
         if (p) this.puzzles.set(m.ply, await recordAttempt(p, r));
+        // a miss can bring back mastered positions, so reload this game's positions, then redraw the list and the counter together
+        await this.refreshPuzzles();
+        this.renderCoach();
         renderTabs('');
       },
       onClose: () => this.closeTrainer(),

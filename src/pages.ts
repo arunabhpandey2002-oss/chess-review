@@ -27,6 +27,8 @@ export interface Ctx {
   level: (rating?: number) => Level;
   setLevel: (l: Level | null) => void;
   levelOverride: () => Level | null;
+  /** Redraw the due badge in the tabs after an attempt is saved. */
+  refreshCounts?: () => void;
 }
 
 export const SITE_LABEL: Record<string, string> = { chesscom: 'Chess.com', lichess: 'Lichess', pgn: 'PGN' };
@@ -145,7 +147,14 @@ export async function renderPuzzles(ctx: Ctx, filter: string | null) {
   const showMore = () => {
     const page = list.slice(shown, shown + PZ_PAGE);
     const tmp = document.createElement('div');
-    tmp.innerHTML = page.map(rowHtml).join('');
+    // split the list into what the "Train N due" counter counts and what is scheduled later, so a trained position visibly leaves the due group
+    const firstLater = list.findIndex((p) => !isDue(p.srs, now));
+    const dueInList = firstLater < 0 ? list.length : firstLater;
+    tmp.innerHTML = page.map((p, k) => {
+      const at = shown + k;
+      const sep = at === 0 && dueInList ? `<h3 class="pz-sep" id="pz-due-head">Due now (${dueInList})</h3>` : at === dueInList && at < list.length ? `<h3 class="pz-sep">${dueInList ? 'Coming up later' : 'Nothing due · coming up later'}</h3>` : '';
+      return sep + rowHtml(p);
+    }).join('');
     tmp.querySelectorAll<HTMLElement>('.mini').forEach((m) => miniBoard(m, m.dataset.fen!, m.dataset.color as 'w' | 'b'));
     tmp.querySelectorAll<HTMLButtonElement>('[data-train]').forEach((b) => (b.onclick = () => ctx.navigate({ view: 'train', p: b.dataset.train! })));
     tmp.querySelectorAll<HTMLButtonElement>('[data-game]').forEach((b) => (b.onclick = () => ctx.navigate({ view: null, game: b.dataset.game!, ply: b.dataset.ply! })));
@@ -195,7 +204,7 @@ export async function renderTrain(ctx: Ctx, onlyId: string | null) {
     trainer = new Trainer(host, {
       core: p.core, level: ctx.level(),
       title: puzzleTitle(p), subtitle: puzzleSub(p),
-      onResult: async (r) => { if (r.solved) solved++; await recordAttempt(p, r); },
+      onResult: async (r) => { if (r.solved) solved++; await recordAttempt(p, r); ctx.refreshCounts?.(); },
       rating: p.rating, prior: p.diagnosis, onDiagnosis: async (d) => { await recordDiagnosis(p, d); },
       replay: { profileKey: p.profileKey, sourceId: p.id, original: p.source && p.source !== 'game' ? null : () => originalForPuzzle(p.profileKey, p.gameId, p.core.fenBefore, p.core.playedUci) },
       onAnalyse: async (m) => { const id = await createWorkspace(ctx.pk, lessonDoc(m, m.color, `${puzzleTitle(p)}`)); ctx.navigate({ view: 'analysis', ws: id, p: null }); },

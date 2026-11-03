@@ -727,3 +727,4 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
 .ex-col-foot, .ex-cap-foot { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-start; }
 .ex-cap-foot { margin-top: 6px; }
 .ex-capture ul { margin-top: 2px; }
+.pz-sep { margin: 14px 0 2px; font-size: 0.95rem; color: var(--muted, #888); font-weight: 600; }
