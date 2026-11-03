@@ -773,3 +773,7 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
   .op-faced th:nth-child(2), .op-faced td:nth-child(2) { display: none; }
   .op-faced td, .op-faced th { padding: 5px 3px; font-size: 13px; }
 }
+
+/* "Practise Bishop's Opening" must wrap inside the table on a phone */
+.op-faced .btn { white-space: normal; text-align: center; }
+.op-faced td { overflow-wrap: anywhere; }
