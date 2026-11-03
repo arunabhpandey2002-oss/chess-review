@@ -57,7 +57,7 @@ const bookPromise = fetch(`${import.meta.env.BASE_URL}book.json`).then((r) => r.
 function params() {
   const p = new URLSearchParams(location.search);
   const site = (p.get('site') === 'lichess' ? 'lichess' : 'chesscom') as Site;
-  return { user: p.get('user') || DEFAULT_USER, site, game: p.get('game'), view: p.get('view'), ply: p.get('ply'), p: p.get('p'), o: p.get('o'), tag: p.get('tag'), ws: p.get('ws') };
+  return { user: p.get('user') || DEFAULT_USER, site, game: p.get('game'), view: p.get('view'), ply: p.get('ply'), p: p.get('p'), o: p.get('o'), m: p.get('m'), tag: p.get('tag'), ws: p.get('ws') };
 }
 function navigate(q: Record<string, string | null>, replace = false) {
   const p = new URLSearchParams(location.search);
@@ -113,7 +113,7 @@ function renderHeader() {
 // ---------------- routing ----------------
 let currentReview: ReviewView | null = null;
 async function route() {
-  const { user, site, game, view, ply, p, tag, ws, o } = params();
+  const { user, site, game, view, ply, p, tag, ws, o, m } = params();
   if (user.toLowerCase() !== state.user.toLowerCase() || site !== state.site) {
     state.user = user; state.site = site; state.archives = []; state.loadedMonths = 0; state.exhausted = false; state.games = []; state.gamesById.clear(); state.profile = null; state.rating = 0;
     renderHeader();
@@ -131,7 +131,7 @@ async function route() {
   try {
     if (view === 'puzzles') return await renderPuzzles(ctx, tag);
     if (view === 'train') return await renderTrain(ctx, p);
-    if (view === 'openings') return await renderOpenings({ ...ctx, pk: pk(), user: state.user, site: state.site, games: () => state.games, book: () => bookPromise, loadGames: async () => { try { if (!state.loadedMonths) await loadNextMonth(); while (state.games.length < 80 && state.loadedMonths < 4 && (await loadNextMonth())); } catch { /* offline or no such player: stored games only */ } } }, o);
+    if (view === 'openings') return await renderOpenings({ ...ctx, pk: pk(), user: state.user, site: state.site, games: () => state.games, book: () => bookPromise, loadGames: async () => { try { if (!state.loadedMonths) await loadNextMonth(); while (state.games.length < 80 && state.loadedMonths < 4 && (await loadNextMonth())); } catch { /* offline or no such player: stored games only */ } } }, o, m === 'defend' ? 'defend' : 'play');
     if (view === 'history') return await renderHistory(ctx);
     if (view === 'import') return await renderImport(ctx);
     if (view === 'data') return await renderData(ctx);

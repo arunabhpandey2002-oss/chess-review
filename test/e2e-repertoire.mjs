@@ -56,7 +56,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   check(`${tag}: Réti variation shows ECO and its moves`, /A09/.test(await card.innerText()) && /1\. Nf3 d5 2\. c4/.test(await card.locator('summary').innerText()));
   await card.locator('summary').click();
   check(`${tag}: Réti line lists reasons`, (await card.locator('.op-line li').count()) >= 4, await card.locator('.op-line li').count());
-  check(`${tag}: not practised yet`, /Not practised/.test(await card.locator('.op-status').innerText()));
+  check(`${tag}: not practised yet`, /Not practised/.test(await card.locator('.op-var-top .op-status').innerText()));
   await page.waitForSelector('#op-faced table');
   const faced = page.locator('#op-faced');
   const retiRow = faced.locator('tbody tr').filter({ has: page.locator('td:first-child', { hasText: /^Réti Opening A09/ }) });
@@ -128,7 +128,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   // back to the library: status updated
   await page.click('#op-back');
   await page.waitForSelector('#op-reti');
-  check(`${tag}: library shows the new status`, !/Not practised/.test(await page.locator('#op-reti .op-status').innerText()), await page.locator('#op-reti .op-status').innerText());
+  check(`${tag}: library shows the new status`, !/Not practised/.test(await page.locator('#op-reti .op-var-top .op-status').innerText()), await page.locator('#op-reti .op-var-top .op-status').innerText());
   // a White line: Sicilian starts with your move, no last move yet
   await page.goto(BASE + `?user=${USER}&view=openings&o=sicilian`);
   await page.waitForSelector('.op-drill #tr-board cg-board');

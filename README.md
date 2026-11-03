@@ -29,6 +29,7 @@ Design and roadmap: docs/PRODUCT_PLAN.md.
     node test/e2e-learn.mjs       # Playwright E2E of the learning loop; BASE=https://... to run against a deployment
     node test/e2e-explore.mjs     # Playwright E2E of Explore and decided-position wording (desktop + phone)
     node test/e2e-coach.mjs       # Playwright E2E of the why-you-erred coach and Play it out (desktop + phone)
+    node test/e2e-bothsides.mjs   # Openings: strict Play mode, Defend (free play, 12-move review), Random opening, Drill this line (desktop + phone; shots in shots-bothsides/)
     npm run test:layout           # Playwright layout check: overflow, clipped text, tiny text on 5 screen sizes
     node test/e2e-xss.mjs         # Security check: script injection via URL, PGN and backup files
     node test/e2e-batch.mjs       # Batch queue: estimate, run, refresh mid-batch and resume, cancel, summary, responsiveness

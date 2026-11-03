@@ -777,3 +777,52 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
 /* "Practise Bishop's Opening" must wrap inside the table on a phone */
 .op-faced .btn { white-space: normal; text-align: center; }
 .op-faced td { overflow-wrap: anywhere; }
+/* Openings: play / defend modes and the defend review */
+.op-modes { display: flex; gap: 6px; flex-wrap: wrap; margin: -4px 0 12px; }
+.op-modes .btn.on { border-color: var(--accent); background: var(--accent-soft, rgba(165, 148, 249, .12)); color: var(--text); font-weight: 600; }
+.op-namebar { margin: 0 0 6px; font-size: 15px; }
+.op-namebar b { font-size: 16px; }
+.op-var-def { display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.op-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.dr-review h3 { margin: 0 0 8px; font-size: 16px; }
+.dr-sum { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.dr-sum > div { background: var(--card2); border: 1px solid var(--line); border-radius: 8px; padding: 4px 9px; display: flex; flex-direction: column; align-items: center; min-width: 54px; }
+.dr-sum b { font-size: 17px; }
+.dr-sum span { font-size: 11px; color: var(--muted); }
+.dr-sum .dr-acc { border-color: var(--accent); }
+.dr-sum .dr-acc b { font-size: 20px; color: var(--accent); }
+.dr-sum .dr-bad b { color: #ff9a7a; }
+.dr-tablewrap { overflow-x: auto; }
+.dr-table { font-size: 13px; }
+.dr-table td, .dr-table th { padding: 4px 5px; white-space: nowrap; }
+.dr-table .dr-why td { border-top: 0; white-space: normal; color: var(--muted); font-size: 12px; padding-top: 0; padding-bottom: 7px; }
+.dr-row { cursor: pointer; }
+.dr-row:hover td, .dr-row.on td, .dr-why.on td { background: rgba(255, 255, 255, .04); }
+.dr-row.on td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.dr-n { color: var(--muted); }
+.dr-v { font-size: 11.5px; border-radius: 8px; padding: 1px 7px; border: 1px solid var(--line); white-space: nowrap; }
+.dr-v-book { border-color: #4a7fb5; color: #a9cdf5; }
+.dr-v-good { border-color: #3d8a63; color: #b4f0d8; }
+.dr-v-inaccuracy { border-color: #c9a227; color: #ffe59a; }
+.dr-v-mistake { border-color: #d07a3a; color: #ffc39a; }
+.dr-v-blunder { border-color: #d0453a; color: #ff9a9a; background: rgba(208, 69, 58, .12); }
+.dr-key-best { color: #8fdc7a; }
+@media (max-width: 520px) { .dr-table td, .dr-table th { padding: 4px 3px; } .dr-table { font-size: 12.5px; } .op-var-def { justify-content: flex-start; } }
+.op-modes .btn.small.on, .op-modes .btn.small.on .muted { color: var(--text); }
+.op-modes .btn.small.on .muted { opacity: .75; }
+.dr-sum > div { min-width: 44px; padding: 4px 7px; }
+@media (min-width: 981px) { .op-defend .tr-board-col { position: sticky; top: 64px; align-self: start; } }
+
+/* Random opening + book line in the review */
+.op-random { margin-bottom: 16px; border-color: #3a4a5e; }
+.op-random h2 { margin: 0; font-size: 18px; }
+.op-random .op-actions { margin-top: 8px; }
+.dr-reveal { font-size: 17px; margin: 0 0 10px; padding: 10px 12px; border-radius: 10px; background: var(--card2); border: 1px solid #4a7fb5; }
+.dr-bookline { margin: 12px 0; padding: 10px 12px; border-radius: 10px; background: var(--card2); border: 1px solid var(--line); }
+.dr-bookline h4 { margin: 0 0 6px; font-size: 14px; }
+.dr-plies { line-height: 1.9; margin: 0 0 6px; }
+.dr-ply { white-space: nowrap; margin-right: 2px; }
+.dr-ply.dr-left { background: rgba(208, 122, 58, .22); border: 1px solid #d07a3a; border-radius: 6px; padding: 1px 5px; white-space: normal; }
+.dr-ply.dr-after { opacity: .75; }
+.dr-you { color: #ffc39a; font-size: 12px; }
+.dr-whys { margin: 4px 0 0; padding-left: 18px; color: var(--muted); }
