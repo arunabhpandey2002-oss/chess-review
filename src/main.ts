@@ -134,7 +134,7 @@ function renderHeader() {
   const u = state.profile?.username ?? state.user;
   h.innerHTML = `
     ${state.profile?.avatar ? `<img src="${esc(state.profile.avatar)}" alt="">` : `<span class="avatar-ph">${esc(u.slice(0, 1).toUpperCase())}</span>`}
-    <span class="uname"><span class="un">${esc(u)}</span></span>
+    <span class="uname" title="${esc(u)}"><span class="un">${esc(u)}</span></span>
     <div class="settings-wrap">
       <button type="button" class="icon-btn" id="settings-btn" aria-label="Settings" aria-haspopup="menu" aria-expanded="false" title="Settings">⚙</button>
       <div id="settings-menu" class="settings-menu" role="menu" hidden>

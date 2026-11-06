@@ -128,7 +128,7 @@ cg-board { border-radius: 4px; }
   .topbar { padding: 8px 12px; }
   .user-chip input { width: 140px; }
   .brand { font-size: 16px; }
-  .uname { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* username ellipsis handled on .uname .un */
 }
 
 /* plain-English lines */
@@ -154,7 +154,7 @@ cg-board { border-radius: 4px; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: #10160a; font-weight: 600; }
 .btn.danger { border-color: #D55E00; color: #ffb38a; }
 .btn:disabled { opacity: .5; cursor: default; }
-.tabs { display: flex; gap: 4px; flex: 1; margin: 0 18px; overflow-x: auto; scrollbar-width: none; }
+.tabs { display: flex; gap: 4px; flex: 1 1 auto; min-width: 0; margin: 0 18px; overflow-x: auto; scrollbar-width: none; }
 .tabs a { text-decoration: none; padding: 7px 11px; border-radius: 8px; color: var(--muted); font-size: 14px; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
 .tabs a:hover { color: var(--text); background: var(--card2); }
 .tabs a.on { color: var(--text); background: var(--card2); }
@@ -325,13 +325,26 @@ label[for="sp-input"] { white-space: nowrap; font-size: 13px; color: var(--muted
 .ex-k { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
 .ex-k .src, .ex-col h3 .src { text-transform: none; letter-spacing: normal; }
 
-/* ---------- UI QA pass (Oct 2026): header, dialogs, board coordinates, Explore ---------- */
-.user-chip { min-width: 0; }
-.uname { display: flex; align-items: baseline; gap: 6px; min-width: 0; max-width: none !important; overflow: visible !important; }
-.uname .un { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; max-width: 220px; }
+/* ---------- Header: brand + tabs + profile/gear must stay on-screen ---------- */
+.topbar { width: 100%; max-width: 100vw; box-sizing: border-box; min-width: 0; }
+.brand { flex: none; }
+.tabs { min-width: 0; } /* let tabs shrink/scroll so the profile cluster is never shoved off-screen */
+.user-chip {
+  flex: none; /* never crush profile + gear off the right edge */
+  display: flex; align-items: center; gap: 8px; min-width: 0; max-width: min(42vw, 280px);
+}
+.uname { display: flex; align-items: baseline; gap: 6px; min-width: 0; flex: 1 1 auto; overflow: hidden; }
+.uname .un { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; max-width: none; }
 .uname .site { flex: none; }
-@media (max-width: 980px) { .uname .un { max-width: 150px; } }
-@media (max-width: 520px) { .uname .site { display: none; } }
+.settings-wrap { flex: none; }
+@media (max-width: 980px) {
+  .user-chip { max-width: min(46vw, 200px); }
+  .tabs { flex-basis: 100%; } /* keep tabs on their own row when the topbar wraps */
+}
+@media (max-width: 520px) {
+  .uname .site { display: none; }
+  .user-chip { max-width: min(50vw, 160px); }
+}
 
 /* board coordinates: inside the squares, readable, coloured for the square they sit on (both orientations) */
 .cg-wrap coords { font-size: clamp(9.5px, 1.5vw, 12px); font-weight: 700; opacity: 1; font-family: inherit; }
@@ -444,6 +457,10 @@ main { padding: 24px; }
 
 /* header */
 .topbar { background: rgba(18, 19, 23, .86); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding: 8px 24px; gap: 16px; }
+@media (max-width: 980px) {
+  .topbar { padding: 8px 12px; gap: 8px; }
+}
+
 .brand { font-size: 16px; font-weight: 600; letter-spacing: -.01em; }
 .logo { background: none; color: var(--accent); width: auto; height: auto; font-size: 20px; }
 .tabs a { color: var(--muted); background: none !important; border-radius: 8px; }
@@ -830,7 +847,7 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
 
 
 /* Settings gear menu */
-.settings-wrap { position: relative; }
+.settings-wrap { position: relative; flex: none; }
 .icon-btn { background: var(--card2); border: 1px solid var(--line); border-radius: 8px; width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: var(--muted); }
 .icon-btn:hover, .icon-btn[aria-expanded="true"] { color: var(--text); border-color: #4a5260; }
 .settings-menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 180px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.35); z-index: 40; display: flex; flex-direction: column; gap: 2px; }
