@@ -73,8 +73,8 @@ await page.waitForSelector('.overlay', { state: 'detached' });
 const st = await page.locator('.moment').first().locator('.st').innerText();
 ok('solve recorded on moment card', /Solved/.test(st), st);
 
-// 3. Mistakes to Master + due queue
-await page.click('#tabs a[data-view="puzzles"]');
+// 3. Practice + due queue
+await page.click('#tabs a[data-view="practice"]');
 await page.waitForSelector('.pz-row');
 const nP = await page.locator('.pz-row').count();
 ok('positions saved as puzzles', nP >= m1 + m2 && nP >= 3, `${nP} saved`);

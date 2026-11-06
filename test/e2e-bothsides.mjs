@@ -60,7 +60,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   await page.goto(BASE + `?user=${USER}&view=openings`);
   await page.waitForSelector('.op-card');
   const nVar = await page.locator('.op-var').count();
-  check(`${tag}: every variation offers Practise and Defend`, nVar === data.openings.length && (await page.locator('.op-var [data-practice]').count()) === nVar && (await page.locator('.op-var [data-defend]').count()) === nVar, nVar);
+  check(`${tag}: every variation offers Practise (Defend is on the practice screen / family)`, nVar === data.openings.length && (await page.locator('.op-var [data-practice]').count()) === nVar && (await page.locator('.op-card .op-actions [data-defend]').count()) === data.families.length, nVar);
   check(`${tag}: every family offers Practise all and Defend against it`, (await page.locator('.op-card .op-actions [data-defend]').count()) === data.families.length);
 
   // ---- play mode: strict, as before ----
@@ -68,7 +68,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   await page.locator('#op-indian-knights [data-practice]').click();
   await page.waitForSelector('#op-task');
   check(`${tag}: play mode selected in the mode switch`, (await page.locator('#op-mode-play').getAttribute('aria-pressed')) === 'true');
-  check(`${tag}: play mode names the variation`, /Indian Defense: Knights Variation/.test(await page.locator('#op-varname').innerText()) && /A46|A45|Indian/.test(await page.locator('.tr-head h2').innerText()));
+  check(`${tag}: play mode names the variation`, /Indian Defense: Knights Variation/.test(await page.locator('.tr-head h2').innerText()) && /A46|A45|Indian/.test(await page.locator('.tr-head h2').innerText()) && /^Practise$/.test((await page.locator('.page-head h1').innerText()).trim()) && /Indian Defense: Knights Variation/.test(await page.locator('#op-namebar').innerText()));
   await page.waitForFunction(() => /to move/.test(document.querySelector('#op-task')?.textContent ?? ''));
   const famIdea = data.families.find((f) => f.id === (ik.family || 'f-indian'))?.idea;
   const ideaTxt = await page.locator('#op-idea-text').textContent();
@@ -95,7 +95,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   await page.click('#op-switch');
   await page.waitForFunction(() => !!window.__defend);
   check(`${tag}: switch goes to defend mode`, page.url().includes('m=defend') && (await page.locator('#op-mode-defend').getAttribute('aria-pressed')) === 'true');
-  check(`${tag}: defend: you play Black, the app plays White`, /You play Black\. The app plays White/.test(await page.locator('.tr-head').innerText()));
+  check(`${tag}: defend: you play Black, the app plays White`, /You play Black/.test(await page.locator('.tr-head').innerText()) && (await page.locator('#op-mode-defend').getAttribute('aria-pressed')) === 'true');
   const r1 = await defendRound(page, ik, { 3: 'h6', 6: 'a5', 9: 'Qd7' }, tag, 5);
   check(`${tag}: defend round accepts any move; nothing marked wrong mid-round`, r1.statuses.every((c) => !/bad|warn/.test(c)), r1.played.join(' '));
   await page.waitForSelector('#dr-review', { timeout: 240000 });
@@ -129,7 +129,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   await page.waitForSelector('.op-card');
   await page.locator('#op-f-reti .op-actions [data-defend]').click();
   await page.waitForFunction(() => !!window.__defend);
-  check(`${tag}: Réti defend: you play White`, /You play White\. The app plays Black/.test(await page.locator('.tr-head').innerText()));
+  check(`${tag}: Réti defend: you play White`, /You play White/.test(await page.locator('.tr-head').innerText()) && (await page.locator('#op-mode-defend').getAttribute('aria-pressed')) === 'true');
   const reti = byId('reti');
   const r2 = await defendRound(page, reti, { 2: 'h3', 7: 'Qe2' }, `${tag}-reti`, 4);
   await page.waitForSelector('#dr-review', { timeout: 240000 });
@@ -169,14 +169,15 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   await page.screenshot({ path: `${OUT}/${tag}-random-3-bookline.png` });
   await page.click('#dr-drill');
   await page.waitForSelector('#op-task');
-  check(`${tag}: Drill this line opens strict practise of that opening as Black`, page.url().includes(`o=${rid}`) && !page.url().includes('m=') && (await page.locator('#op-mode-play').getAttribute('aria-pressed')) === 'true' && /you're Black/.test(await page.locator('#op-mode-play').innerText()) && (await page.locator('h1').innerText()).includes(re.name), page.url());
+  check(`${tag}: Drill this line opens strict practise of that opening as Black`, page.url().includes(`o=${rid}`) && !page.url().includes('m=') && (await page.locator('#op-mode-play').getAttribute('aria-pressed')) === 'true' && /you're Black/.test(await page.locator('#op-mode-play').innerText()) && (await page.locator('.tr-head h2').innerText()).includes(re.name.split(':')[0]), page.url());
 
   // progress saved per side
   await page.goto(BASE + `?user=${USER}&view=openings`);
   await page.waitForSelector('.op-card');
   const row = page.locator('#op-indian-knights');
-  const play = await row.locator('.op-var-top .op-status').innerText(), def = await row.locator('.op-var-def .op-status').innerText();
-  check(`${tag}: progress tracked separately per side`, !/Not practised/.test(play) && !/Not practised/.test(def) && /1 run/.test(play) && /1 run/.test(def), `play: ${play} | defend: ${def}`);
+  const st = await row.locator('.op-var-top .op-status').innerText();
+  const tip = await row.locator('.op-var-top .op-status').getAttribute('title');
+  check(`${tag}: progress tracked (combined mark; both modes under the hood)`, !/New/.test(st) && /Play:/.test(tip || '') && /Defend:/.test(tip || ''), `status: ${st} | ${tip}`);
   const ov2 = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   check(`${tag}: random progress shown on the card`, /1 of 64 seen/.test(await page.locator('#op-random-card .op-status').innerText()), await page.locator('#op-random-card .op-status').innerText());
   check(`${tag}: library has no horizontal overflow`, ov2 <= 0, `${ov2}px`);

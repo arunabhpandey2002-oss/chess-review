@@ -12,7 +12,7 @@ import { resultFor } from './api';
 import type { Book } from './review';
 import { newSrs, schedule, srsStatus, isDue, type SrsState } from './srs';
 import { describeMove } from './lastmove';
-import { $, esc, fmtWhen, reducedMotion, boardDescription, legalDests, parseTyped } from './ui';
+import { $, esc, fmtWhen, reducedMotion, boardDescription, legalDests, parseTyped, tipSeen, markTip, helpTip, wireHelpTips } from './ui';
 import { openingName, loadOpenings, explore, type OpeningData } from './openings';
 import { EnginePool, type PosEval } from './engine';
 import { ROUND_PLIES, LOSS, VERDICT_LABEL, lineMoves, lineReplies, sideMoves, leftLine, pickRandomOpening, randomResult, pickAppMove, bookCandidates, sanOf, fmtEval, reviewRow, summarize, roundResult, reachedVariation, markLineBook, type MoveCheck, type ReviewRow } from './defend';
@@ -46,6 +46,20 @@ function statusOf(p: OpeningProgress | undefined, now: number) {
   const when = s === 'scheduled' || s === 'learning' ? ` · next ${fmtWhen(p.srs.due, now)}` : '';
   const runs = p.srs.history.length;
   return { cls: s, text: `${STATUS_LABEL[s]}${when}${runs ? ` · ${runs} run${runs === 1 ? '' : 's'}` : ''}` };
+}
+
+/** One compact mark for play + defend progress (details in the title tooltip). */
+function compactStatus(play: OpeningProgress | undefined, def: OpeningProgress | undefined, now: number) {
+  const urg = (s: ReturnType<typeof srsStatus> | 'new') => ({ due: 4, learning: 3, scheduled: 2, mastered: 1, new: 0 }[s]);
+  const sp = play ? srsStatus(play.srs, now) : 'new';
+  const sd = def ? srsStatus(def.srs, now) : 'new';
+  const top = urg(sp) >= urg(sd) ? sp : sd;
+  const title = `Play: ${STATUS_LABEL[sp]} · Defend: ${STATUS_LABEL[sd]}`;
+  if (!play && !def) return { cls: 'new', text: 'New', title };
+  if (top === 'due') return { cls: 'due', text: 'Due', title };
+  if (sp === 'mastered' && sd === 'mastered') return { cls: 'mastered', text: '✓', title };
+  if (top === 'mastered') return { cls: 'mastered', text: '✓', title };
+  return { cls: top === 'new' ? 'new' : 'learning', text: top === 'new' ? 'New' : 'Learning', title };
 }
 
 /** Your games (stored + loaded this visit), each with your colour and result. */
@@ -93,16 +107,15 @@ export async function renderOpenings(ctx: OpeningsCtx, id: string | null, mode: 
   const rpool = RANDOM_POOL();
   const rseen = rpool.filter((o) => rprog.get(o.id)).length;
   const rdue = rpool.filter((o) => { const p = rprog.get(o.id); return p && isDue(p.srs, now); }).length;
+  const showModesHow = !tipSeen('op-modes');
   const varRow = (f: RepFamily, o: RepEntry, w: number) => {
-    const st = statusOf(prog.get(o.id), now);
-    const dst = statusOf(dprog.get(o.id), now);
+    const st = compactStatus(prog.get(o.id), dprog.get(o.id), now);
     const resp = o.plies.map((p, i) => ({ p, i })).filter(({ p, i }) => p.mine && i >= o.idPlies - 1 && p.why);
     const short = o.name.startsWith(family(f, o.name)) && o.name.includes(':') ? o.name.slice(o.name.indexOf(':') + 1).trim() : o.name;
     return `<li class="op-var" id="op-${esc(o.id)}" data-op="${esc(o.id)}">
-      <div class="op-var-top"><span class="op-var-name"><b>${esc(short)}</b> <span class="op-eco">${esc(o.eco)}</span>${o.fromGames ? ` <span class="op-mine" title="Seen in your games">in your games ×${o.fromGames}</span>` : ''}</span>
-        <span class="op-var-meta"><span class="muted small" title="Share of this family's sample games">${pctText(w)}</span> <span class="op-status op-${st.cls}">${esc(st.text)}</span> <button class="btn small" data-practice="${esc(o.id)}" aria-label="Practise ${esc(o.name)}">Practise</button></span></div>
-      <div class="op-var-def"><span class="muted small">Defend against it (you play ${sideWord(other(o.side))}):</span> <span class="op-status op-${dst.cls}">${esc(dst.text)}</span> <button class="btn small" data-defend="${esc(o.id)}" aria-label="Defend against ${esc(o.name)}">Defend</button></div>
-      <details class="op-line"><summary>${esc(moveText(o.plies.slice(0, o.idPlies)))} — your line (${o.plies.length - o.idPlies} moves)</summary>
+      <div class="op-var-top"><span class="op-var-name"><b>${esc(short)}</b> <span class="op-eco">${esc(o.eco)}</span>${o.fromGames ? ` <span class="op-mine" title="Seen in your games">×${o.fromGames}</span>` : ''}</span>
+        <span class="op-var-meta"><span class="op-status op-${st.cls}" title="${esc(st.title)}">${esc(st.text)}</span> <button class="btn small primary" data-practice="${esc(o.id)}" aria-label="Practise ${esc(o.name)}">Practise</button></span></div>
+      <details class="op-line"><summary class="muted small">${esc(moveText(o.plies.slice(0, o.idPlies)))} · ${pctText(w)}</summary>
         <p class="op-full">${esc(moveText(o.plies))}</p>
         <p class="op-var-idea">${esc(o.idea)}</p>
         <ul>${resp.map(({ p, i }) => `<li><b>${esc(moveLabel(i, p.san))}</b> — ${esc(p.why!)}</li>`).join('')}</ul>
@@ -121,53 +134,59 @@ export async function renderOpenings(ctx: OpeningsCtx, id: string | null, mode: 
       <p class="op-idea">${esc(f.idea)}</p>
       <ul class="op-vars">${vs.map((o) => varRow(f, o, w.get(o.id) ?? 0)).join('')}</ul>
       ${sk.length ? `<p class="muted small op-skipped">From your games, not in this line: ${sk.map((x) => `${esc(x.name)} (${esc(x.why)})`).join('; ')}.</p>` : ''}
-      <div class="op-actions"><button class="btn primary" data-practice="${esc(f.id)}">Practise all ${vs.length > 1 ? `${vs.length} variations` : ''}</button><button class="btn" data-defend="${esc(f.id)}">Defend against it</button><span class="muted small">Practise: you play ${sideWord(f.side)} and find each move of the line. Defend: you play ${sideWord(other(f.side))} against it, any move you like, then a 12-move review.</span></div>
+      <div class="op-actions"><button class="btn primary" data-practice="${esc(f.id)}">Practise all ${vs.length > 1 ? `${vs.length} variations` : ''}</button><button class="btn" data-defend="${esc(f.id)}">Defend against it</button>${showModesHow ? `<span class="muted small">Practise: you play ${sideWord(f.side)}. Defend: you play ${sideWord(other(f.side))}.</span>` : helpTip('op-modes', `Practise: you play ${sideWord(f.side)} and find each move. Defend: you play ${sideWord(other(f.side))} against it, then a 12-move review.`)}</div>
     </article>`;
   };
   const nVars = FAMILIES.reduce((a, f) => a + f.variations.length, 0);
+  const randomHow = tipSeen('op-random')
+    ? helpTip('op-random', `You're Black. White picks one of ${rpool.length} openings at random — popular ones and ones you missed come back sooner. After 12 moves the review names it.`)
+    : `<p class="muted small">You're Black. White picks one of ${rpool.length} openings at random — popular ones more often, and ones you got wrong come back sooner. You aren't told which: play any moves for 12 moves, then the review names the opening.</p>`;
   ctx.app.innerHTML = `
     <section class="page openings">
       <div class="page-head"><h1>Openings</h1><span class="muted">${FAMILIES.length} families · ${nVars} variations · ${due.length + ddue.length ? `${due.length + ddue.length} due for practice` : 'practise any of them'}</span></div>
       <div class="card op-random" id="op-random-card"><div class="op-top"><h2>Random opening</h2><span class="op-status op-${rdue ? 'due' : rseen ? 'learning' : 'new'}">${rseen ? `${rseen} of ${rpool.length} seen${rdue ? ` · ${rdue} to repeat` : ''}` : `${rpool.length} White openings`}</span></div>
-        <p class="muted small">You're Black. White picks one of ${rpool.length} openings at random — popular ones more often, and ones you got wrong come back sooner. You aren't told which: play any moves for 12 moves, then the review names the opening and shows the book line you should have played.</p>
+        ${randomHow}
         <div class="op-actions"><button class="btn primary" id="op-random">Play a random opening</button></div></div>
       <div class="card" id="op-faced"><h2>Openings you face most</h2><p class="muted">Looking through your games…</p></div>
       ${due.length || ddue.length ? `<div class="card op-due"><b>Due now:</b> ${due.map((o) => `<button class="chip" data-practice="${esc(o.id)}">${esc(o.name)}</button>`).join(' ')} ${ddue.map((o) => `<button class="chip" data-defend="${esc(o.id)}">${esc(o.name)} (defend)</button>`).join(' ')}</div>` : ''}
       <h2 class="op-group">When you're Black</h2>
-      <p class="muted small">The opponent opens; you learn a sound reply to each of its main variations.</p>
       <div class="op-grid">${FAMILIES.filter((f) => f.side === 'b').map(card).join('')}</div>
       <h2 class="op-group">When you're White</h2>
-      <p class="muted small">You open; you learn what to do against each defence and its main variations.</p>
       <div class="op-grid">${FAMILIES.filter((f) => f.side === 'w').map(card).join('')}</div>
       <p class="muted small op-src">Names and ECO codes: ${esc(REPERTOIRE.meta.sources.names)}. Moves: ${esc(REPERTOIRE.meta.sources.moves)}. ${esc(REPERTOIRE.meta.sources.check)}.${REPERTOIRE.meta.sources.yourGames ? ` Variations marked "in your games": ${esc(REPERTOIRE.meta.sources.yourGames)}` : ''}</p>
     </section>`;
   const wire = (root: ParentNode) => {
-    root.querySelectorAll<HTMLButtonElement>('[data-practice]').forEach((b) => (b.onclick = () => ctx.navigate({ view: 'openings', o: b.dataset.practice!, m: null })));
-    root.querySelectorAll<HTMLButtonElement>('[data-defend]').forEach((b) => (b.onclick = () => ctx.navigate({ view: 'openings', o: b.dataset.defend!, m: 'defend' })));
+    root.querySelectorAll<HTMLButtonElement>('[data-practice]').forEach((b) => (b.onclick = () => { markTip('op-modes'); ctx.navigate({ view: 'openings', o: b.dataset.practice!, m: null }); }));
+    root.querySelectorAll<HTMLButtonElement>('[data-defend]').forEach((b) => (b.onclick = () => { markTip('op-modes'); ctx.navigate({ view: 'openings', o: b.dataset.defend!, m: 'defend' }); }));
   };
   wire(ctx.app);
-  $('#op-random').onclick = () => ctx.navigate({ view: 'openings', o: 'random', m: null });
+  wireHelpTips(ctx.app);
+  $('#op-random').onclick = () => { markTip('op-random'); ctx.navigate({ view: 'openings', o: 'random', m: null }); };
   await ctx.loadGames();
   const [games, book] = await Promise.all([myGames(ctx), ctx.book()]);
   const el = document.getElementById('op-faced');
   if (!el) return;
   const all = facedStats(games, book);
-  const row = (r: FacedRow) => {
+  const row = (r: FacedRow, i: number) => {
     const target = r.entry && (r.entry.name === r.label || r.entry.names.includes(r.label)) ? r.entry : null;
-    const btn = target ? `<button class="btn small" data-practice="${esc(target.id)}">Practise</button>`
-      : r.family ? `<button class="btn small" data-practice="${esc(r.family.id)}">Practise ${esc(r.family.name)}</button>` : '<span class="muted small">no line yet</span>';
-    return `<tr class="${r.struggling ? 'op-struggle' : ''}" data-faced="${esc(r.key)}">
-      <td>${esc(r.label)} <span class="op-eco">${esc(r.eco)}</span>${r.struggling ? ' <span class="op-flag">You struggle here</span>' : ''}${target && target.name !== r.label ? `<div class="muted small">Line: ${esc(target.name)}</div>` : ''}${r.differs ? `<div class="muted small">Your trainer line differs: it ${esc(r.differs)}.</div>` : ''}</td>
-      <td>${sideWord(r.myColor)}</td><td>${r.games}</td>
-      <td>${Math.round(r.score * 100)}% <span class="muted small">(${r.wins}W ${r.draws}D ${r.losses}L)</span></td>
-      <td>${btn}</td></tr>`;
+    const btn = target ? `<button class="btn small primary" data-practice="${esc(target.id)}">Practise</button>`
+      : r.family ? `<button class="btn small primary" data-practice="${esc(r.family.id)}" title="Trainer line differs">Practise</button>` : '<span class="muted small">no line yet</span>';
+    const sub = [`${r.games} game${r.games === 1 ? '' : 's'}`, sideWord(r.myColor), `${r.wins}W ${r.draws}D ${r.losses}L`];
+    if (target && target.name !== r.label) sub.push(`line: ${target.name}`);
+    if (r.differs) sub.push(`trainer differs: ${r.differs}`);
+    return `<li class="op-faced-row${r.struggling ? ' op-struggle' : ''}" data-faced="${esc(r.key)}">
+      <span class="op-faced-rank">${i + 1}</span>
+      <div class="op-faced-main"><div class="op-faced-name">${esc(r.label)} <span class="op-eco">${esc(r.eco)}</span>${r.struggling ? ' <span class="op-flag" title="Low score in your games">struggle</span>' : ''}</div>
+        <div class="muted small">${esc(sub.join(' · '))}</div></div>
+      <span class="op-faced-score" title="Win=1, draw=½">${Math.round(r.score * 100)}%</span>
+      ${btn}</li>`;
   };
-  const head = '<thead><tr><th>Opening (lichess name)</th><th>You</th><th>Games</th><th>Score</th><th></th></tr></thead>';
   el.innerHTML = `<h2>Openings you face most</h2>${all.length ? `
-    <p class="muted small">From ${games.length} of your games, by exact variation name. Score counts a win as 1 and a draw as ½.</p>
-    <table class="rec op-faced">${head}<tbody>${all.slice(0, 12).map(row).join('')}</tbody></table>
-    ${all.length > 12 ? `<details class="op-more"><summary>All ${all.length} variations from your games</summary><table class="rec op-faced">${head}<tbody>${all.slice(12).map(row).join('')}</tbody></table></details>` : ''}`
+    ${tipSeen('op-faced') ? '' : `<p class="muted small">From ${games.length} of your games. Score counts a win as 1 and a draw as ½.</p>`}
+    <ol class="op-faced-list">${all.slice(0, 12).map(row).join('')}</ol>
+    ${all.length > 12 ? `<details class="op-more"><summary>All ${all.length} variations from your games</summary><ol class="op-faced-list" start="13">${all.slice(12).map((r, i) => row(r, i + 12)).join('')}</ol></details>` : ''}`
     : '<p class="muted">No games found yet. Open the Games tab to load your games, then come back.</p>'}`;
+  if (all.length) markTip('op-faced');
   wire(el);
 }
 
@@ -218,7 +237,7 @@ async function renderDrill(ctx: OpeningsCtx, fam: RepFamily | null, chosen: RepE
   const book = await ctx.book();
   document.title = `${title} · ${mode === 'defend' ? 'Defend' : 'Openings'} · rook-i.e. mistakes`;
   const target = branching ? fam!.id : entry.id;
-  ctx.app.innerHTML = `<section class="page train openings-train"><div class="page-head"><h1>${mode === 'defend' ? 'Defend against' : 'Practise'}: ${esc(title)}</h1><button class="btn ghost" id="op-back">‹ All openings</button></div>
+  ctx.app.innerHTML = `<section class="page train openings-train"><div class="page-head"><h1>${mode === 'defend' ? 'Defend' : 'Practise'}</h1><button class="btn ghost" id="op-back">‹ All openings</button></div>
     <div class="op-modes" role="group" aria-label="Mode">
       <button class="btn small${mode === 'play' ? ' on' : ''}" id="op-mode-play" aria-pressed="${mode === 'play'}">Play the opening <span class="muted">(you're ${sideWord(entry.side)})</span></button>
       <button class="btn small${mode === 'defend' ? ' on' : ''}" id="op-mode-defend" aria-pressed="${mode === 'defend'}">Defend against it <span class="muted">(you're ${sideWord(other(entry.side))})</span></button>
@@ -299,7 +318,7 @@ class Drill implements Round {
           </form>
         </div>
         <div class="tr-side">
-          <div class="tr-head"><h2>${this.o.branching ? esc(this.o.family!.name) : `${esc(e.name)} <span class="op-eco">${esc(e.eco)}</span>`}</h2><p class="muted">You play ${sideWord(e.side)}. ${this.o.branching ? `The app picks the other side's moves among the ${this.o.family!.variations.length} main variations, as often as each is played.` : "The app plays the other side's most common moves."}</p><p class="op-varname" id="op-varname" aria-live="polite"></p></div>
+          <div class="tr-head"><h2>${this.o.branching ? esc(this.o.family!.name) : `${esc(e.name)} <span class="op-eco">${esc(e.eco)}</span>`}</h2><p class="muted small">You play ${sideWord(e.side)}${this.o.branching ? ` · app picks among ${this.o.family!.variations.length} variations` : ''}.</p><p class="op-varname" id="op-varname" aria-live="polite"></p></div>
           <p class="tr-task" id="op-task"></p>
           <p class="op-progress" id="op-progress"></p>
           <div class="tr-status" id="tr-status" role="status" aria-live="polite"></div>
@@ -377,7 +396,7 @@ class Drill implements Round {
       $('#op-task', this.host).innerHTML = `<b>${sideWord(this.e.side)} to move${this.i === 0 ? '' : ` (move ${n})`}.</b> Find the move in this line.`;
       $<HTMLButtonElement>('#tr-hint', this.host).disabled = false;
       $<HTMLButtonElement>('#tr-hint', this.host).textContent = 'Hint (1 of 3)';
-      if (!this.wrong && !this.hints && this.i < 2) this.status('Drag a piece, click a piece then a square, or type a move.');
+      if (!this.wrong && !this.hints && this.i < 2 && !tipSeen('move-input')) { this.status('Drag a piece, click a piece then a square, or type a move.'); markTip('move-input'); }
       return;
     }
     $('#op-task', this.host).innerHTML = `<b>${sideWord(this.e.side === 'w' ? 'b' : 'w')} is thinking…</b>`;
@@ -392,6 +411,8 @@ class Drill implements Round {
     $('#op-idea-text', this.host).textContent = committed ? this.e.idea : this.o.family!.idea;
     $('#op-idea-sum', this.host).textContent = committed && this.o.branching ? `The idea (${this.e.name})` : 'The idea';
     if (!committed) { el.innerHTML = '<span class="muted">Which variation? Watch the opponent\'s moves.</span>'; return; }
+    // Non-branching: name is already in the sidebar heading — don't say it again.
+    if (!this.o.branching) { el.innerHTML = ''; return; }
     el.innerHTML = `Variation: <b>${esc(this.e.name)}</b> <span class="op-eco">${esc(this.e.eco)}</span>${this.o.family && this.o.family.variations.length > 1 ? ` <span class="muted small">(${Math.round(this.o.share * 100)}% of this family's games)</span>` : ''}`;
   }
 
@@ -535,7 +556,6 @@ class DefendRound implements Round {
   get name() { return this.o.branching ? this.o.family!.name : this.e.name; }
 
   render() {
-    const them = sideWord(this.them);
     this.host.innerHTML = `
       <div class="trainer op-drill op-defend${this.random ? ' op-random-round' : ''}" role="region" aria-label="${this.random ? 'Random opening' : 'Defend against this opening'}">
         <div class="tr-board-col">
@@ -550,8 +570,8 @@ class DefendRound implements Round {
         </div>
         <div class="tr-side" id="dr-side">
           <div class="tr-head">${this.random ? `<h2 id="dr-title">A surprise White opening</h2>
-            <p class="muted">You play Black. White has picked an opening and won't say which. Play any move you like — nothing is marked wrong during the round. After 12 moves the review names the opening and shows the book line you should have played.</p>` : `<h2>${esc(this.name)}${this.o.branching ? '' : ` <span class="op-eco">${esc(this.e.eco)}</span>`}</h2>
-            <p class="muted">You play ${sideWord(this.me)}. The app plays ${them}'s moves from this opening${this.o.branching ? ` (all ${this.o.family!.variations.length} variations)` : ''}. Play any move you like — nothing is marked wrong during the round. After 12 moves you get a review of every move.</p>`}</div>
+            <p class="muted small">You play Black. Any legal move — review after 12.</p>` : `<h2>${esc(this.name)}${this.o.branching ? '' : ` <span class="op-eco">${esc(this.e.eco)}</span>`}</h2>
+            <p class="muted small">You play ${sideWord(this.me)}. Any legal move — review after 12.</p>`}</div>
           <p class="tr-task" id="op-task"></p>
           <p class="op-progress" id="op-progress"></p>
           <div class="tr-status" id="tr-status" role="status" aria-live="polite"></div>
@@ -560,7 +580,7 @@ class DefendRound implements Round {
             <button class="btn" id="tr-hint">Hint (1 of 2)</button>
             <button class="btn ghost" id="dr-restart">Restart</button>
           </div>
-          ${this.random ? '' : `<details class="op-line"><summary>The idea</summary><p>${esc(this.o.branching ? this.o.family!.idea : this.e.idea)}</p><p class="muted small">This is ${them}'s plan; you are on the other side. Your book replies come from the most played moves in the sample, checked with Stockfish.</p></details>`}
+          ${this.random ? '' : `<details class="op-line"><summary>The idea</summary><p>${esc(this.o.branching ? this.o.family!.idea : this.e.idea)}</p><p class="muted small">This is ${sideWord(this.them)}'s plan; you are on the other side. Your book replies come from the most played moves in the sample, checked with Stockfish.</p></details>`}
           <div class="tr-lesson" id="tr-lesson" hidden></div>
         </div>
       </div>`;
@@ -602,7 +622,10 @@ class DefendRound implements Round {
     $('#tr-board', this.host).setAttribute('aria-label', boardDescription(fen));
     $('#op-namebar', this.host).innerHTML = this.random ? this.randomBar(this.fens) : nameBar(this.fens, this.o.book);
     const moveNo = Math.min(12, Math.floor(i / 2) + 1);
-    $('#op-progress', this.host).innerHTML = `<span class="op-bar"><span style="width:${Math.round((i / ROUND_PLIES) * 100)}%"></span></span> Move ${moveNo} of 12 · <span class="muted">${esc(moveText(this.sans.map((san) => ({ san }))) || 'start position')}</span>`;
+    const bar = `<span class="op-bar"><span style="width:${Math.round((Math.min(i, ROUND_PLIES) / ROUND_PLIES) * 100)}%"></span></span>`;
+    $('#op-progress', this.host).innerHTML = this.done
+      ? `${bar} Round complete`
+      : `${bar} Move ${moveNo} of 12 · <span class="muted">${esc(moveText(this.sans.map((san) => ({ san }))) || 'start position')}</span>`;
   }
 
   /** Random mode: the opening stays hidden during the round; afterwards, White's choice plus what the position became. */
@@ -624,7 +647,7 @@ class DefendRound implements Round {
     if (this.myTurn()) {
       $('#op-task', this.host).innerHTML = `<b>${sideWord(this.me)} to move (move ${Math.floor(this.ply / 2) + 1}).</b> Your choice — any legal move.`;
       $<HTMLButtonElement>('#tr-hint', this.host).disabled = false;
-      if (this.ply < 2) this.status('Drag a piece, click a piece then a square, or type a move.');
+      if (this.ply < 2 && !tipSeen('move-input')) { this.status('Drag a piece, click a piece then a square, or type a move.'); markTip('move-input'); }
       return;
     }
     $<HTMLButtonElement>('#tr-hint', this.host).disabled = true;
@@ -746,7 +769,7 @@ class DefendRound implements Round {
     const left = leftLine(this.sans, reached, this.me);
     const progress = await this.o.onDone(this.random ? randomResult(s, this.hints, left) : roundResult(s, this.hints), this.o.branching ? reached.id : this.e.id);
     if (this.destroyed) return;
-    this.status(`✓ Round complete: ${esc(moveText(this.sans.map((san) => ({ san }))))}`, 'good');
+    this.status('✓ Round complete.', 'good');
     this.renderReview(s, progress, reached, left);
   }
 

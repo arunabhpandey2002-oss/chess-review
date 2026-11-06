@@ -827,3 +827,40 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
 .dr-you { color: #ffc39a; font-size: 12px; }
 .dr-whys { margin: 4px 0 0; padding-left: 18px; color: var(--muted); }
 .op-var-idea { font-size: 13px; color: var(--text); margin: 6px 0; }
+
+
+/* Settings gear menu */
+.settings-wrap { position: relative; }
+.icon-btn { background: var(--card2); border: 1px solid var(--line); border-radius: 8px; width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer; font-size: 16px; line-height: 1; padding: 0; color: var(--muted); }
+.icon-btn:hover, .icon-btn[aria-expanded="true"] { color: var(--text); border-color: #4a5260; }
+.settings-menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 180px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.35); z-index: 40; display: flex; flex-direction: column; gap: 2px; }
+.settings-menu[hidden] { display: none !important; }
+.settings-menu button { background: transparent; border: 0; text-align: left; padding: 8px 10px; border-radius: 7px; cursor: pointer; font-size: 13.5px; color: var(--text); }
+.settings-menu button:hover { background: var(--card2); }
+.settings-menu button.danger { color: #f0a29a; }
+
+/* Help tip (?) */
+.help-tip { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--line); background: var(--card2); color: var(--muted); font-size: 11px; font-weight: 700; cursor: pointer; padding: 0; vertical-align: middle; margin-left: 4px; }
+.help-tip:hover { color: var(--text); border-color: #4a5260; }
+.help-tip-pop { display: block; margin: 6px 0; padding: 8px 10px; background: var(--card2); border: 1px solid var(--line); border-radius: 8px; font-size: 13px; color: var(--muted); line-height: 1.4; }
+.help-tip-pop[hidden] { display: none !important; }
+.howto-inline { float: right; margin-top: -28px; }
+
+/* Faced-most ranked list */
+.op-faced-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.op-faced-row { display: grid; grid-template-columns: 28px 1fr auto auto; align-items: center; gap: 10px; padding: 10px 12px; background: var(--card2); border: 1px solid var(--line); border-radius: 10px; }
+.op-faced-row.op-struggle { border-color: #a0562a; background: rgba(255, 140, 60, .09); }
+.op-faced-rank { color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; }
+.op-faced-main { min-width: 0; }
+.op-faced-name { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.op-faced-score { font-weight: 800; font-variant-numeric: tabular-nums; font-size: 15px; min-width: 3.2em; text-align: right; }
+@media (max-width: 520px) {
+  .op-faced-row { grid-template-columns: 22px 1fr auto; gap: 8px; padding: 8px 10px; }
+  .op-faced-score { grid-column: 3; grid-row: 1; }
+  .op-faced-row .btn { grid-column: 2 / -1; }
+}
+
+/* Compact variation status */
+.op-var-meta .op-status { font-size: 11px; padding: 1px 7px; }
+.btn.small.primary, .btn.primary.small { background: var(--accent); border-color: var(--accent); color: #111; font-weight: 600; }
+.btn.small.primary:hover { filter: brightness(1.05); }

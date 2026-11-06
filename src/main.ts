@@ -89,9 +89,44 @@ async function renderTabs(active: string) {
   const el = $('#tabs');
   let due = 0;
   try { due = (await store.byProfile<Puzzle>('puzzles', pk())).filter((p) => isDue(p.srs, Date.now())).length; } catch { /* no IndexedDB */ }
-  const tabs: [string, string][] = [['', 'Games'], ['puzzles', `Mistakes to Master${due ? ` <span class="badge-n" aria-label="${due} due">${due}</span>` : ''}`], ['openings', 'Openings'], ['history', 'History'], ['import', 'Import'], ['data', 'Your data']];
-  el.innerHTML = tabs.map(([v, label]) => `<a href="?${new URLSearchParams({ user: state.user, ...(state.site === 'lichess' ? { site: 'lichess' } : {}), ...(v ? { view: v } : {}) })}" data-view="${v}" class="${active === v ? 'on' : ''}" ${active === v ? 'aria-current="page"' : ''}>${label}</a>`).join('');
+  const tabActive = (v: string) => v === 'practice' ? (active === 'practice' || active === 'puzzles') : active === v;
+  const tabs: [string, string][] = [['', 'Games'], ['practice', `Practice${due ? ` <span class="badge-n" aria-label="${due} due">${due}</span>` : ''}`], ['openings', 'Openings'], ['history', 'History']];
+  el.innerHTML = tabs.map(([v, label]) => `<a href="?${new URLSearchParams({ user: state.user, ...(state.site === 'lichess' ? { site: 'lichess' } : {}), ...(v ? { view: v } : {}) })}" data-view="${v}" class="${tabActive(v) ? 'on' : ''}" ${tabActive(v) ? 'aria-current="page"' : ''}>${label}</a>`).join('');
   el.querySelectorAll<HTMLAnchorElement>('a').forEach((a) => (a.onclick = (e) => { e.preventDefault(); navigate({ view: a.dataset.view || null, game: null, p: null, tag: null, ply: null, o: null }); }));
+}
+
+function closeSettingsMenu() {
+  const menu = document.getElementById('settings-menu');
+  const btn = document.getElementById('settings-btn');
+  if (menu) menu.hidden = true;
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+function startAccountSwitch() {
+  closeSettingsMenu();
+  const h = $('#user-chip');
+  h.innerHTML = `<form id="user-form"><select id="site-input" aria-label="Platform"><option value="chesscom" ${state.site === 'chesscom' ? 'selected' : ''}>Chess.com</option><option value="lichess" ${state.site === 'lichess' ? 'selected' : ''}>Lichess</option></select><input id="user-input" aria-label="Username" placeholder="Username" autocomplete="off" spellcheck="false" value="${esc(state.user)}"><button>Go</button></form>`;
+  const inp = $<HTMLInputElement>('#user-input');
+  inp.focus(); inp.select();
+  $('#user-form').onsubmit = (e) => { e.preventDefault(); const v = inp.value.trim(); if (v) navigate({ user: v, site: $<HTMLSelectElement>('#site-input').value, game: null, view: null }); };
+  h.addEventListener('focusout', () => setTimeout(() => { if (!h.contains(document.activeElement)) renderHeader(); }, 200));
+}
+
+async function exportBackup() {
+  closeSettingsMenu();
+  const data = JSON.stringify(await store.exportAll(), null, 1);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+  a.download = `chess-review-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+async function deleteAllData() {
+  closeSettingsMenu();
+  if (!confirm('Delete all reviews, saved positions and progress stored in this browser? This cannot be undone (export a backup first if you want one).')) return;
+  await store.deleteAll();
+  ctx.refreshCounts?.();
+  route();
 }
 
 function renderHeader() {
@@ -100,14 +135,42 @@ function renderHeader() {
   h.innerHTML = `
     ${state.profile?.avatar ? `<img src="${esc(state.profile.avatar)}" alt="">` : `<span class="avatar-ph">${esc(u.slice(0, 1).toUpperCase())}</span>`}
     <span class="uname"><span class="un">${esc(u)}</span></span>
-    <button class="link" id="change-user" title="Review another player's games">Change</button>`;
-  $('#change-user').onclick = () => {
-    h.innerHTML = `<form id="user-form"><select id="site-input" aria-label="Platform"><option value="chesscom" ${state.site === 'chesscom' ? 'selected' : ''}>Chess.com</option><option value="lichess" ${state.site === 'lichess' ? 'selected' : ''}>Lichess</option></select><input id="user-input" aria-label="Username" placeholder="Username" autocomplete="off" spellcheck="false" value="${esc(state.user)}"><button>Go</button></form>`;
-    const inp = $<HTMLInputElement>('#user-input');
-    inp.focus(); inp.select();
-    $('#user-form').onsubmit = (e) => { e.preventDefault(); const v = inp.value.trim(); if (v) navigate({ user: v, site: $<HTMLSelectElement>('#site-input').value, game: null, view: null }); };
-    h.addEventListener('focusout', () => setTimeout(() => { if (!h.contains(document.activeElement)) renderHeader(); }, 200));
+    <div class="settings-wrap">
+      <button type="button" class="icon-btn" id="settings-btn" aria-label="Settings" aria-haspopup="menu" aria-expanded="false" title="Settings">⚙</button>
+      <div id="settings-menu" class="settings-menu" role="menu" hidden>
+        <button type="button" role="menuitem" data-set="import">Import games</button>
+        <button type="button" role="menuitem" data-set="settings">Settings</button>
+        <button type="button" role="menuitem" data-set="export">Export data</button>
+        <button type="button" role="menuitem" data-set="delete" class="danger">Delete all data</button>
+        <button type="button" role="menuitem" data-set="account">Change account</button>
+      </div>
+    </div>`;
+  const btn = $<HTMLButtonElement>('#settings-btn');
+  const menu = $('#settings-menu');
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    const open = menu.hidden;
+    menu.hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
   };
+  menu.querySelectorAll<HTMLButtonElement>('[data-set]').forEach((b) => (b.onclick = () => {
+    const a = b.dataset.set;
+    if (a === 'import') { closeSettingsMenu(); navigate({ view: 'import', game: null }); }
+    else if (a === 'settings') { closeSettingsMenu(); navigate({ view: 'data', game: null }); }
+    else if (a === 'export') void exportBackup();
+    else if (a === 'delete') void deleteAllData();
+    else if (a === 'account') startAccountSwitch();
+  }));
+}
+
+// Close settings on outside click / Escape (wired once).
+if (!(window as unknown as { __crSettingsWired?: boolean }).__crSettingsWired) {
+  (window as unknown as { __crSettingsWired?: boolean }).__crSettingsWired = true;
+  document.addEventListener('click', (e) => {
+    const wrap = document.querySelector('.settings-wrap');
+    if (wrap && !wrap.contains(e.target as Node)) closeSettingsMenu();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSettingsMenu(); });
 }
 
 // ---------------- routing ----------------
@@ -129,7 +192,7 @@ async function route() {
   if (view !== 'analysis') destroyWorkspace();
   if (view !== 'openings') destroyDrill();
   try {
-    if (view === 'puzzles') return await renderPuzzles(ctx, tag);
+    if (view === 'puzzles' || view === 'practice') return await renderPuzzles(ctx, tag);
     if (view === 'train') return await renderTrain(ctx, p);
     if (view === 'openings') return await renderOpenings({ ...ctx, pk: pk(), user: state.user, site: state.site, games: () => state.games, book: () => bookPromise, loadGames: async () => { try { if (!state.loadedMonths) await loadNextMonth(); while (state.games.length < 80 && state.loadedMonths < 4 && (await loadNextMonth())); } catch { /* offline or no such player: stored games only */ } } }, o, m === 'defend' ? 'defend' : 'play');
     if (view === 'history') return await renderHistory(ctx);
@@ -787,7 +850,7 @@ class ReviewView {
     const T = (t: string) => esc(renderText(t, nt ? 'san' : 'words', seen));
     const lvl = this.level;
     const phaseRow = s.phases.filter((p) => p.moves).map((p) => `<li><b>${cap(p.phase)}</b>: ${esc(p.label)}${p.accuracy != null ? ` <span class="muted">(accuracy ${p.accuracy.toFixed(0)}, ${p.moves} moves${p.mistakes + p.blunders ? `, ${p.mistakes + p.blunders} error${p.mistakes + p.blunders > 1 ? 's' : ''}` : ''})</span>` : ''}</li>`).join('');
-    // status comes from the same saved spaced-review state the Mistakes to Master counter counts
+    // status comes from the same saved spaced-review state the Practice counter counts
     const now = Date.now();
     const statusOf = (m: Moment) => {
       const p = this.puzzles.get(m.ply);
@@ -821,7 +884,7 @@ class ReviewView {
         <div class="src-note">Sources:${srcChip('rules')}${srcChip('estimate')}</div>
       </div>
       <div class="moments">
-        <h2>Critical moments</h2>${this.moments.length ? `<p class="muted small sub">${this.moments.length} position${this.moments.length > 1 ? 's' : ''} saved to Mistakes to Master · <span id="moments-due">${dueHere ? `${dueHere} to train now` : 'all trained for now'}</span></p>` : ''}
+        <h2>Critical moments</h2>${this.moments.length ? `<p class="muted small sub">${this.moments.length} position${this.moments.length > 1 ? 's' : ''} saved to Practice · <span id="moments-due">${dueHere ? `${dueHere} to train now` : 'all trained for now'}</span></p>` : ''}
         ${this.moments.length ? `<div class="moment-list">${this.moments.map((m, i) => {
           const cm = CLS_META[m.cls as Cls] ?? CLS_META.mistake;
           const t = m.tags.primary;

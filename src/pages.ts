@@ -1,4 +1,4 @@
-// Home training panel, Mistakes to Master, training session, history, import and data pages.
+// Home training panel, Practice, training session, history, import and data pages.
 import { safeUrl } from './safe';
 import { Chessground } from 'chessground';
 import type { Key } from 'chessground/types';
@@ -14,7 +14,7 @@ import { MOTIF_INFO, SKILL_LABEL } from './concepts';
 import { LEVEL_LABEL, type Level } from './moments';
 import { Trainer, releaseTrainerEngine, type TrainResult } from './trainer';
 import { importPgn } from './sources';
-import { $, esc, fmtDate, fmtWhen, applyMotionClass, reducedMotion } from './ui';
+import { $, esc, fmtDate, fmtWhen, applyMotionClass, reducedMotion, tipSeen, markTip, helpTip, wireHelpTips } from './ui';
 import { lastMoveFromPgn } from './lastmove';
 import type { GameSummary } from './api';
 
@@ -89,9 +89,14 @@ export async function renderHomePanel(el: HTMLElement, ctx: Ctx) {
   const diags = puzzles.flatMap((p) => (p.diagnosis ? [p.diagnosis] : []));
   const causes = topCauses(diags);
   if (!puzzles.length && !reviews.length) {
-    el.innerHTML = `<div class="card home-card"><h2>Your training</h2><p>Open any game below. When the review finishes you get a short summary, up to three positions to retry, and those positions are saved as your own puzzles for spaced review.</p></div>`;
+    const intro = tipSeen('games')
+      ? `<p class="muted small">No saved positions yet. Review a game to start training.</p>`
+      : `<p>Open any game below. When the review finishes you get a short summary, up to three positions to retry, and those positions are saved for spaced review.</p>`;
+    el.innerHTML = `<div class="card home-card"><h2>Your training</h2>${intro}</div>`;
+    markTip('games');
     return;
   }
+  markTip('games');
   el.innerHTML = `
     <div class="card home-card">
       <div class="home-head">
@@ -111,7 +116,7 @@ export async function renderHomePanel(el: HTMLElement, ctx: Ctx) {
   if (sd) sd.onclick = () => ctx.navigate({ view: 'train', p: null });
 }
 
-// ---------------- Mistakes to Master ----------------
+// ---------------- Practice (formerly Mistakes to Master) ----------------
 const PZ_PAGE = 40;
 export async function renderPuzzles(ctx: Ctx, filter: string | null) {
   const now = Date.now();
@@ -120,15 +125,22 @@ export async function renderPuzzles(ctx: Ctx, filter: string | null) {
   for (const p of all) tags.set(p.core.tags.primary.motif, (tags.get(p.core.tags.primary.motif) ?? 0) + 1);
   const list = sortQueue(all.filter((p) => !filter || p.core.tags.primary.motif === filter), now);
   const due = all.filter((p) => isDue(p.srs, now)).length;
+  document.title = 'Practice · rook-i.e. mistakes';
+  const practiceSeen = tipSeen('practice');
+  const howto = practiceSeen
+    ? `<span class="howto-inline">${helpTip('practice', 'Positions from your own games where a better move existed. Solve them on first try and they come back less often; miss one and it comes back in 10 minutes.')}</span>`
+    : `<p class="muted">Positions from your own games where a better move existed. Solve them on first try and they come back less often; after four clean solves at a 3-week interval they count as mastered. Miss one and it comes back in 10 minutes.</p>`;
+  if (!practiceSeen) markTip('practice');
   ctx.app.innerHTML = `
     <section class="page puzzles">
-      <div class="page-head"><h1>Mistakes to Master</h1>
+      <div class="page-head"><h1>Practice</h1>
         <button class="btn primary" id="train" ${due ? '' : 'disabled'}>${due ? `Train ${due} due` : 'Nothing due'}</button></div>
-      <p class="muted">Positions from your own games where a better move existed. Solve them on first try and they come back less often; after four clean solves at a 3-week interval they count as mastered. Miss one and it comes back in 10 minutes.</p>
+      ${howto}
       ${tags.size ? `<div class="filters" role="group" aria-label="Filter by pattern"><button class="chip ${filter ? '' : 'on'}" data-f="">All (${all.length})</button>${[...tags.entries()].sort((a, b) => b[1] - a[1]).map(([t, n]) => `<button class="chip ${filter === t ? 'on' : ''}" data-f="${esc(t)}">${esc(MOTIF_INFO[t as keyof typeof MOTIF_INFO]?.name ?? t)} (${n})</button>`).join('')}</div>` : ''}
       <div class="pz-list">${list.length ? '' : `<div class="empty">No saved positions yet. Review a game and its critical moments are saved here automatically.</div>`}</div>
       <div class="pz-more"></div>
     </section>`;
+  wireHelpTips(ctx.app);
   // rows are drawn a page at a time (each has a small board), so a library of thousands of positions still opens quickly
   const rowHtml = (p: Puzzle) => {
         const st = srsStatus(p.srs, now);
@@ -173,7 +185,7 @@ export async function renderPuzzles(ctx: Ctx, filter: string | null) {
     if (b) b.onclick = showMore;
   };
   showMore();
-  ctx.app.querySelectorAll<HTMLButtonElement>('.chip[data-f]').forEach((b) => (b.onclick = () => ctx.navigate({ view: 'puzzles', tag: b.dataset.f || null })));
+  ctx.app.querySelectorAll<HTMLButtonElement>('.chip[data-f]').forEach((b) => (b.onclick = () => ctx.navigate({ view: 'practice', tag: b.dataset.f || null })));
   const tr = $<HTMLButtonElement>('#train');
   if (tr) tr.onclick = () => ctx.navigate({ view: 'train', p: null });
 }
@@ -195,8 +207,8 @@ export async function renderTrain(ctx: Ctx, onlyId: string | null) {
     if (i >= queue.length) {
       host.innerHTML = `<div class="card done-card"><h2>${queue.length ? 'Session complete' : 'Nothing due right now'}</h2>
         ${queue.length ? `<p>You solved ${solved} of ${queue.length}. Missed positions come back in 10 minutes; solved ones are scheduled further out.</p>` : '<p>Come back later, or review another game to add positions.</p>'}
-        <button class="btn primary" id="to-list">Mistakes to Master</button> <button class="btn ghost" id="to-games">Games</button></div>`;
-      $('#to-list').onclick = () => ctx.navigate({ view: 'puzzles', p: null });
+        <button class="btn primary" id="to-list">Practice</button> <button class="btn ghost" id="to-games">Games</button></div>`;
+      $('#to-list').onclick = () => ctx.navigate({ view: 'practice', p: null });
       $('#to-games').onclick = () => ctx.navigate({ view: null, p: null });
       return;
     }
@@ -211,7 +223,7 @@ export async function renderTrain(ctx: Ctx, onlyId: string | null) {
       onAnalyse: async (m) => { const id = await createWorkspace(ctx.pk, lessonDoc(m, m.color, `${puzzleTitle(p)}`)); ctx.navigate({ view: 'analysis', ws: id, p: null }); },
       findLastMove: async () => { const g = p.gameId ? await storedGame(p.profileKey, p.gameId) : undefined; return g?.game.pgn ? lastMoveFromPgn(g.game.pgn, p.core.fenBefore, p.core.ply) : null; },
       onNext: () => { i++; show(); }, nextLabel: i + 1 < queue.length ? 'Next position' : 'Finish',
-      onClose: () => ctx.navigate({ view: 'puzzles', p: null }), closeLabel: 'Stop',
+      onClose: () => ctx.navigate({ view: 'practice', p: null }), closeLabel: 'Stop',
     });
   };
   show();
@@ -243,6 +255,7 @@ const cap1 = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 // ---------------- import ----------------
 export async function renderImport(ctx: Ctx) {
+  document.title = 'Import games · rook-i.e. mistakes';
   const games = (await store.byProfile<StoredGame>('games', ctx.pk)).filter((g) => g.game.platform === 'pgn').sort((a, b) => b.savedAt - a.savedAt);
   ctx.app.innerHTML = `
     <section class="page import">
@@ -307,12 +320,13 @@ export async function rememberGame(pk: string, g: GameSummary, myColor: 'w' | 'b
 
 // ---------------- your data ----------------
 export async function renderData(ctx: Ctx) {
+  document.title = 'Settings · rook-i.e. mistakes';
   const b = await store.exportAll();
   const motion = localStorage.getItem('cr-motion') ?? 'system';
   const lvl = ctx.levelOverride();
   ctx.app.innerHTML = `
     <section class="page data">
-      <div class="page-head"><h1>Your data & settings</h1></div>
+      <div class="page-head"><h1>Settings</h1></div>
       <div class="card"><h2>What leaves your device</h2>
         <p>Only requests to public game archives to download your games. Engine analysis runs in your browser. Reviews, puzzles and progress are stored only in this browser (IndexedDB). There are no accounts, no tracking and no server-side copy.</p>
         <p class="muted small">Stored here: ${b.profiles.length} profile${b.profiles.length === 1 ? '' : 's'}, ${b.reviews.length} reviewed game${b.reviews.length === 1 ? '' : 's'}, ${b.puzzles.length} saved position${b.puzzles.length === 1 ? '' : 's'}.</p>

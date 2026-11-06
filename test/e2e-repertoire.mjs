@@ -56,16 +56,16 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   check(`${tag}: Réti variation shows ECO and its moves`, /A09/.test(await card.innerText()) && /1\. Nf3 d5 2\. c4/.test(await card.locator('summary').innerText()));
   await card.locator('summary').click();
   check(`${tag}: Réti line lists reasons`, (await card.locator('.op-line li').count()) >= 4, await card.locator('.op-line li').count());
-  check(`${tag}: not practised yet`, /Not practised/.test(await card.locator('.op-var-top .op-status').innerText()));
-  await page.waitForSelector('#op-faced table');
+  check(`${tag}: not practised yet`, /New|Not practised/.test(await card.locator('.op-var-top .op-status').innerText()));
+  await page.waitForSelector('#op-faced .op-faced-list');
   const faced = page.locator('#op-faced');
-  const retiRow = faced.locator('tbody tr').filter({ has: page.locator('td:first-child', { hasText: /^Réti Opening A09/ }) });
+  const retiRow = faced.locator('.op-faced-row').filter({ hasText: /Réti Opening A09/ });
   check(`${tag}: faced most: Réti 3 games, 17% and flagged`, (await retiRow.count()) === 1 && /\b3\b/.test(await retiRow.innerText()) && /17%/.test(await retiRow.innerText()) && (await retiRow.locator('.op-flag').count()) === 1, (await retiRow.innerText().catch(() => '')).replace(/\s+/g, ' '));
-  const sicRow = faced.locator('tr', { hasText: 'Sicilian Defense' });
+  const sicRow = faced.locator('.op-faced-row', { hasText: 'Sicilian Defense' });
   check(`${tag}: faced most: Sicilian 2 games 100%, not flagged`, (await sicRow.count()) === 1 && /100%/.test(await sicRow.innerText()) && (await sicRow.locator('.op-flag').count()) === 0);
-  const cgRow = faced.locator('tr', { hasText: 'Center Game: Normal Variation' });
+  const cgRow = faced.locator('.op-faced-row', { hasText: 'Center Game: Normal Variation' });
   check(`${tag}: faced most shows the exact variation name`, (await cgRow.count()) === 1 && /C22/.test(await cgRow.innerText()) && (await cgRow.locator('[data-practice]').count()) === 1, (await cgRow.innerText().catch(() => '')).replace(/\s+/g, ' '));
-  check(`${tag}: faced most sorted by count`, /Réti/.test(await faced.locator('tbody tr').first().innerText()));
+  check(`${tag}: faced most sorted by count`, /Réti/.test(await faced.locator('.op-faced-row').first().innerText()));
   check(`${tag}: no horizontal overflow on the library`, await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
 
   // practise from the faced-most row
@@ -128,7 +128,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   // back to the library: status updated
   await page.click('#op-back');
   await page.waitForSelector('#op-reti');
-  check(`${tag}: library shows the new status`, !/Not practised/.test(await page.locator('#op-reti .op-var-top .op-status').innerText()), await page.locator('#op-reti .op-var-top .op-status').innerText());
+  check(`${tag}: library shows the new status`, !/^(New|Not practised)$/.test((await page.locator('#op-reti .op-var-top .op-status').innerText()).trim()), await page.locator('#op-reti .op-var-top .op-status').innerText());
   // a White line: Sicilian starts with your move, no last move yet
   await page.goto(BASE + `?user=${USER}&view=openings&o=sicilian`);
   await page.waitForSelector('.op-drill #tr-board cg-board');

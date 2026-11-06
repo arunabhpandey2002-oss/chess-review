@@ -50,7 +50,7 @@ export function renderReplayReview(el: HTMLElement, d: ReplayReview, o: { level:
   el.querySelectorAll<HTMLButtonElement>('[data-save]').forEach((b) => (b.onclick = async () => {
     b.disabled = true;
     const ok = await o.onSave!(d.moments[+b.dataset.save!]);
-    b.textContent = ok ? 'Saved to Mistakes to Master' : 'Could not save';
+    b.textContent = ok ? 'Saved to Practice' : 'Could not save';
   }));
 }
 

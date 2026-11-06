@@ -41,7 +41,7 @@ async function run(tag, viewport, mobile) {
   // keep browsing while it runs: open Puzzles and come back
   await page.waitForFunction(() => window.__batch?.jobs.some((j) => j.status === 'running' && j.posDone > 5), null, { timeout: 120000 });
   const tNav = Date.now();
-  await page.click('a[href*="view=puzzles"], [data-view="puzzles"]').catch(() => {});
+  await page.click('a[href*="view=practice"], a[href*="view=puzzles"], [data-view="practice"], [data-view="puzzles"]').catch(() => {});
   await page.waitForTimeout(300);
   await page.goBack();
   await page.waitForSelector('.batch-run', { timeout: 30000 });

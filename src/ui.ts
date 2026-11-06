@@ -98,3 +98,32 @@ export function fmtWhen(ms: number, now = Date.now()): string {
   const days = Math.round(h / 24);
   return `in ${days} day${days === 1 ? '' : 's'}`;
 }
+
+/** One-shot tips: hide chatty how-to copy after the user has seen the feature. */
+export function tipSeen(key: string): boolean {
+  try { return localStorage.getItem(`cr-tip-${key}`) === '1'; } catch { return false; }
+}
+export function markTip(key: string): void {
+  try { localStorage.setItem(`cr-tip-${key}`, '1'); } catch { /* private mode */ }
+}
+/** Compact help control: click toggles a short tip; first open marks it seen. */
+export function helpTip(key: string, text: string): string {
+  return `<button type="button" class="help-tip" data-tip="${esc(key)}" aria-label="Help" title="Help">?</button><span class="help-tip-pop" data-tip-pop="${esc(key)}" hidden>${esc(text)}</span>`;
+}
+export function wireHelpTips(root: ParentNode = document): void {
+  root.querySelectorAll<HTMLButtonElement>('.help-tip[data-tip]').forEach((b) => {
+    if ((b as HTMLButtonElement & { _wired?: boolean })._wired) return;
+    (b as HTMLButtonElement & { _wired?: boolean })._wired = true;
+    b.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const key = b.dataset.tip!;
+      const pop = root.querySelector<HTMLElement>(`[data-tip-pop="${key}"]`) ?? document.querySelector<HTMLElement>(`[data-tip-pop="${key}"]`);
+      if (!pop) return;
+      const open = pop.hidden;
+      root.querySelectorAll<HTMLElement>('.help-tip-pop').forEach((p) => { p.hidden = true; });
+      pop.hidden = !open;
+      if (open) markTip(key);
+    };
+  });
+}
