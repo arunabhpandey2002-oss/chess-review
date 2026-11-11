@@ -23,21 +23,21 @@ async function verify(label) {
 }
 // 1. URL parameters
 for (const q of [`?user=${encodeURIComponent(P('user'))}`, `?user=${encodeURIComponent(P('u2'))}&view=puzzles&tag=${encodeURIComponent(P('tag'))}`,
-  `?user=Arunabh-pandey&game=${encodeURIComponent(P('game'))}`, `?user=Arunabh-pandey&view=history`, `?user=${encodeURIComponent(P('li'))}&site=lichess`,
-  `?user=Arunabh-pandey&view=${encodeURIComponent(P('view'))}`]) {
+  `?user=demo-player&game=${encodeURIComponent(P('game'))}`, `?user=demo-player&view=history`, `?user=${encodeURIComponent(P('li'))}&site=lichess`,
+  `?user=demo-player&view=${encodeURIComponent(P('view'))}`]) {
   await page.goto(BASE + q); await verify('url ' + q.slice(0, 40));
 }
 // 2. Imported PGN with payloads in every header and a javascript: link
-const pgn = `[Event "${P('event').replace(/"/g, "'")}"]\n[Site "javascript:window.__x=['site']"]\n[Link "javascript:window.__x=['link']"]\n[White "${P('white').replace(/"/g, "'")}"]\n[Black "Arunabh-pandey"]\n[WhiteElo "${P('elo').replace(/"/g, "'")}"]\n[Result "1-0"]\n[Opening "${P('open').replace(/"/g, "'")}"]\n[Termination "${P('term').replace(/"/g, "'")}"]\n[TimeControl "600"]\n\n1. e4 {${P('comment').replace(/[{}]/g, '')}} e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7# 1-0\n`;
-await page.goto(BASE + '?user=Arunabh-pandey&view=import');
+const pgn = `[Event "${P('event').replace(/"/g, "'")}"]\n[Site "javascript:window.__x=['site']"]\n[Link "javascript:window.__x=['link']"]\n[White "${P('white').replace(/"/g, "'")}"]\n[Black "demo-player"]\n[WhiteElo "${P('elo').replace(/"/g, "'")}"]\n[Result "1-0"]\n[Opening "${P('open').replace(/"/g, "'")}"]\n[Termination "${P('term').replace(/"/g, "'")}"]\n[TimeControl "600"]\n\n1. e4 {${P('comment').replace(/[{}]/g, '')}} e5 2. Qh5 Nc6 3. Bc4 Nf6 4. Qxf7# 1-0\n`;
+await page.goto(BASE + '?user=demo-player&view=import');
 await page.fill('#pgn-text', pgn);
 await page.click('#f-pgn button.btn:not(.ghost)');
 await page.waitForSelector('.progress.complete', { timeout: 300000 }).catch(() => {});
 await verify('pgn import → review');
-await page.goto(BASE + '?user=Arunabh-pandey&view=import'); await verify('pgn import list');
-await page.goto(BASE + '?user=Arunabh-pandey&view=history'); await verify('history after pgn');
+await page.goto(BASE + '?user=demo-player&view=import'); await verify('pgn import list');
+await page.goto(BASE + '?user=demo-player&view=history'); await verify('history after pgn');
 // 3. Backup with payloads in fields that are not normally text
-await page.goto(BASE + '?user=Arunabh-pandey&view=data');
+await page.goto(BASE + '?user=demo-player&view=data');
 const dump = await page.evaluate(async () => {
   const db = await new Promise((res, rej) => { const r = indexedDB.open('chess-review'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
   const out = {};
@@ -61,8 +61,8 @@ await page.setInputFiles('#imp', '/tmp/evil-backup.json');
 await page.waitForTimeout(1500);
 console.log('  import message:', await page.textContent('#data-msg, [role=status]').catch(() => '?'));
 await verify('backup import');
-for (const v of ['', 'puzzles', 'history', 'data', 'train']) { await page.goto(BASE + `?user=Arunabh-pandey${v ? '&view=' + v : ''}`); await verify('after backup: ' + (v || 'home')); }
-await page.goto(BASE + '?user=Arunabh-pandey&game=evil'); await verify('after backup: evil game');
+for (const v of ['', 'puzzles', 'history', 'data', 'train']) { await page.goto(BASE + `?user=demo-player${v ? '&view=' + v : ''}`); await verify('after backup: ' + (v || 'home')); }
+await page.goto(BASE + '?user=demo-player&game=evil'); await verify('after backup: evil game');
 console.log(csp.length ? `CSP reports: ${[...new Set(csp)].slice(0, 5).join(' | ')}` : 'no CSP violations logged');
 console.log(`\n${checks - fails.length}/${checks} passed`);
 await browser.close();

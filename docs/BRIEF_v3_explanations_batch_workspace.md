@@ -1,6 +1,6 @@
 # Brief v3: explanation quality, batch analysis and an analysis workspace
 
-Source: Arunabh's product brief of 30 Oct 2026, plus his follow-up on Play it out. This is a faithful summary; the plan is in `docs/PLAN_v3.md`.
+Source: product brief of 30 Oct 2026, plus a follow-up on Play it out. This is a faithful summary; the plan is in `docs/PLAN_v3.md`.
 
 ## Ground rules
 - Improve **rook-i.e. mistakes**; keep everything that works (username import, multi-PGN import, in-browser engine at several depths, eval graph, classifications and accuracy, level-adjusted explanations, game summary and phases, critical moments, retries, the thinking question, personal puzzles, spaced repetition, recurring-error history, local storage, export/import/delete, provenance labels Engine / Formula / Rule-based / Estimate).
@@ -45,7 +45,7 @@ Source: Arunabh's product brief of 30 Oct 2026, plus his follow-up on Play it ou
 - **Later phases (not this slice):** opening explorer with sourced stats, repertoire and flashcards, 7-piece tablebase, diagnostic overlays, local studies, shareable read-only analysis that excludes private data, optional encrypted sync.
 - **Accessibility:** keyboard, screen-reader board descriptions, colour-blind-safe markers, reduced motion, focus management, large touch targets, explanations not relying on colour or arrows alone.
 
-## Follow-up from Arunabh: Play it out → review and compare
+## Follow-up: Play it out → review and compare
 1. After a Play it out game ends or is stopped, offer **Review this game**: the same review pipeline (classifications, graph, grounded explanations, critical moments) on the played-out continuation, saved locally and linked to the source game and moment.
 2. **Record take-backs**: every attempt or branch (including moves taken back) stays in the variation tree, so errors and corrections are visible.
 3. **Compare with original**: original line vs replay (and take-back branches) from the shared position; highlight divergence points; for each side, mistakes and the win-chance path (both curves on one graph); explain each divergence in grounded terms (win% before/after, what the new move did differently via board facts and the material ledger, and whether the same concept category of error repeated or was fixed). Example: "You diverged at 16...Qc7 → 16...Bf6. In the original you lost the bishop two moves later; here you kept material and your win chance rose from 60% to 100%. You still slipped once at 19...a4 (−29%), the same piece-safety pattern."

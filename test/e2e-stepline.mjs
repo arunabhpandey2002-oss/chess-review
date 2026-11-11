@@ -16,7 +16,7 @@ for (const [tag, opts] of [['desktop', { viewport: { width: 1400, height: 950 } 
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.addInitScript(() => localStorage.setItem('cr-notation', '1'));
-  await page.goto(BASE + '?user=Arunabh-pandey&game=186374332730');
+  await page.goto(BASE + '?user=demo-player&game=186374332730');
   await page.waitForSelector('cg-board piece', { timeout: 60000 });
   await page.waitForSelector('.progress.complete', { timeout: 300000 });
   await page.evaluate(() => window.__review.go(27));

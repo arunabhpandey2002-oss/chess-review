@@ -43,8 +43,9 @@ Design and roadmap: docs/PRODUCT_PLAN.md.
 Live: https://rook-ie-mistakes.vercel.app/ (the old https://chess-review-ashen.vercel.app/ still works)
 
 ## Anyone can use it
-- Open the site and type a username with the "Change" link, or share a link like `https://rook-ie-mistakes.vercel.app/?user=hikaru`.
-- With no `?user=`, it opens on Arunabh-pandey. Add `&site=lichess` to load games from the second supported source.
+- Open the site and enter a Chess.com or Lichess username, or share a link like `https://rook-ie-mistakes.vercel.app/?user=hikaru`.
+- With no `?user=`, the app reopens the last player used in this browser, or shows a welcome screen. Add `&site=lichess` to load games from Lichess.
+- Change account (in the settings menu) returns to the welcome screen. `?user=` links still work directly.
 - Games come straight from public game archives, called from the visitor's own browser. No login, key or server is needed, and only public games are shown.
 - The engine runs on the visitor's own device. Nothing is uploaded anywhere. Results are cached in the browser's localStorage.
 
@@ -73,7 +74,7 @@ Hosted on Vercel as the project `rook-ie-mistakes` (renamed from `chess-review`;
     git add -A && git commit -m "your change" && git push
 - **Manual:** `npm run deploy` runs `vercel --prod`. It needs the Vercel CLI (`npm i -g vercel`) and a one-time `vercel login` and `vercel link --project rook-ie-mistakes`.
 
-To turn on automatic deploys: on GitHub, open Settings, Applications, Vercel, Configure, and add `chess-review` to the repositories Vercel can access. Then in Vercel open the project, Settings, Git, and connect `arunabhpandey2002-oss/chess-review` to the `rook-ie-mistakes` project.
+To turn on automatic deploys: on GitHub, open Settings, Applications, Vercel, Configure, and add `chess-review` to the repositories Vercel can access. Then in Vercel open the project, Settings, Git, and connect the GitHub repository to the `rook-ie-mistakes` project.
 
 Legacy: the site used to be on GitHub Pages (`npm run deploy:gh-pages-legacy`, `gh-pages` branch). Pages is off now that the repo is private.
 

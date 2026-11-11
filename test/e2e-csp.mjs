@@ -7,7 +7,7 @@ await ctx.route('http://localhost:4173/**', async (route) => { const r = await r
 const p = await ctx.newPage(); const v = [];
 p.on('console', (m) => { if (/Content Security Policy|Refused/i.test(m.text())) v.push(m.text().slice(0, 220)); });
 p.on('pageerror', (e) => v.push('err ' + e.message));
-await p.goto('http://localhost:4173/?user=Arunabh-pandey&game=186132691608');
+await p.goto('http://localhost:4173/?user=demo-player&game=186132691608');
 await p.waitForSelector('.progress.complete', { timeout: 300000 });
 await p.evaluate(() => window.__review.go(31)); await p.click('#mc-explore'); await p.waitForTimeout(3000);
 await p.goto('http://localhost:4173/?user=DrNykterstein&site=lichess'); await p.waitForTimeout(5000);

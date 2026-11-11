@@ -32,7 +32,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.setDefaultTimeout(30000);
-  await page.goto(BASE + '?user=Arunabh-pandey&view=data');
+  await page.goto(BASE + '?user=demo-player&view=data');
   await page.waitForSelector('h1');
   await page.evaluate(async ({ seeds, games }) => {
     const db = await new Promise((r, j) => { const q = indexedDB.open('chess-review'); q.onsuccess = () => r(q.result); q.onerror = () => j(q.error); });
@@ -41,7 +41,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   }, { seeds, games });
 
   const open = async (id) => {
-    await page.goto(BASE + `?user=Arunabh-pandey&view=train&p=${encodeURIComponent(`${pk}|${id}`)}`);
+    await page.goto(BASE + `?user=demo-player&view=train&p=${encodeURIComponent(`${pk}|${id}`)}`);
     await page.waitForSelector('.trainer #tr-board cg-board');
     await page.waitForTimeout(400);
   };
@@ -54,7 +54,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   const sameCells = (got, squares, white) => got.length === 2 && squares.every((sq) => { const g = got.find((x) => x.key === sq); const e = cell(sq, white); return g && g.col === e.col && g.row === e.row; });
   const lastText = async () => (await page.locator('#tr-last').isVisible()) ? (await page.locator('#tr-last').innerText()).replace(/\s+/g, ' ').trim() : '(hidden)';
 
-  // Black to play, Black at the bottom (as in Arunabh's screenshot): last move 15. Rb5 (e5 to b5)
+  // Black to play, Black at the bottom (as in demo-player's screenshot): last move 15. Rb5 (e5 to b5)
   await open('lm-black');
   check(`${tag}: Black to play shows White's last move`, /^Last move: 15\. Rb5 \(e5 → b5\)$/.test(await lastText()), await lastText());
   check(`${tag}: board flipped for Black`, await page.locator('#tr-board.orientation-black, #tr-board .orientation-black').count() >= 1);

@@ -12,7 +12,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.setDefaultTimeout(30000);
-  await page.goto(BASE + '?user=Arunabh-pandey&view=data');
+  await page.goto(BASE + '?user=demo-player&view=data');
   await page.waitForSelector('h1');
   await page.evaluate(async (base) => {
     const db = await new Promise((r, j) => { const q = indexedDB.open('chess-review'); q.onsuccess = () => r(q.result); q.onerror = () => j(q.error); });
@@ -20,7 +20,7 @@ for (const [tag, viewport, mobile] of [['desktop', { width: 1400, height: 950 },
     db.close();
   }, base);
   const t0 = Date.now();
-  await page.goto(BASE + '?user=Arunabh-pandey&view=puzzles');
+  await page.goto(BASE + '?user=demo-player&view=puzzles');
   await page.waitForSelector('.pz-row');
   check(`${tag}: first page opens`, true, `${Date.now() - t0} ms`);
   check(`${tag}: 40 rows drawn first`, (await page.locator('.pz-row').count()) === 40, await page.locator('.pz-row').count());

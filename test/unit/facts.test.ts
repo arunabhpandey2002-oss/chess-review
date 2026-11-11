@@ -92,7 +92,7 @@ describe('material along a line', () => {
 });
 
 describe('tagging a real game move', () => {
-  it('13...Nc2+ from Oggiggity vs Arunabh-pandey is tagged as a fork when missed', () => {
+  it('13...Nc2+ from Oggiggity vs demo-player is tagged as a fork when missed', () => {
     const { plies } = parseGame(readFileSync('test/game.pgn', 'utf8'));
     const p = plies[25]; // 13...Nc2+
     expect(p.san).toBe('Nc2+');

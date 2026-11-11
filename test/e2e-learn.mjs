@@ -25,7 +25,7 @@ async function review(url, label) {
 }
 
 // 1. summary on the reference game
-await review('?user=Arunabh-pandey&game=186131916376', '186131916376');
+await review('?user=demo-player&game=186131916376', '186131916376');
 await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true))); const story = (await page.locator('.story').innerText()).trim();
 ok('summary story shown', story.length > 40, story.slice(0, 160));
 await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true))); const facts = (await page.locator('.coach-card').innerText()).replace(/\s+/g, ' ');
@@ -38,7 +38,7 @@ await page.evaluate(() => window.scrollTo(0, 0));
 await page.screenshot({ path: `${OUT}/01-summary.png` });
 
 // 2. a game with three critical moments, retry with a hint
-await review('?user=Arunabh-pandey&game=186092857180', '186092857180');
+await review('?user=demo-player&game=186092857180', '186092857180');
 const m2 = await page.locator('.moment').count();
 ok('three critical moments', m2 === 3, `${m2}`);
 await page.locator('[data-retry="0"]').click();
@@ -115,7 +115,7 @@ await page.screenshot({ path: `${OUT}/06-lichess-review.png` });
 
 // 5. mobile layout
 await page.setViewportSize({ width: 390, height: 844 });
-await page.goto(BASE + '?user=Arunabh-pandey&game=186092857180');
+await page.goto(BASE + '?user=demo-player&game=186092857180');
 await page.waitForSelector('.coach-card', { timeout: 120000 });
 const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
 ok('mobile: no horizontal overflow on review', overflow <= 1, `${overflow}px`);
@@ -127,7 +127,7 @@ const bw = await page.locator('.overlay .tr-board').boundingBox();
 ok('mobile: retry board fits screen', bw && bw.width >= 300 && bw.width <= 390, `${bw?.width}px`);
 await page.screenshot({ path: `${OUT}/08-mobile-retry.png` });
 await page.click('#tr-close');
-await page.goto(BASE + '?user=Arunabh-pandey&view=puzzles');
+await page.goto(BASE + '?user=demo-player&view=puzzles');
 await page.waitForSelector('.pz-row');
 const ov2 = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
 ok('mobile: puzzles page fits', ov2 <= 1, `${ov2}px`);

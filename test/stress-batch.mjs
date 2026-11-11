@@ -16,7 +16,7 @@ await cdp.send('HeapProfiler.enable');
 const heap = async () => { await cdp.send('HeapProfiler.collectGarbage'); const m = await cdp.send('Runtime.getHeapUsage'); return +(m.usedSize / 1048576).toFixed(1); };
 const workers = () => page.workers().length;
 const est = () => page.evaluate(async () => { const e = await navigator.storage.estimate(); return +((e.usage ?? 0) / 1048576).toFixed(1); });
-await page.goto(BASE + '?user=Arunabh-pandey');
+await page.goto(BASE + '?user=demo-player');
 await page.waitForSelector('.game-row', { timeout: 60000 });
 const h0 = await heap(); const w0 = workers();
 console.log(`before: heap ${h0} MB, workers ${w0}, storage ${await est()} MB`);
@@ -46,11 +46,11 @@ const h1 = await heap();
 console.log(`after: heap ${h1} MB, workers ${workers()} (peak ${peakW}), storage ${await est()} MB, ${snap.jobs.map((j) => j.status).join(',')}`);
 console.log(`games done ${per.length}, total ${Math.round((Date.now() - t0) / 1000)} s, mean ${Math.round(per.reduce((a, b) => a + b, 0) / per.length / 1000)} s/game`);
 // navigate around after the batch and re-measure (leak check across pages)
-for (const v of ['puzzles', 'history', '', 'puzzles', 'history', '']) { await page.goto(BASE + '?user=Arunabh-pandey' + (v ? '&view=' + v : '')); await page.waitForTimeout(800); }
+for (const v of ['puzzles', 'history', '', 'puzzles', 'history', '']) { await page.goto(BASE + '?user=demo-player' + (v ? '&view=' + v : '')); await page.waitForTimeout(800); }
 console.log(`after browsing: heap ${await heap()} MB, workers ${workers()}`);
 const counts = await page.evaluate(async () => { const db = await new Promise((r) => { const q = indexedDB.open('chess-review'); q.onsuccess = () => r(q.result); }); const out = {}; for (const s of db.objectStoreNames) out[s] = await new Promise((r) => { const q = db.transaction(s).objectStore(s).count(); q.onsuccess = () => r(q.result); }); return out; });
 console.log('records:', JSON.stringify(counts));
-await page.goto(BASE + '?user=Arunabh-pandey&view=data');
+await page.goto(BASE + '?user=demo-player&view=data');
 const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#exp')]);
 await dl.saveAs('stress/seed-backup.json');
 writeFileSync('stress/batch-result.json', JSON.stringify({ h0, h1, w0, peakW, samples, per, counts, errors }, null, 1));

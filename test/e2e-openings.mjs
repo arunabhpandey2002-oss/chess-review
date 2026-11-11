@@ -21,7 +21,7 @@ async function run(tag, viewport, mobile) {
   page.on('request', (r) => { const u = new URL(r.url()); if (/^https?:/.test(u.protocol) && u.host !== host && !/api\.chess\.com|lichess\.org/.test(u.host)) outside.push(u.host); if (/explorer|opening/i.test(u.host)) outside.push(u.host); });
   page.on('pageerror', (e) => errors.push(`${tag}: ${e.message}`));
   page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(`${tag}: ${m.text()}`); });
-  await page.goto(BASE + '?user=Arunabh-pandey&view=analysis');
+  await page.goto(BASE + '?user=demo-player&view=analysis');
   await page.waitForSelector('#ws-book .ob-mv', { timeout: 30000 });
   const r0 = await rows(page);
   const total0 = +(await page.locator('#ws-book').innerText()).match(/([\d,]+) games reached this position/)[1].replace(/,/g, '');
@@ -56,7 +56,7 @@ async function run(tag, viewport, mobile) {
   // file missing: degrade gracefully, board still works
   const p2 = await ctx.newPage();
   await p2.route('**/openings.json', (r) => r.abort());
-  await p2.goto(BASE + '?user=Arunabh-pandey&view=analysis');
+  await p2.goto(BASE + '?user=demo-player&view=analysis');
   await p2.waitForSelector('#ob-none', { timeout: 15000 });
   ok(`${tag}: missing data handled calmly`, /could not be loaded/.test(await p2.locator('#ob-none').innerText()) && (await p2.locator('#ws-board cg-board').count()) === 1);
   await ctx.close();

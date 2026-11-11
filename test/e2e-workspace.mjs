@@ -9,7 +9,7 @@ const results = [];
 const ok = (name, cond, info = '') => { results.push({ name, pass: !!cond, info }); console.log(`${cond ? 'PASS' : 'FAIL'} ${name}${info ? ' — ' + info : ''}`); };
 const browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const UA = (await (await browser.newPage()).evaluate(() => navigator.userAgent)).replace('HeadlessChrome', 'Chrome');
-const GAME = '?user=Arunabh-pandey&game=186092857180';
+const GAME = '?user=demo-player&game=186092857180';
 const errors = [];
 const lines = (page) => page.waitForFunction(() => document.querySelectorAll('#ws-lines .ws-pl').length > 0, null, { timeout: 60000 });
 
@@ -86,7 +86,7 @@ async function run(tag, viewport, mobile) {
   await lines(page);
   ok(`${tag}: load a FEN`, (await page.evaluate(() => window.__ws.fen)) === '8/8/8/4k3/8/8/4P3/4K3 w - - 0 1');
   // Import page entry point
-  await page.goto(BASE + '?user=Arunabh-pandey&view=import');
+  await page.goto(BASE + '?user=demo-player&view=import');
   await page.fill('#ws-text', '[White "A"]\n[Black "B"]\n\n1. e4 e5 2. Nf3 Nc6 *');
   await page.click('#f-ws button');
   await page.waitForSelector('.ws #ws-board cg-board');

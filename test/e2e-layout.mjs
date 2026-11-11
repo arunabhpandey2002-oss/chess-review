@@ -61,7 +61,7 @@ const closeOverlays = async (page) => { while (await page.locator('.overlay').co
   for (const [w, h] of VIEWS) {
     await page.setViewportSize({ width: w, height: h });
     for (const v of ['', 'puzzles', 'history', 'import', 'data']) {
-      await page.goto(`${BASE}?user=Arunabh-pandey${v ? '&view=' + v : ''}`);
+      await page.goto(`${BASE}?user=demo-player${v ? '&view=' + v : ''}`);
       await page.waitForSelector(v ? 'main .page, main .card, main h1' : '.game-row', { timeout: 60000 });
       await check(page, `${w}-${v || 'home'}`);
     }
@@ -73,7 +73,7 @@ for (const [side, g] of Object.entries(GAMES)) {
   const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1440, height: 900 } });
   const page = await ctx.newPage();
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto(`${BASE}?user=Arunabh-pandey&game=${g.id}`);
+  await page.goto(`${BASE}?user=demo-player&game=${g.id}`);
   await page.waitForSelector('.progress.complete', { timeout: 900000 });
   await page.waitForFunction(() => window.__coach && window.__coach.played, null, { timeout: 60000 }).catch(() => {});
   await page.waitForSelector('[data-retry="0"]', { timeout: 15000 }).catch(() => {});

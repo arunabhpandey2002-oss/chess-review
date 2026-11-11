@@ -13,7 +13,7 @@ function load(pgnPath: string, evPath: string) {
   return { plies, headers, evals, reviews };
 }
 
-describe('coach on Oggiggity vs Arunabh-pandey (186131916376)', () => {
+describe('coach on Oggiggity vs demo-player (186131916376)', () => {
   const g = load('test/game.pgn', 'test/game.pgn.native20.evals.json');
   const moments = buildMoments(g.plies, g.evals, g.reviews, 'b', 'beginner');
   const s = buildSummary({ plies: g.plies, evals: g.evals, reviews: g.reviews, me: 'b', moments, opening: 'Philidor Defense', opponent: 'Oggiggity', resultText: 'You won by resignation', timeControl: '600' });

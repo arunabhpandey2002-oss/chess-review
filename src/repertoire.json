@@ -5,7 +5,7 @@
 "moves": "Lichess database sample: 400000 games, 2025-09, blitz, rapid, classical, both players 1800+ (CC0)",
 "check": "Stockfish depth 16: no move of yours loses more than 0.5 pawns"
 },
-"yourGames": "Opening names (lichess chess-openings) of Arunabh-pandey's chess.com games, last 4 months, counted by the side he played. Only names and counts."
+"yourGames": "Opening names (lichess chess-openings) of sample chess.com games, last 4 months, counted by the side played. Only names and counts."
 },
 "families": [
 {

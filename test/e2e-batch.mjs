@@ -10,7 +10,7 @@ const results = [];
 const ok = (name, cond, info = '') => { results.push({ name, pass: !!cond, info }); console.log(`${cond ? 'PASS' : 'FAIL'} ${name}${info ? ' — ' + info : ''}`); };
 const browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const UA = (await (await browser.newPage()).evaluate(() => navigator.userAgent)).replace('HeadlessChrome', 'Chrome');
-const LIST = '?user=Arunabh-pandey';
+const LIST = '?user=demo-player';
 const errors = [];
 const perfInit = () => {
   window.__perf = { long: [], gaps: [], last: 0 };

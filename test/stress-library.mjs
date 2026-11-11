@@ -9,7 +9,7 @@ const seed = JSON.parse(readFileSync('stress/seed-backup.json', 'utf8'));
 const browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const UA = (await (await browser.newPage()).evaluate(() => navigator.userAgent)).replace('HeadlessChrome', 'Chrome');
 const rows = [];
-const U = '?user=Arunabh-pandey';
+const U = '?user=demo-player';
 
 async function seedDb(page, n) {
   return page.evaluate(async ({ seed, n }) => {

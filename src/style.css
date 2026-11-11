@@ -881,3 +881,17 @@ cg-board square.selected { background-color: rgba(165, 148, 249, .45) !important
 .op-var-meta .op-status { font-size: 11px; padding: 1px 7px; }
 .btn.small.primary, .btn.primary.small { background: var(--accent); border-color: var(--accent); color: #111; font-weight: 600; }
 .btn.small.primary:hover { filter: brightness(1.05); }
+
+/* Welcome (no player chosen) */
+.welcome { display: flex; justify-content: center; padding: 48px 0 24px; }
+.welcome-card { max-width: 420px; width: 100%; }
+.welcome-card h1 { margin: 0 0 8px; }
+.welcome-card > p { margin: 0 0 20px; }
+.welcome-sites { display: flex; gap: 16px; margin: 0 0 12px; }
+.welcome-sites label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.welcome #welcome-user { width: 100%; margin-bottom: 12px; padding: 8px 12px; font: inherit; }
+.welcome-card .btn.primary { width: 100%; }
+.welcome-msg { margin: 12px 0 0; color: #f0a29a; font-size: 14px; }
+.welcome-msg[hidden] { display: none !important; }
+.welcome-alt { margin: 16px 0 0; text-align: center; }
+@media (max-width: 520px) { .welcome { padding: 24px 0; } }

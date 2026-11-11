@@ -6,7 +6,7 @@ const page = await ctx.newPage();
 const logs = [];
 page.on('console', (m) => logs.push(`[${m.type()}] ${m.text()}`));
 page.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
-await page.goto(BASE);
+await page.goto(BASE + '?user=demo-player');
 await page.waitForSelector('.game-row', { timeout: 30000 });
 console.log('games listed:', await page.locator('.game-row').count());
 console.log('first row:', (await page.locator('.game-row').first().innerText()).replace(/\s+/g, ' '));
@@ -46,12 +46,12 @@ await page.screenshot({ path: 'shots/05-flipped.png' });
 // mobile
 const m = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
 const mp = await m.newPage();
-await mp.goto(BASE + '?user=Arunabh-pandey&game=186131916376');
+await mp.goto(BASE + '?user=demo-player&game=186131916376');
 await mp.waitForSelector('.progress.complete', { timeout: 600000 }); // should be instant from cache? separate context => re-analysis
 await mp.locator('.mv[data-ply="26"]').click();
 await mp.waitForTimeout(400);
 await mp.screenshot({ path: 'shots/06-mobile-review.png', fullPage: true });
-await mp.goto(BASE);
+await mp.goto(BASE + '?user=demo-player');
 await mp.waitForSelector('.game-row');
 await mp.screenshot({ path: 'shots/07-mobile-list.png' });
 console.log('errors:', logs.filter((l) => /error/i.test(l)).join('\n') || 'none');

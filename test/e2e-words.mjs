@@ -10,7 +10,7 @@ async function run(viewport, mobile) {
   const page = await ctx.newPage();
   page.on('pageerror', (e) => errs.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
-  await page.goto(BASE + '?user=Arunabh-pandey&game=186131916376');
+  await page.goto(BASE + '?user=demo-player&game=186131916376');
   await page.waitForSelector('.progress.complete', { timeout: 600000 });
   await page.evaluate(() => window.__review.go(26));
   await page.waitForTimeout(400);

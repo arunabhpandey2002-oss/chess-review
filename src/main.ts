@@ -33,8 +33,30 @@ import { isDue, srsStatus } from './srs';
 import { renderOpenings, destroyDrill } from './openings-page';
 import { lastMoveFromPgn } from './lastmove';
 
-const DEFAULT_USER = 'Arunabh-pandey';
+const PLAYER_KEY = 'cr-player';
+const WELCOME_KEY = 'cr-welcome';
 const app = $('#app');
+
+type Remembered = { user: string; site: Site };
+function readRemembered(): Remembered | null {
+  try {
+    const raw = localStorage.getItem(PLAYER_KEY);
+    if (!raw) return null;
+    const j = JSON.parse(raw) as { user?: unknown; site?: unknown };
+    const user = typeof j.user === 'string' ? j.user.trim() : '';
+    if (!user) return null;
+    return { user, site: j.site === 'lichess' ? 'lichess' : 'chesscom' };
+  } catch { return null; }
+}
+function writeRemembered(user: string, site: Site) {
+  try { localStorage.setItem(PLAYER_KEY, JSON.stringify({ user, site })); } catch { /* private mode */ }
+}
+function welcomeMode(): boolean {
+  try { return sessionStorage.getItem(WELCOME_KEY) === '1'; } catch { return false; }
+}
+function setWelcomeMode(on: boolean) {
+  try { on ? sessionStorage.setItem(WELCOME_KEY, '1') : sessionStorage.removeItem(WELCOME_KEY); } catch { /* private mode */ }
+}
 applyMotionClass();
 window.matchMedia?.('(prefers-reduced-motion: reduce)').addEventListener?.('change', applyMotionClass);
 
@@ -56,8 +78,15 @@ const bookPromise = fetch(`${import.meta.env.BASE_URL}book.json`).then((r) => r.
 
 function params() {
   const p = new URLSearchParams(location.search);
-  const site = (p.get('site') === 'lichess' ? 'lichess' : 'chesscom') as Site;
-  return { user: p.get('user') || DEFAULT_USER, site, game: p.get('game'), view: p.get('view'), ply: p.get('ply'), p: p.get('p'), o: p.get('o'), m: p.get('m'), tag: p.get('tag'), ws: p.get('ws') };
+  const urlUser = (p.get('user') || '').trim();
+  const siteFromUrl = p.get('site') === 'lichess' ? 'lichess' as const : p.get('site') === 'chesscom' ? 'chesscom' as const : null;
+  let user = urlUser;
+  let site: Site = siteFromUrl ?? 'chesscom';
+  if (!user && !welcomeMode()) {
+    const mem = readRemembered();
+    if (mem) { user = mem.user; site = siteFromUrl ?? mem.site; }
+  }
+  return { user, site, game: p.get('game'), view: p.get('view'), ply: p.get('ply'), p: p.get('p'), o: p.get('o'), m: p.get('m'), tag: p.get('tag'), ws: p.get('ws') };
 }
 function navigate(q: Record<string, string | null>, replace = false) {
   const p = new URLSearchParams(location.search);
@@ -87,11 +116,16 @@ const ctx: Ctx = {
 // ---------------- header ----------------
 async function renderTabs(active: string) {
   const el = $('#tabs');
-  let due = 0;
-  try { due = (await store.byProfile<Puzzle>('puzzles', pk())).filter((p) => isDue(p.srs, Date.now())).length; } catch { /* no IndexedDB */ }
   const tabActive = (v: string) => v === 'practice' ? (active === 'practice' || active === 'puzzles') : active === v;
-  const tabs: [string, string][] = [['', 'Games'], ['practice', `Practice${due ? ` <span class="badge-n" aria-label="${due} due">${due}</span>` : ''}`], ['openings', 'Openings'], ['history', 'History']];
-  el.innerHTML = tabs.map(([v, label]) => `<a href="?${new URLSearchParams({ user: state.user, ...(state.site === 'lichess' ? { site: 'lichess' } : {}), ...(v ? { view: v } : {}) })}" data-view="${v}" class="${tabActive(v) ? 'on' : ''}" ${tabActive(v) ? 'aria-current="page"' : ''}>${label}</a>`).join('');
+  let tabs: [string, string][];
+  if (!state.user) {
+    tabs = [['openings', 'Openings']];
+  } else {
+    let due = 0;
+    try { due = (await store.byProfile<Puzzle>('puzzles', pk())).filter((p) => isDue(p.srs, Date.now())).length; } catch { /* no IndexedDB */ }
+    tabs = [['', 'Games'], ['practice', `Practice${due ? ` <span class="badge-n" aria-label="${due} due">${due}</span>` : ''}`], ['openings', 'Openings'], ['history', 'History']];
+  }
+  el.innerHTML = tabs.map(([v, label]) => `<a href="?${new URLSearchParams({ ...(state.user ? { user: state.user } : {}), ...(state.site === 'lichess' ? { site: 'lichess' } : {}), ...(v ? { view: v } : {}) })}" data-view="${v}" class="${tabActive(v) ? 'on' : ''}" ${tabActive(v) ? 'aria-current="page"' : ''}>${label}</a>`).join('');
   el.querySelectorAll<HTMLAnchorElement>('a').forEach((a) => (a.onclick = (e) => { e.preventDefault(); navigate({ view: a.dataset.view || null, game: null, p: null, tag: null, ply: null, o: null }); }));
 }
 
@@ -104,12 +138,8 @@ function closeSettingsMenu() {
 
 function startAccountSwitch() {
   closeSettingsMenu();
-  const h = $('#user-chip');
-  h.innerHTML = `<form id="user-form"><select id="site-input" aria-label="Platform"><option value="chesscom" ${state.site === 'chesscom' ? 'selected' : ''}>Chess.com</option><option value="lichess" ${state.site === 'lichess' ? 'selected' : ''}>Lichess</option></select><input id="user-input" aria-label="Username" placeholder="Username" autocomplete="off" spellcheck="false" value="${esc(state.user)}"><button>Go</button></form>`;
-  const inp = $<HTMLInputElement>('#user-input');
-  inp.focus(); inp.select();
-  $('#user-form').onsubmit = (e) => { e.preventDefault(); const v = inp.value.trim(); if (v) navigate({ user: v, site: $<HTMLSelectElement>('#site-input').value, game: null, view: null }); };
-  h.addEventListener('focusout', () => setTimeout(() => { if (!h.contains(document.activeElement)) renderHeader(); }, 200));
+  setWelcomeMode(true);
+  navigate({ user: null, site: null, view: null, game: null, p: null, tag: null, ply: null, o: null, m: null, ws: null });
 }
 
 async function exportBackup() {
@@ -129,24 +159,23 @@ async function deleteAllData() {
   route();
 }
 
-function renderHeader() {
-  const h = $('#user-chip');
-  const u = state.profile?.username ?? state.user;
-  h.innerHTML = `
-    ${state.profile?.avatar ? `<img src="${esc(state.profile.avatar)}" alt="">` : `<span class="avatar-ph">${esc(u.slice(0, 1).toUpperCase())}</span>`}
-    <span class="uname" title="${esc(u)}"><span class="un">${esc(u)}</span></span>
-    <div class="settings-wrap">
+function settingsMenuHtml(showAccount: boolean) {
+  return `<div class="settings-wrap">
       <button type="button" class="icon-btn" id="settings-btn" aria-label="Settings" aria-haspopup="menu" aria-expanded="false" title="Settings">⚙</button>
       <div id="settings-menu" class="settings-menu" role="menu" hidden>
         <button type="button" role="menuitem" data-set="import">Import games</button>
         <button type="button" role="menuitem" data-set="settings">Settings</button>
         <button type="button" role="menuitem" data-set="export">Export data</button>
         <button type="button" role="menuitem" data-set="delete" class="danger">Delete all data</button>
-        <button type="button" role="menuitem" data-set="account">Change account</button>
+        ${showAccount ? '<button type="button" role="menuitem" data-set="account">Change account</button>' : ''}
       </div>
     </div>`;
+}
+
+function wireSettingsMenu() {
   const btn = $<HTMLButtonElement>('#settings-btn');
   const menu = $('#settings-menu');
+  if (!btn || !menu) return;
   btn.onclick = (e) => {
     e.stopPropagation();
     const open = menu.hidden;
@@ -161,6 +190,21 @@ function renderHeader() {
     else if (a === 'delete') void deleteAllData();
     else if (a === 'account') startAccountSwitch();
   }));
+}
+
+function renderHeader() {
+  const h = $('#user-chip');
+  const u = state.profile?.username ?? state.user;
+  if (!state.user) {
+    h.innerHTML = settingsMenuHtml(false);
+    wireSettingsMenu();
+    return;
+  }
+  h.innerHTML = `
+    ${state.profile?.avatar ? `<img src="${esc(state.profile.avatar)}" alt="">` : `<span class="avatar-ph">${esc(u.slice(0, 1).toUpperCase())}</span>`}
+    <span class="uname" title="${esc(u)}"><span class="un">${esc(u)}</span></span>
+    ${settingsMenuHtml(true)}`;
+  wireSettingsMenu();
 }
 
 // Close settings on outside click / Escape (wired once).
@@ -180,21 +224,39 @@ async function route() {
   if (user.toLowerCase() !== state.user.toLowerCase() || site !== state.site) {
     state.user = user; state.site = site; state.archives = []; state.loadedMonths = 0; state.exhausted = false; state.games = []; state.gamesById.clear(); state.profile = null; state.rating = 0;
     renderHeader();
-    const prof = site === 'lichess' ? fetchLichessProfile(user) : fetchProfile(user);
-    prof.then((pr) => { if (state.user === user) { state.profile = pr; renderHeader(); } }).catch(() => {});
-    store.ensureProfile(site, user).catch(() => {});
-    void bookPromise.then(() => batch.restore(pk(), book)).catch(() => {});
+    if (user) {
+      const prof = site === 'lichess' ? fetchLichessProfile(user) : fetchProfile(user);
+      prof.then((pr) => {
+        if (state.user !== user) return;
+        state.profile = pr;
+        renderHeader();
+        writeRemembered(pr.username || user, site);
+        setWelcomeMode(false);
+      }).catch(() => {});
+      store.ensureProfile(site, user).catch(() => {});
+      void bookPromise.then(() => batch.restore(pk(), book)).catch(() => {});
+    }
   }
-  document.title = game ? 'Game Review · rook-i.e. mistakes' : `${state.user} · rook-i.e. mistakes`;
+  document.title = !user ? 'rook-i.e. mistakes' : game ? 'Game Review · rook-i.e. mistakes' : `${state.user} · rook-i.e. mistakes`;
   renderTabs(game ? '' : view ?? '');
   if (!game || view) { currentReview?.destroy(); currentReview = null; }
   if (view !== 'train') destroyTrainer();
   if (view !== 'analysis') destroyWorkspace();
   if (view !== 'openings') destroyDrill();
+  const openingsCtx = { ...ctx, pk: pk(), user: state.user, site: state.site, games: () => state.games, book: () => bookPromise, loadGames: async () => { if (!state.user) return; try { if (!state.loadedMonths) await loadNextMonth(); while (state.games.length < 80 && state.loadedMonths < 4 && (await loadNextMonth())); } catch { /* offline or no such player: stored games only */ } } };
   try {
+    if (!user) {
+      const guestOk = view === 'openings' || view === 'import' || view === 'data' || view === 'analysis';
+      if (view === 'openings') return await renderOpenings(openingsCtx, o, m === 'defend' ? 'defend' : 'play');
+      if (view === 'import') return await renderImport(ctx);
+      if (view === 'data') return await renderData(ctx);
+      if (view === 'analysis') { document.title = 'Analysis · rook-i.e. mistakes'; return await renderWorkspace(app, pk(), ws ?? undefined, () => (history.length > 1 ? history.back() : navigate({ view: null, ws: null }))); }
+      if (view && !guestOk) { /* Games / Practice / History need a player */ }
+      return renderWelcome();
+    }
     if (view === 'puzzles' || view === 'practice') return await renderPuzzles(ctx, tag);
     if (view === 'train') return await renderTrain(ctx, p);
-    if (view === 'openings') return await renderOpenings({ ...ctx, pk: pk(), user: state.user, site: state.site, games: () => state.games, book: () => bookPromise, loadGames: async () => { try { if (!state.loadedMonths) await loadNextMonth(); while (state.games.length < 80 && state.loadedMonths < 4 && (await loadNextMonth())); } catch { /* offline or no such player: stored games only */ } } }, o, m === 'defend' ? 'defend' : 'play');
+    if (view === 'openings') return await renderOpenings(openingsCtx, o, m === 'defend' ? 'defend' : 'play');
     if (view === 'history') return await renderHistory(ctx);
     if (view === 'import') return await renderImport(ctx);
     if (view === 'data') return await renderData(ctx);
@@ -224,6 +286,72 @@ function showError(e: unknown) {
   const msg = (e as Error)?.message === 'not-found' ? `No player called “${esc(state.user)}” was found.` : `Couldn't load games (${esc(String((e as Error)?.message ?? e))}).`;
   app.innerHTML = `<div class="error">${msg} <button class="btn" id="retry">Try again</button></div>`;
   $('#retry').onclick = () => { state.user = ''; route(); };
+}
+
+const siteWord = (s: Site) => (s === 'lichess' ? 'Lichess' : 'Chess.com');
+
+async function probePlayer(user: string, site: Site): Promise<{ ok: true; username: string } | { ok: false; error: string }> {
+  try {
+    if (site === 'lichess') {
+      const pr = await fetchLichessProfile(user);
+      const games = await fetchLichessGames(pr.username, 5);
+      if (!games.length) return { ok: false, error: `No finished games were found for “${pr.username}” on Lichess.` };
+      return { ok: true, username: pr.username };
+    }
+    const pr = await fetchProfile(user);
+    const archives = await fetchArchives(pr.username);
+    if (!archives.length) return { ok: false, error: `No finished games were found for “${pr.username}” on Chess.com.` };
+    return { ok: true, username: pr.username };
+  } catch (e) {
+    if ((e as Error)?.message === 'not-found') return { ok: false, error: `No player called “${user}” was found on ${siteWord(site)}.` };
+    return { ok: false, error: `Couldn't load games (${String((e as Error)?.message ?? e)}).` };
+  }
+}
+
+function renderWelcome(preset?: { user?: string; site?: Site; error?: string }) {
+  document.title = 'rook-i.e. mistakes';
+  const site = preset?.site ?? state.site ?? 'chesscom';
+  app.innerHTML = `
+    <section class="page welcome" id="welcome">
+      <div class="card welcome-card">
+        <h1>Review your games</h1>
+        <p class="muted">Enter a Chess.com or Lichess username to load public games.</p>
+        <form id="welcome-form" autocomplete="on">
+          <div class="welcome-sites" role="radiogroup" aria-label="Platform">
+            <label><input type="radio" name="welcome-site" value="chesscom" ${site === 'chesscom' ? 'checked' : ''}> Chess.com</label>
+            <label><input type="radio" name="welcome-site" value="lichess" ${site === 'lichess' ? 'checked' : ''}> Lichess</label>
+          </div>
+          <label class="sr-only" for="welcome-user">Username</label>
+          <input id="welcome-user" name="username" placeholder="Username" autocomplete="username" spellcheck="false" maxlength="40" value="${esc(preset?.user ?? '')}">
+          <button class="btn primary" id="welcome-go" type="submit">Load games</button>
+          <div id="welcome-msg" class="welcome-msg" role="alert"${preset?.error ? '' : ' hidden'}>${preset?.error ? esc(preset.error) : ''}</div>
+        </form>
+        <p class="welcome-alt"><button type="button" class="link" id="welcome-import">Paste or upload a PGN</button></p>
+      </div>
+    </section>`;
+  const inp = $<HTMLInputElement>('#welcome-user');
+  inp.focus();
+  const showErr = (msg: string) => {
+    const el = $('#welcome-msg');
+    el.hidden = !msg;
+    el.textContent = msg;
+  };
+  $('#welcome-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const v = inp.value.trim();
+    const s = (document.querySelector('input[name="welcome-site"]:checked') as HTMLInputElement | null)?.value === 'lichess' ? 'lichess' as const : 'chesscom' as const;
+    if (!v) { showErr('Enter a username.'); inp.focus(); return; }
+    const go = $<HTMLButtonElement>('#welcome-go');
+    go.disabled = true; go.textContent = 'Loading…';
+    showErr('');
+    const r = await probePlayer(v, s);
+    go.disabled = false; go.textContent = 'Load games';
+    if (!r.ok) { showErr(r.error); inp.focus(); inp.select(); return; }
+    writeRemembered(r.username, s);
+    setWelcomeMode(false);
+    navigate({ user: r.username, site: s, view: null, game: null });
+  };
+  $('#welcome-import').onclick = () => navigate({ view: 'import', game: null });
 }
 
 async function ensureArchives() {
@@ -999,9 +1127,18 @@ class ReviewView {
 }
 
 // boot
-const { user } = params();
 void releaseTrainerEngine;
-if (!new URLSearchParams(location.search).get('user')) history.replaceState(null, '', `${location.pathname}?user=${encodeURIComponent(user)}${location.search.includes('game=') ? '&' + location.search.slice(1) : ''}`);
+{
+  const q = params();
+  if (q.user && !new URLSearchParams(location.search).get('user')) {
+    const p = new URLSearchParams(location.search);
+    p.set('user', q.user);
+    if (q.site === 'lichess') p.set('site', 'lichess');
+    else p.delete('site');
+    const qs = p.toString();
+    history.replaceState(null, '', qs ? `${location.pathname}?${qs}` : location.pathname);
+  }
+}
 route();
 // once per visit, when idle: keep the engine cache bounded (no-op unless it is over its cap)
 setTimeout(() => { void pruneCache(); }, 4000);

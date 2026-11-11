@@ -7,7 +7,7 @@ const seed = JSON.parse(readFileSync('stress/seed-backup.json', 'utf8'));
 const browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const counts = (page) => page.evaluate(async () => { const db = await new Promise((r) => { const q = indexedDB.open('chess-review'); q.onsuccess = () => r(q.result); }); const out = {}; for (const s of ['reviews', 'puzzles', 'evalcache', 'games']) out[s] = await new Promise((r) => { const q = db.transaction(s).objectStore(s).count(); q.onsuccess = () => r(q.result); }); db.close(); return out; });
 const a = await (await browser.newContext()).newPage(), b = await (await browser.newContext()).newPage();
-await a.goto(BASE + '?user=Arunabh-pandey'); await a.waitForSelector('.game-row');
+await a.goto(BASE + '?user=demo-player'); await a.waitForSelector('.game-row');
 await b.goto(BASE + '?user=someone-else'); await b.waitForTimeout(2000);
 // person A: 25 real reviews + an over-cap engine cache (16 copies of the real batch cache = 26,352 entries)
 await a.evaluate(async (seed) => {
@@ -20,7 +20,7 @@ await a.evaluate(async (seed) => {
 }, seed);
 console.log('A after seeding:', JSON.stringify(await counts(a)));
 await b.reload(); await b.waitForTimeout(1500);
-console.log('B (separate browser):', JSON.stringify(await counts(b)), 'history rows', await b.goto(BASE + '?user=Arunabh-pandey&view=history').then(() => b.waitForTimeout(1500)).then(() => b.locator('.hist-list .game-row').count()));
-await a.goto(BASE + '?user=Arunabh-pandey'); await a.waitForTimeout(9000);
+console.log('B (separate browser):', JSON.stringify(await counts(b)), 'history rows', await b.goto(BASE + '?user=demo-player&view=history').then(() => b.waitForTimeout(1500)).then(() => b.locator('.hist-list .game-row').count()));
+await a.goto(BASE + '?user=demo-player'); await a.waitForTimeout(9000);
 console.log('A 9 s after a visit (cache cap):', JSON.stringify(await counts(a)));
 await browser.close();

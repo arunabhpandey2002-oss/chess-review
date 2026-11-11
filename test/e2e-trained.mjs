@@ -20,14 +20,14 @@ const counts = async () => {
   return { badge: await badge(), button: btn ? +btn[1] : 0, group: head ? +head[1] : 0 };
 };
 
-await page.goto(BASE + '?user=Arunabh-pandey&view=data');
+await page.goto(BASE + '?user=demo-player&view=data');
 await page.waitForSelector('h1');
 await page.evaluate(async (base) => {
   const db = await new Promise((r, j) => { const q = indexedDB.open('chess-review'); q.onsuccess = () => r(q.result); q.onerror = () => j(q.error); });
   await new Promise((r, j) => { const t = db.transaction('puzzles', 'readwrite'); const now = Date.now(); for (let i = 0; i < 6; i++) { const p = base[i % 3]; t.objectStore('puzzles').put({ ...p, id: `${p.id}-t${i}`, gameId: `${p.gameId}t${i}`, srs: { ...p.srs, retired: false, due: now - 1000 * (i + 1), history: [] } }); } t.oncomplete = r; t.onerror = () => j(t.error); });
   db.close();
 }, base);
-await page.goto(BASE + '?user=Arunabh-pandey&view=puzzles');
+await page.goto(BASE + '?user=demo-player&view=puzzles');
 await page.waitForSelector('.pz-row');
 const before = await counts();
 check('before: badge, button and Due-now group agree', before.badge === before.button && before.button === before.group && before.group >= 6, JSON.stringify(before));
@@ -55,7 +55,7 @@ const st = await page.locator(`.pz-row[data-id="${target}"] .st`).innerText();
 check('trained position shows its next review date', /Next in/.test(st), st);
 
 if (process.env.FULL) {
-  await page.goto(BASE + '?user=Arunabh-pandey&game=186092857180');
+  await page.goto(BASE + '?user=demo-player&game=186092857180');
   await page.waitForSelector('.progress.complete', { timeout: 420000 });
   await page.waitForSelector('.moment');
   const b0 = await badge();

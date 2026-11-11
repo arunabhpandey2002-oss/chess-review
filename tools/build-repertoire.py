@@ -35,7 +35,7 @@ ENTRIES = [  # id, side you play, moves that identify it (must be an exact line 
   ('scandinavian', 'w', '1. e4 d5', ["Scandinavian Defense"]),
   ('kid', 'w', '1. d4 Nf6 2. c4 g6 3. Nc3', ["King's Indian Defense"]),
   ('pirc', 'w', '1. e4 d6 2. d4 Nf6 3. Nc3 g6', ["Pirc Defense"]),
-  # added after looking at Arunabh's games: as White he plays 1.d4 and 2.Nf3; as Black he meets 1.e4 with ...e5
+  # added after looking at sample games: as White, 1.d4 and 2.Nf3; as Black, meet 1.e4 with ...e5
   ('three-knights', 'b', '1. e4 e5 2. Nf3 Nc6 3. Nc3', ["Three Knights Opening", "Four Knights Game"]),
   ('bishops', 'b', '1. e4 e5 2. Bc4', ["Bishop's Opening"]),
   ('wayward-queen', 'b', '1. e4 e5 2. Qh5', ["King's Pawn Game: Wayward Queen Attack"]),

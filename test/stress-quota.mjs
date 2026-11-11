@@ -13,7 +13,7 @@ page.on('dialog', (d) => d.accept());
 if (process.env.TRACE) await page.addInitScript(() => { const o = IDBDatabase.prototype.transaction; IDBDatabase.prototype.transaction = function (...a) { const st = new Error().stack; const t = o.apply(this, a); t.addEventListener('abort', () => console.log('IDBABORT ' + a[0] + ' ' + st.split('\n').slice(2, 7).join(' < '))); return t; }; });
 if (process.env.TRACE) page.on('console', (m) => { if (m.text().startsWith('IDBABORT')) console.log(`[${phase}] ` + m.text()); });
 const cdp = await ctx.newCDPSession(page);
-const U = '?user=Arunabh-pandey';
+const U = '?user=demo-player';
 await page.goto(BASE + U); await page.waitForSelector('.game-row', { timeout: 60000 });
 const origin = new URL(BASE).origin;
 const est = () => page.evaluate(async () => { const e = await navigator.storage.estimate(); return { used: e.usage, quota: e.quota }; });

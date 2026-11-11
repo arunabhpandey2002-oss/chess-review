@@ -6,14 +6,14 @@ let pass = 0, fail = 0;
 const check = (name, ok, info = '') => { ok ? pass++ : fail++; console.log(`${ok ? 'PASS' : 'FAIL'} ${name}${info !== '' ? ' — ' + info : ''}`); };
 
 const cases = [
-  ['arunabh-pandey', 1280, false],
-  ['arunabh-pandey', 1100, false],
-  ['arunabh-pandey', 1024, false],
+  ['demo-player', 1280, false],
+  ['demo-player', 1100, false],
+  ['demo-player', 1024, false],
   ['minimal-ui-shots', 1024, false],
-  ['arunabh-pandey', 390, true],
+  ['demo-player', 390, true],
   ['minimal-ui-shots', 390, true],
-  ['arunabh-pandey-extra-long-username', 1024, false],
-  ['arunabh-pandey-extra-long-username', 390, true],
+  ['demo-player-extra-long-username', 1024, false],
+  ['demo-player-extra-long-username', 390, true],
 ];
 
 for (const [user, w, mobile] of cases) {
